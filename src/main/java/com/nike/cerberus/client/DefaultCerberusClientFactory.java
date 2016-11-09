@@ -20,7 +20,6 @@ import com.nike.cerberus.client.auth.DefaultCerberusCredentialsProviderChain;
 import com.nike.vault.client.UrlResolver;
 import com.nike.vault.client.VaultClient;
 import com.nike.vault.client.VaultClientFactory;
-import com.nike.vault.client.auth.DefaultVaultCredentialsProviderChain;
 
 /**
  * Client factory for creating a Cerberus client.
@@ -39,6 +38,6 @@ public final class DefaultCerberusClientFactory {
      */
     public static VaultClient getClient() {
         final UrlResolver urlResolver = new DefaultCerberusUrlResolver();
-        return VaultClientFactory.getClient(urlResolver, new DefaultVaultCredentialsProviderChain());
+        return VaultClientFactory.getClient(urlResolver, new DefaultCerberusCredentialsProviderChain());
     }
 }
