@@ -53,7 +53,7 @@ Cerberus client is a small project. It only has a few classes and they are all f
 <a name="license"></a>
 ## License
 
-Vault client is released under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+Cerberus client is released under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
 [travis]:https://travis-ci.org/Nike-Inc/cerberus-java-client
 [travis img]:https://api.travis-ci.org/Nike-Inc/cerberus-java-client.svg?branch=master
