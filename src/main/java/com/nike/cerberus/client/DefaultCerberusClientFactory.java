@@ -17,27 +17,22 @@
 package com.nike.cerberus.client;
 
 import com.nike.cerberus.client.auth.DefaultCerberusCredentialsProviderChain;
-import com.nike.vault.client.UrlResolver;
 import com.nike.vault.client.VaultClient;
 import com.nike.vault.client.VaultClientFactory;
 
 /**
- * Client factory for creating a Cerberus client.
+ * Client factory for creating a Vault client with a URL resolver and credentials provider specific to Cerberus.
  */
 public final class DefaultCerberusClientFactory {
 
-    private DefaultCerberusClientFactory() {
-        // Don't instantiate factory class.
-    }
-
     /**
-     * Resolves the Vault/Cerberus URL via the {@link DefaultCerberusUrlResolver} and creates a new {@link VaultClient}
-     * with the {@link DefaultCerberusCredentialsProviderChain}.
+     * Creates a new {@link VaultClient} with the {@link DefaultCerberusUrlResolver} for URL resolving
+     * and {@link DefaultCerberusCredentialsProviderChain} for obtaining credentials.
      *
      * @return Vault client
      */
     public static VaultClient getClient() {
-        final UrlResolver urlResolver = new DefaultCerberusUrlResolver();
-        return VaultClientFactory.getClient(urlResolver, new DefaultCerberusCredentialsProviderChain());
+        return VaultClientFactory.getClient(new DefaultCerberusUrlResolver(),
+                new DefaultCerberusCredentialsProviderChain());
     }
 }
