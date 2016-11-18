@@ -17,8 +17,12 @@
 package com.nike.cerberus.client;
 
 import com.nike.cerberus.client.auth.DefaultCerberusCredentialsProviderChain;
+import com.nike.cerberus.client.auth.EnvironmentCerberusCredentialsProvider;
+import com.nike.cerberus.client.auth.SystemPropertyCerberusCredentialsProvider;
+import com.nike.cerberus.client.auth.aws.LambdaRoleVaultCredentialsProvider;
 import com.nike.vault.client.VaultClient;
 import com.nike.vault.client.VaultClientFactory;
+import com.nike.vault.client.auth.VaultCredentialsProviderChain;
 
 /**
  * Client factory for creating a Vault client with a URL resolver and credentials provider specific to Cerberus.
@@ -34,5 +38,22 @@ public final class DefaultCerberusClientFactory {
     public static VaultClient getClient() {
         return VaultClientFactory.getClient(new DefaultCerberusUrlResolver(),
                 new DefaultCerberusCredentialsProviderChain());
+    }
+
+    /**
+     * Creates a new {@link VaultClient} with the {@link DefaultCerberusUrlResolver} for URL resolving
+     * and a credentials provider chain that includes the {@link LambdaRoleVaultCredentialsProvider} for obtaining
+     * credentials.
+     *
+     * @param invokedFunctionArn The ARN for the AWS Lambda function being invoked.
+     * @return Vault client
+     */
+    public static VaultClient getClientForLambda(final String invokedFunctionArn) {
+        final DefaultCerberusUrlResolver urlResolver = new DefaultCerberusUrlResolver();
+        return VaultClientFactory.getClient(urlResolver,
+                new VaultCredentialsProviderChain(
+                        new EnvironmentCerberusCredentialsProvider(),
+                        new SystemPropertyCerberusCredentialsProvider(),
+                        new LambdaRoleVaultCredentialsProvider(urlResolver, invokedFunctionArn)));
     }
 }

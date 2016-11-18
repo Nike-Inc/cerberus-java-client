@@ -17,21 +17,18 @@
 package com.nike.cerberus.client.auth.aws;
 
 import com.amazonaws.AmazonClientException;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.kms.AWSKMSClient;
 import com.amazonaws.util.EC2MetadataUtils;
 import com.google.gson.JsonSyntaxException;
 import com.nike.vault.client.UrlResolver;
 import com.nike.vault.client.VaultClientException;
-import com.nike.vault.client.auth.TokenVaultCredentials;
 import com.nike.vault.client.auth.VaultCredentialsProvider;
-import com.nike.vault.client.model.VaultAuthResponse;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -44,6 +41,8 @@ import java.util.Set;
 public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InstanceRoleVaultCredentialsProvider.class);
+
+    public static final Pattern IAM_ARN_PATTERN = Pattern.compile("(arn\\:aws\\:iam\\:\\:)(?<accountId>[0-9].*)(\\:.*)");
 
     /**
      * Constructor to setup credentials provider using the specified
@@ -68,24 +67,13 @@ public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProv
             final Set<String> iamRoleSet = EC2MetadataUtils.getIAMSecurityCredentials().keySet();
             final String accountId = lookupAccountId();
 
-            final AWSKMSClient kmsClient = new AWSKMSClient();
-            kmsClient.setRegion(Regions.getCurrentRegion());
-
             for (final String iamRole : iamRoleSet) {
                 try {
-                    final String encryptedAuthData = getEncryptedAuthData(accountId, iamRole);
-                    final VaultAuthResponse decryptedToken = decryptToken(kmsClient, encryptedAuthData);
-                    final DateTime expires = DateTime.now(DateTimeZone.UTC);
-                    expires.plusSeconds(decryptedToken.getLeaseDuration() - paddingTimeInSeconds);
-
-                    credentials = new TokenVaultCredentials(decryptedToken.getClientToken());
-                    expireDateTime = expires;
-
+                    getAndSetToken(accountId, iamRole);
                     return;
                 } catch (VaultClientException sce) {
                     LOGGER.warn("Unable to acquire Vault token for IAM role: " + iamRole, sce);
                 }
-
             }
         } catch (AmazonClientException ace) {
             LOGGER.warn("Unexpected error communicating with AWS services.", ace);
@@ -94,5 +82,31 @@ public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProv
         }
 
         throw new VaultClientException("Unable to acquire token with EC2 instance role.");
+    }
+
+    /**
+     * Parses and returns the AWS account ID from the instance profile ARN.
+     *
+     * @return AWS account ID
+     */
+    protected String lookupAccountId() {
+        final EC2MetadataUtils.IAMInfo iamInfo = EC2MetadataUtils.getIAMInstanceProfileInfo();
+
+        if (iamInfo == null) {
+            final String errorMessage = "No IAM Instance Profile assigned to running instance.";
+            LOGGER.error(errorMessage);
+            throw new VaultClientException(errorMessage);
+        }
+
+        final Matcher matcher = IAM_ARN_PATTERN.matcher(iamInfo.instanceProfileArn);
+
+        if (matcher.matches()) {
+            final String accountId = matcher.group("accountId");
+            if (StringUtils.isNotBlank(accountId)) {
+                return accountId;
+            }
+        }
+
+        throw new VaultClientException("Unable to obtain AWS account ID from instance profile ARN.");
     }
 }
