@@ -58,7 +58,7 @@ public class LambdaRoleVaultCredentialsProvider extends BaseAwsCredentialsProvid
      * Constructor to setup credentials provider using the specified
      * implementation of {@link UrlResolver}
      *
-     * @param urlResolver Resolver for resolving the Cerberus URL
+     * @param urlResolver        Resolver for resolving the Cerberus URL
      * @param invokedFunctionArn The invoked lambda function's ARN
      */
     public LambdaRoleVaultCredentialsProvider(final UrlResolver urlResolver, final String invokedFunctionArn) {
@@ -113,6 +113,8 @@ public class LambdaRoleVaultCredentialsProvider extends BaseAwsCredentialsProvid
             LOGGER.warn("Unable to acquire Vault token for IAM role: " + iamRoleArn, sce);
         }
 
-        throw new VaultClientException("Unable to acquire token with EC2 instance role.");
+        throw new VaultClientException("Unable to acquire token with Lambda instance role.");
     }
+
+
 }

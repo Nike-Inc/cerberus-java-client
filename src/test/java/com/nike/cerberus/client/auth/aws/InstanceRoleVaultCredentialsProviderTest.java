@@ -19,8 +19,6 @@ package com.nike.cerberus.client.auth.aws;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.kms.AWSKMSClient;
-import com.amazonaws.services.kms.model.DecryptRequest;
-import com.amazonaws.services.kms.model.DecryptResult;
 import com.amazonaws.util.EC2MetadataUtils;
 import com.nike.cerberus.client.DefaultCerberusUrlResolver;
 import com.nike.vault.client.UrlResolver;
@@ -36,7 +34,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,13 +52,7 @@ import static org.powermock.api.mockito.PowerMockito.whenNew;
 @PrepareForTest({AWSKMSClient.class,
     EC2MetadataUtils.class, InstanceRoleVaultCredentialsProvider.class})
 @PowerMockIgnore({"javax.management.*","javax.net.*"})
-public class InstanceRoleVaultCredentialsProviderTest {
-
-    private static final String AUTH_RESPONSE = "{\"auth_data\":\"eyJjbGllbnRfdG9rZW4iOiI2NjMyY2I1Zi1mMTBjLTQ1NzItOTU0NS1lNTJmNDdmNmEzZmQiLCAibGVhc2VfZHVyYXRpb24iOiIzNjAwIn0=\"}";
-
-    private static final String DECODED_AUTH_DATA = "{\"client_token\":\"6632cb5f-f10c-4572-9545-e52f47f6a3fd\", \"lease_duration\":\"3600\"}";
-
-    private static final String AUTH_TOKEN = "6632cb5f-f10c-4572-9545-e52f47f6a3fd";
+public class InstanceRoleVaultCredentialsProviderTest extends BaseCredentialsProviderTest {
 
     private static final String GOOD_INSTANCE_PROFILE_ARN = "arn:aws:iam::107274433934:instance-profile/rawr";
 
@@ -93,7 +84,7 @@ public class InstanceRoleVaultCredentialsProviderTest {
 
         mockGetIamSecurityCredentials(DEFAULT_ROLE);
         mockGetIamInstanceProfileInfo(GOOD_INSTANCE_PROFILE_ARN);
-        mockDecrypt(DECODED_AUTH_DATA);
+        mockDecrypt(kmsClient, DECODED_AUTH_DATA);
         when(urlResolver.resolve()).thenReturn(vaultUrl);
 
         System.setProperty(DefaultCerberusUrlResolver.CERBERUS_ADDR_SYS_PROPERTY, vaultUrl);
@@ -151,9 +142,4 @@ public class InstanceRoleVaultCredentialsProviderTest {
         when(EC2MetadataUtils.getIAMInstanceProfileInfo()).thenReturn(iamInfo);
     }
 
-    private void mockDecrypt(final String toDecrypt) {
-        DecryptResult decryptResult = new DecryptResult();
-        decryptResult.setPlaintext(ByteBuffer.wrap(toDecrypt.getBytes()));
-        when(kmsClient.decrypt(any(DecryptRequest.class))).thenReturn(decryptResult);
-    }
 }
