@@ -17,7 +17,8 @@
 package com.nike.cerberus.client.auth.aws;
 
 import com.amazonaws.AmazonClientException;
-import com.amazonaws.regions.Regions;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.RegionUtils;
 import com.amazonaws.services.lambda.AWSLambda;
 import com.amazonaws.services.lambda.AWSLambdaClient;
 import com.amazonaws.services.lambda.model.GetFunctionConfigurationRequest;
@@ -45,14 +46,14 @@ public class LambdaRoleVaultCredentialsProvider extends BaseAwsCredentialsProvid
     public static final Logger LOGGER = LoggerFactory.getLogger(LambdaRoleVaultCredentialsProvider.class);
 
     public static final Pattern LAMBDA_FUNCTION_ARN_PATTERN =
-            Pattern.compile("arn:aws:lambda:(?<awsRegion>.*):(?<accountId>[0-9].*):(?<functionConstant>.*):(?<functionName>.*):(?<qualifier>.*)");
+            Pattern.compile("arn:aws:lambda:(?<awsRegion>[a-zA-Z0-9-]+):(?<accountId>[0-9]{12}):function:(?<functionName>[a-zA-Z0-9-_]+)(:(?<qualifier>.*))?");
 
     public static final Pattern IAM_ROLE_ARN_PATTERN =
             Pattern.compile("arn:aws:iam::(?<accountId>\\d{12}):role/?(?<roleName>[a-zA-Z_0-9+=,.@\\-_/]+)");
 
     private final String functionName;
-
     private final String qualifier;
+    private final String region;
 
     /**
      * Constructor to setup credentials provider using the specified
@@ -71,6 +72,7 @@ public class LambdaRoleVaultCredentialsProvider extends BaseAwsCredentialsProvid
 
         this.functionName = matcher.group("functionName");
         this.qualifier = matcher.group("qualifier");
+        this.region = matcher.group("awsRegion");
     }
 
     /**
@@ -79,8 +81,10 @@ public class LambdaRoleVaultCredentialsProvider extends BaseAwsCredentialsProvid
      */
     @Override
     protected void authenticate() {
+        final Region currentRegion = RegionUtils.getRegion(this.region);
+
         final AWSLambda lambdaClient = new AWSLambdaClient();
-        lambdaClient.setRegion(Regions.getCurrentRegion());
+        lambdaClient.setRegion(currentRegion);
 
         final GetFunctionConfigurationResult functionConfiguration = lambdaClient.getFunctionConfiguration(
                 new GetFunctionConfigurationRequest()
@@ -103,7 +107,7 @@ public class LambdaRoleVaultCredentialsProvider extends BaseAwsCredentialsProvid
         final String iamRoleArn = roleArnMatcher.group("roleName");
 
         try {
-            getAndSetToken(accountId, iamRoleArn);
+            getAndSetToken(accountId, iamRoleArn, currentRegion);
             return;
         } catch (AmazonClientException ace) {
             LOGGER.warn("Unexpected error communicating with AWS services.", ace);

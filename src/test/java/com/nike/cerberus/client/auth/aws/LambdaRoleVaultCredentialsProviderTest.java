@@ -32,6 +32,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
 @PowerMockIgnore({"javax.management.*", "javax.net.*"})
 public class LambdaRoleVaultCredentialsProviderTest extends BaseCredentialsProviderTest {
     private static final String VALID_LAMBDA_ARN = "arn:aws:lambda:us-west-2:123456789012:function:lambda-test:1.1.0";
+    private static final String VALID_LAMBDA_ARN_NO_QUALIFIER = "arn:aws:lambda:us-west-2:012345678912:function:lambda-test";
     private static final String VALID_IAM_ARN = "arn:aws:iam::123456789012:role/cerberus-role";
     private static final String INVALID_ARN = "invalid-arn";
 
@@ -67,8 +68,8 @@ public class LambdaRoleVaultCredentialsProviderTest extends BaseCredentialsProvi
     }
 
     @Test
-    public void provider_creation_succeeds_with_valid_arn_and_parsed_properly() {
-        LambdaRoleVaultCredentialsProvider provider = new LambdaRoleVaultCredentialsProvider(urlResolver, VALID_LAMBDA_ARN);
+    public void valid_arn_and_no_qualifier_matched_properly_on_provider_creation() {
+        LambdaRoleVaultCredentialsProvider provider = new LambdaRoleVaultCredentialsProvider(urlResolver, VALID_LAMBDA_ARN_NO_QUALIFIER);
     }
 
     @Test
