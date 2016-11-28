@@ -48,7 +48,7 @@ with Cerberus and obtain a token.
 
 The IAM role must be configured for access to Cerberus before this will work.
 
-The following policy statement must also be assigned to the IAM role:
+The following policy statement must also be assigned to the IAM role, so that the client can automatically decrypt the auth token from the Cerberus IAM auth endpoint:
 
 ``` json
     {
@@ -67,7 +67,7 @@ The following policy statement must also be assigned to the IAM role:
 
 #### Prerequisites
 
-The IAM role assigned to the Lambda function must contain the following policy statement:
+The IAM role assigned to the Lambda function must contain the following policy statement in addition to the above KMS decrypt policy, this is so the Lambda can look up its metadata to automatically authenticate with the Cerberus IAM auth endpoint:
 
 ``` json
     {
