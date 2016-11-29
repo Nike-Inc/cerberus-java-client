@@ -16,12 +16,13 @@
 
 package com.nike.cerberus.client.auth.aws;
 
+import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.kms.AWSKMS;
+import com.amazonaws.services.kms.AWSKMSClient;
 import com.amazonaws.services.kms.model.DecryptRequest;
 import com.amazonaws.services.kms.model.DecryptResult;
 import com.amazonaws.util.Base64;
-import com.amazonaws.util.EC2MetadataUtils;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -43,6 +44,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,8 +58,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * {@link VaultCredentialsProvider} implementation that uses some AWS
@@ -71,8 +71,6 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
     public static final MediaType DEFAULT_MEDIA_TYPE = MediaType.parse("application/json; charset=utf-8");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseAwsCredentialsProvider.class);
-
-    private final Pattern iamArnPattern = Pattern.compile("(arn\\:aws\\:iam\\:\\:)(?<accountId>[0-9].*)(\\:.*)");
 
     private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
@@ -139,29 +137,38 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
     abstract protected void authenticate();
 
     /**
-     * Parses and returns the AWS account ID from the instance profile ARN.
+     * Authenticates with Cerberus and decrypts and sets the token and expiration details.
      *
-     * @return AWS account ID
+     * @param accountId
+     *          AWS account ID used to auth with cerberus
+     * @param iamRole
+     *          IAM role name used to auth with cerberus
      */
-    protected String lookupAccountId() {
-        final EC2MetadataUtils.IAMInfo iamInfo = EC2MetadataUtils.getIAMInstanceProfileInfo();
+    protected void getAndSetToken(final String accountId, final String iamRole) {
+        getAndSetToken(accountId, iamRole, Regions.getCurrentRegion());
+    }
 
-        if (iamInfo == null) {
-            final String errorMessage = "No IAM Instance Profile assigned to running instance.";
-            LOGGER.error(errorMessage);
-            throw new VaultClientException(errorMessage);
-        }
+    /**
+     * Authenticates with Cerberus and decrypts and sets the token and expiration details.
+     *
+     * @param accountId
+     *          AWS account ID used to auth with cerberus
+     * @param iamRole
+     *          IAM role name used to auth with cerberus
+     * @param region
+     *          AWS Region used in auth with cerberus
+     */
+    protected void getAndSetToken(final String accountId, final String iamRole, final Region region) {
+        final AWSKMSClient kmsClient = new AWSKMSClient();
+        kmsClient.setRegion(region);
 
-        final Matcher matcher = iamArnPattern.matcher(iamInfo.instanceProfileArn);
+        final String encryptedAuthData = getEncryptedAuthData(accountId, iamRole, region);
+        final VaultAuthResponse decryptedToken = decryptToken(kmsClient, encryptedAuthData);
+        final DateTime expires = DateTime.now(DateTimeZone.UTC);
+        expires.plusSeconds(decryptedToken.getLeaseDuration() - paddingTimeInSeconds);
 
-        if (matcher.matches()) {
-            final String accountId = matcher.group("accountId");
-            if (StringUtils.isNotBlank(accountId)) {
-                return accountId;
-            }
-        }
-
-        throw new VaultClientException("Unable to obtain AWS account ID from instance profile ARN.");
+        credentials = new TokenVaultCredentials(decryptedToken.getClientToken());
+        expireDateTime = expires;
     }
 
     /**
@@ -171,9 +178,11 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
      *            AWS account ID used in the row key
      * @param roleName
      *            IAM role name used in the row key
+     * @param region
+     *            Current region of the running function or instance
      * @return Base64 and encrypted token
      */
-    protected String getEncryptedAuthData(final String accountId, final String roleName) {
+    protected String getEncryptedAuthData(final String accountId, final String roleName, Region region) {
         final String url = urlResolver.resolve();
 
         if (StringUtils.isBlank(url)) {
@@ -189,7 +198,7 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
             Request.Builder requestBuilder = new Request.Builder().url(url + "/v1/auth/iam-role")
                     .addHeader(HttpHeader.ACCEPT, DEFAULT_MEDIA_TYPE.toString())
                     .addHeader(HttpHeader.CONTENT_TYPE, DEFAULT_MEDIA_TYPE.toString())
-                    .method(HttpMethod.POST, buildCredentialsRequestBody(accountId, roleName));
+                    .method(HttpMethod.POST, buildCredentialsRequestBody(accountId, roleName, region));
 
             Response response = httpClient.newCall(requestBuilder.build()).execute();
 
@@ -240,11 +249,13 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
         return gson.fromJson(decryptedAuthData, VaultAuthResponse.class);
     }
 
-    private RequestBody buildCredentialsRequestBody(final String accountId, final String roleName) {
+    private RequestBody buildCredentialsRequestBody(final String accountId, final String roleName, Region region) {
+        final String regionName = region == null ? Regions.getCurrentRegion().getName() : region.getName();
+
         final Map<String, String> credentials = new HashMap<>();
         credentials.put("account_id", accountId);
         credentials.put("role_name", roleName);
-        credentials.put("region", Regions.getCurrentRegion().getName());
+        credentials.put("region", regionName);
 
         return RequestBody.create(DEFAULT_MEDIA_TYPE, gson.toJson(credentials));
     }

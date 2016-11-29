@@ -11,11 +11,13 @@ This library acts as a wrapper around the Nike developed Vault client by configu
 
 ## Quickstart
 
+### Default Client
+
 ``` java
     final VaultClient vaultClient = DefaultCerberusClientFactory.getClient();
 ```
 
-### Default URL Assumptions
+#### Default URL Assumptions
 
 The example above uses the `DefaultCerberusUrlResolver` to resolve the URL for Vault.
 
@@ -27,7 +29,7 @@ or the JVM system property, `cerberus.addr`, must be set:
 
     cerberus.addr=https://cerberus
 
-### Default Credentials Provider Assumptions
+#### Default Credentials Provider Assumptions
 
 Again, for the example above, the `DefaultCerberusCredentialsProviderChain` is used to resolve the token needed to interact with Vault.
 
@@ -39,12 +41,53 @@ or the JVM system property, `vault.token`, must be set:
 
     cerberus.token=TOKEN
     
-or the IAM role authentication flow:
+or the EC2 IAM role authentication flow:
 
 If the client library is running on an EC2 instance, it will attempt to use the instance's assigned IAM role to authenticate 
 with Cerberus and obtain a token.
 
 The IAM role must be configured for access to Cerberus before this will work.
+
+The following policy statement must also be assigned to the IAM role, so that the client can automatically decrypt the auth token from the Cerberus IAM auth endpoint:
+
+``` json
+    {
+        "Sid": "allow-kms-decrypt",
+        "Effect": "Allow",
+        "Action": [
+            "kms:Decrypt"
+        ],
+        "Resource": [
+            "*"
+        ]
+    }
+```
+
+### Client that can authenticate from Lambdas
+
+#### Prerequisites
+
+The IAM role assigned to the Lambda function must contain the following policy statement in addition to the above KMS decrypt policy, this is so the Lambda can look up its metadata to automatically authenticate with the Cerberus IAM auth endpoint:
+
+``` json
+    {
+        "Sid": "allow-get-function-config",
+        "Effect": "Allow",
+        "Action": [
+            "lambda:GetFunctionConfiguration"
+        ],
+        "Resource": [
+            "*"
+        ]
+    }
+```
+
+#### Configure the Client
+
+``` java
+    final String invokedFunctionArn = context.getInvokedFunctionArn()
+    final VaultClient vaultClient = DefaultCerberusClientFactory.getClientForLambda(invokedFunctionArn);
+```
 
 ## Further Details
 
