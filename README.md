@@ -9,6 +9,8 @@ A java based client library for Cerberus that's built on top of Nike's Vault cli
 
 This library acts as a wrapper around the Nike developed Vault client by configuring the client to be Cerberus compatible.
 
+To learn more about Cerberus, please see the [Cerberus website](http://engineering.nike.com/cerberus/).
+
 ## Quickstart
 
 ``` java
