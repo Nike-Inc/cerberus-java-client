@@ -54,13 +54,18 @@ The following policy statement must also be assigned to the IAM role, so that th
 
 ``` json
     {
-        "Sid": "allow-kms-decrypt",
-        "Effect": "Allow",
-        "Action": [
-            "kms:Decrypt"
-        ],
-        "Resource": [
-            "*"
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "AllowKMSDecrypt",
+                "Effect": "Allow",
+                "Action": [
+                    "kms:Decrypt"
+                ],
+                "Resource": [
+                    "*"
+                ]
+            }
         ]
     }
 ```
@@ -73,13 +78,18 @@ The IAM role assigned to the Lambda function must contain the following policy s
 
 ``` json
     {
-        "Sid": "allow-get-function-config",
-        "Effect": "Allow",
-        "Action": [
-            "lambda:GetFunctionConfiguration"
-        ],
-        "Resource": [
-            "*"
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "AllowGetFunctionConfig",
+                "Effect": "Allow",
+                "Action": [
+                    "lambda:GetFunctionConfiguration"
+                ],
+                "Resource": [
+                    "*"
+                ]
+            }
         ]
     }
 ```
@@ -87,7 +97,7 @@ The IAM role assigned to the Lambda function must contain the following policy s
 #### Configure the Client
 
 ``` java
-    final String invokedFunctionArn = context.getInvokedFunctionArn()
+    final String invokedFunctionArn = context.getInvokedFunctionArn();
     final VaultClient vaultClient = DefaultCerberusClientFactory.getClientForLambda(invokedFunctionArn);
 ```
 
