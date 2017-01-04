@@ -18,28 +18,27 @@ repositories {
     jcenter()
 }
 
-final String AWS_SDK_VERSION = '1.10.50'
+def AWS_SDK_VERSION = '1.11.75'
 //noinspection GroovyAssignabilityCheck
-configurations.all {
-    resolutionStrategy {
-        // add a dependency resolve rule
-        eachDependency { DependencyResolveDetails details ->
-            //Force use of certain dependencies or versions
-            if (details.requested.group == 'com.amazonaws') {
-                details.useVersion(AWS_SDK_VERSION)
-            }
-        }
-    }
-}
-
 dependencies {
+
+/***********************************************************************************************************************
+ * IMPORTANT!  This project produces a fat jar!                                                                        *
+ *                                                                                                                     *
+ * If you add a new compile dependency to this library and do not also verify that it gets shaded                      *
+ * you will introduce a transitive dependency nightmare for users of this library.                                     *
+ *                                                                                                                     *
+ * We do this because AWS constantly breaks backwards compatibility of their SDK with minor version releases.          *
+ * We do not want to dictate what SDK version users of Cerberus should use.                                            *
+ ***********************************************************************************************************************/
     compile "com.nike:vault-client:1.0.0"
     compile "joda-time:joda-time:2.8.1"
     compile "org.apache.commons:commons-lang3:3.4"
     compile "org.slf4j:slf4j-api:1.7.14"
-    compile "com.amazonaws:aws-java-sdk-core:1.10.50"
-    compile "com.amazonaws:aws-java-sdk-kms:1.10.50"
-    compile "com.amazonaws:aws-java-sdk-lambda:1.10.50"
+
+    compile "com.amazonaws:aws-java-sdk-core:${AWS_SDK_VERSION}"
+    compile "com.amazonaws:aws-java-sdk-kms:${AWS_SDK_VERSION}"
+    compile "com.amazonaws:aws-java-sdk-lambda:${AWS_SDK_VERSION}"
 
     testCompile "junit:junit:4.12"
     testCompile ("org.mockito:mockito-core:1.10.19") {
@@ -53,4 +52,18 @@ dependencies {
     }
     testCompile "org.assertj:assertj-core:2.3.0"
     testCompile "com.squareup.okhttp3:mockwebserver:3.0.1"
+}
+
+shadowJar {
+    classifier = ''
+    relocate('com.', 'cerberus.com.') {
+        exclude 'com.nike.**'
+    }
+    relocate 'org.', 'cerberus.org.'
+    relocate 'javax.annotation', 'cerberus.javax.annotation'
+    relocate 'models.', 'cerberus.models.'
+    relocate 'mozilla.', 'cerberus.mozilla.'
+    relocate 'okhttp3.', 'cerberus.okhttp3.'
+    relocate 'okio.', 'cerberus.okio.'
+    relocate 'software.', 'cerberus.software.'
 }

@@ -5,7 +5,7 @@ cache:
   directories:
   - "$HOME/.m2"
 after_success:
-- "./gradlew cobertura coveralls --stacktrace"
+- ./gradlew cobertura coveralls --stacktrace
 - test "${TRAVIS_PULL_REQUEST}" == "false" && test "${TRAVIS_TAG}" != "" && ./gradlew
   bintrayUpload --stacktrace
 env:
