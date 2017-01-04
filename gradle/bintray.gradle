@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-def createPomOutputLocation = "${project.buildDir}/libs/pom.xml"
 def bintrayUser = project.hasProperty('bintrayUser') ? project.bintrayUser : System.getenv('BINTRAY_USER') ?: ''
 def bintrayKey = project.hasProperty('bintrayKey') ? project.bintrayKey : System.getenv('BINTRAY_KEY') ?: ''
 def bintrayVersion = "$version"
@@ -24,7 +23,7 @@ bintray {
     key = bintrayKey
     dryRun = false
     publish = true
-    publications = ['mavenInfo']
+    publications = ['jar']
 
     pkg {
         repo = 'maven'
@@ -62,52 +61,15 @@ artifacts {
     archives sourcesJar
 }
 
-task createPom << {
-    pom {
-        project {
-            groupId groupId
-            artifactId artifactId
-            version version
-            name artifactId
-            description "Cerberus Client"
-            url 'https://github.com/Nike-Inc/cerberus-java-client'
-            inceptionYear '2016'
-            licenses {
-                license {
-                    name 'The Apache Software License, Version 2.0'
-                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    distribution 'repo'
-                }
-            }
-            scm {
-                url 'https://github.com/Nike-Inc/cerberus-java-client'
-                connection 'git@github.com:Nike-Inc/cerberus-java-client.git'
-            }
-            organization {
-                name 'Nike'
-                url 'http://nike-inc.github.io'
-            }
-        }
-    }.writeTo(createPomOutputLocation)
-}
-
 publishing {
     publications {
-        mavenInfo(MavenPublication) {
-            from components.java
+        jar(MavenPublication) {
+            from components.shadow
 
             artifact sourcesJar
             artifact javadocJar
-
-            pom.withXml {
-                // The pom produced by this task is questionable - ALL dependencies are set to runtime rather than how we set them up in the build.gradle files.
-                //      Unfortunately we need to use this task anyway for the bintray gradle plugin.
-                //      Therefore we'll just wipe out the pom this produces and use one created by the normal maven plugin (see the createPom task) instead.
-                asString().delete(0, Integer.MAX_VALUE).append(new File(createPomOutputLocation).text)
-            }
         }
     }
 }
 
-bintrayUpload.dependsOn(createPom)
-assemble.finalizedBy(createPom)
+bintrayUpload.dependsOn(shadowJar)
