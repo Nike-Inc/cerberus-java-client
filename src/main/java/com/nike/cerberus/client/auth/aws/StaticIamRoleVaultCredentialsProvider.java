@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- *
+ * Provider for allowing users to explicitly set the account id, rolename and region that they want to authenticate as.
  */
 public class StaticIamRoleVaultCredentialsProvider extends BaseAwsCredentialsProvider {
 
