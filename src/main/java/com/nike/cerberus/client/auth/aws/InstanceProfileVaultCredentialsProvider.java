@@ -5,8 +5,6 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.util.EC2MetadataUtils;
 import com.nike.vault.client.UrlResolver;
 import com.nike.vault.client.VaultClientException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
