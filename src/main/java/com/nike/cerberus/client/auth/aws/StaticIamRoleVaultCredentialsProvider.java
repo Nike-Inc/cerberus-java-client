@@ -80,20 +80,20 @@ public class StaticIamRoleVaultCredentialsProvider extends BaseAwsCredentialsPro
     }
 
     private String getAccountIdFromArn(String arn) {
-        Matcher m = Pattern.compile("arn:aws:iam::(.*?):role.*").matcher(arn);
-        boolean found = m.find();
+        Matcher matcher = Pattern.compile("arn:aws:iam::(.*?):role.*").matcher(arn);
+        boolean found = matcher.find();
         if (found) {
-            return m.group(1);
+            return matcher.group(1);
         }
 
         throw new IllegalArgumentException("Invalid IAM role ARN supplied, expected arn:aws:iam::%s:role/%s");
     }
 
     private String getRoleNameFromArn(String arn) {
-        Matcher m = Pattern.compile("arn:aws:iam::.*?:role/(.*)").matcher(arn);
-        boolean found = m.find();
+        Matcher matcher = Pattern.compile("arn:aws:iam::.*?:role/(.*)").matcher(arn);
+        boolean found = matcher.find();
         if (found) {
-            return m.group(1);
+            return matcher.group(1);
         }
 
         throw new IllegalArgumentException("Invalid IAM role ARN supplied, expected arn:aws:iam::%s:role/%s");
