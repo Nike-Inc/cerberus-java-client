@@ -48,16 +48,16 @@ public class InstanceProfileVaultCredentialsProvider extends BaseAwsCredentialsP
 
         IamAuthInfo info = new IamAuthInfo();
         String pattern = "arn:aws:iam::(.*?):instance-profile/(.*)";
-        Matcher m = Pattern.compile(pattern).matcher(instanceProfileArn);
-        boolean found = m.find();
+        Matcher matcher = Pattern.compile(pattern).matcher(instanceProfileArn);
+        boolean found = matcher.find();
         if (! found) {
             throw new VaultClientException(String.format(
                     "Failed to find account id and role / instance profile name from ARN: %s using pattern %s",
                     instanceProfileArn, pattern));
         }
 
-        info.accountId = m.group(1);
-        info.roleName = m.group(2);
+        info.accountId = matcher.group(1);
+        info.roleName = matcher.group(2);
 
         return info;
     }
