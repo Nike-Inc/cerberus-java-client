@@ -31,7 +31,7 @@ dependencies {
  * We do this because AWS constantly breaks backwards compatibility of their SDK with minor version releases.          *
  * We do not want to dictate what SDK version users of Cerberus should use.                                            *
  ***********************************************************************************************************************/
-    compile "com.nike:vault-client:1.1.1"
+    compile "com.nike:vault-client:1.2.1"
     compile "joda-time:joda-time:2.8.1"
     compile "org.apache.commons:commons-lang3:3.4"
     compile "org.slf4j:slf4j-api:1.7.14"
