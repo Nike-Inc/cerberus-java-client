@@ -59,7 +59,9 @@ shadowJar {
     relocate('com.', 'cerberus.com.') {
         exclude 'com.nike.**'
     }
-    relocate 'org.', 'cerberus.org.'
+    relocate('org.', 'cerberus.org.') {
+        exclude 'org.slf4j.**'
+    }
     relocate 'javax.annotation', 'cerberus.javax.annotation'
     relocate 'models.', 'cerberus.models.'
     relocate 'mozilla.', 'cerberus.mozilla.'
