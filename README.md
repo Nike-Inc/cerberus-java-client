@@ -57,18 +57,21 @@ The following policy statement must also be assigned to the IAM role, so that th
         "Version": "2012-10-17",
         "Statement": [
             {
-                "Sid": "AllowKMSDecrypt",
+                "Sid": "AllowKmsDecrypt",
                 "Effect": "Allow",
                 "Action": [
                     "kms:Decrypt"
                 ],
                 "Resource": [
-                    "*"
+                    "arn:aws:kms:*:[Cerberus AWS Account ID]:key/*"
                 ]
             }
         ]
     }
 ```
+
+The account ID in the ARN should be the account ID where Cerberus is deployed.  See your company's internal
+documentation for the account ID that you should use.
 
 ### Client that can authenticate from Lambdas
 
