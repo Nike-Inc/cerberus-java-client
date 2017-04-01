@@ -61,21 +61,21 @@ dependencies {
 shadowJar {
     classifier = ''
     dependencies {
-      // exclude these from the fat jar
+      // exclude these from the shadow jar
       project.configurations.shadow.each {
         exclude it.name
       }
     }
     relocate('com.', 'cerberus.com.') {
         exclude 'com.nike.**'
+        exclude 'com.google.**'
     }
     relocate('org.', 'cerberus.org.') {
         exclude 'org.slf4j.**'
+        exclude 'org.joda.**'
+        exclude 'org.apache.commons.lang3.**'
     }
-    relocate 'javax.annotation', 'cerberus.javax.annotation'
     relocate 'models.', 'cerberus.models.'
     relocate 'mozilla.', 'cerberus.mozilla.'
-    relocate 'okhttp3.', 'cerberus.okhttp3.'
-    relocate 'okio.', 'cerberus.okio.'
     relocate 'software.', 'cerberus.software.'
 }
