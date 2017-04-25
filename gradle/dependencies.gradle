@@ -18,7 +18,7 @@ repositories {
     jcenter()
 }
 
-def AWS_SDK_VERSION = '1.11.75'
+def AWS_SDK_VERSION = '1.11.123'
 def VAULT_CLIENT_COORDINATES = "com.nike:vault-client:1.2.1"
 //noinspection GroovyAssignabilityCheck
 dependencies {
@@ -38,7 +38,7 @@ dependencies {
     compile VAULT_CLIENT_COORDINATES
     shadow "joda-time:joda-time:2.8.1"
     shadow "org.apache.commons:commons-lang3:3.4"
-    shadow "org.slf4j:slf4j-api:1.7.14"
+    shadow "org.slf4j:slf4j-api:1.7.25"
 
     compile "com.amazonaws:aws-java-sdk-core:${AWS_SDK_VERSION}"
     compile "com.amazonaws:aws-java-sdk-kms:${AWS_SDK_VERSION}"
