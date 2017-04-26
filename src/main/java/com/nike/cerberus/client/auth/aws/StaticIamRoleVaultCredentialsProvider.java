@@ -13,65 +13,57 @@ import java.util.regex.Pattern;
  */
 public class StaticIamRoleVaultCredentialsProvider extends BaseAwsCredentialsProvider {
 
-    protected String accountId;
-    protected String roleName;
+    public static final String IAM_ROLE_ARN_FORMAT = "arn:aws:iam::%s:role/%s";
+    protected String iamPrincipalArn;
     protected Region region;
 
     public StaticIamRoleVaultCredentialsProvider(UrlResolver urlResolver, String accountId, String roleName, String region) {
         this(urlResolver);
-        this.accountId = accountId;
-        this.roleName = roleName;
+        this.iamPrincipalArn = generateIamRoleArn(accountId, roleName);
         this.region = Region.getRegion(Regions.fromName(region));
     }
 
     public StaticIamRoleVaultCredentialsProvider(String vaultUrl, String accountId, String roleName, String region) {
         this(new StaticVaultUrlResolver(vaultUrl));
-        this.accountId = accountId;
-        this.roleName = roleName;
+        this.iamPrincipalArn = generateIamRoleArn(accountId, roleName);
         this.region = Region.getRegion(Regions.fromName(region));
     }
 
     public StaticIamRoleVaultCredentialsProvider(UrlResolver urlResolver, String accountId, String roleName, Region region) {
         this(urlResolver);
-        this.accountId = accountId;
-        this.roleName = roleName;
+        this.iamPrincipalArn = generateIamRoleArn(accountId, roleName);
         this.region = region;
     }
 
     public StaticIamRoleVaultCredentialsProvider(String vaultUrl, String accountId, String roleName, Region region) {
         this(new StaticVaultUrlResolver(vaultUrl));
-        this.accountId = accountId;
-        this.roleName = roleName;
+        this.iamPrincipalArn = generateIamRoleArn(accountId, roleName);
         this.region = region;
     }
 
     public StaticIamRoleVaultCredentialsProvider(UrlResolver urlResolver, String iamRoleArn, String region) {
         this(urlResolver);
-        this.accountId = getAccountIdFromArn(iamRoleArn);
-        this.roleName = getRoleNameFromArn(iamRoleArn);
+        this.iamPrincipalArn = iamRoleArn;
         this.region = Region.getRegion(Regions.fromName(region));
     }
 
 
     public StaticIamRoleVaultCredentialsProvider(String vaultUrl, String iamRoleArn, String region) {
         this(new StaticVaultUrlResolver(vaultUrl));
-        this.accountId = getAccountIdFromArn(iamRoleArn);
-        this.roleName = getRoleNameFromArn(iamRoleArn);
+        this.iamPrincipalArn = iamRoleArn;
         this.region = Region.getRegion(Regions.fromName(region));
     }
 
 
     public StaticIamRoleVaultCredentialsProvider(UrlResolver urlResolver, String iamRoleArn, Region region) {
         this(urlResolver);
-        this.accountId = getAccountIdFromArn(iamRoleArn);
-        this.roleName = getRoleNameFromArn(iamRoleArn);
+        this.iamPrincipalArn = iamRoleArn;
         this.region = region;
     }
 
     public StaticIamRoleVaultCredentialsProvider(String vaultUrl, String iamRoleArn, Region region) {
         this(new StaticVaultUrlResolver(vaultUrl));
-        this.accountId = getAccountIdFromArn(iamRoleArn);
-        this.roleName = getRoleNameFromArn(iamRoleArn);
+        this.iamPrincipalArn = iamRoleArn;
         this.region = region;
     }
 
@@ -79,28 +71,13 @@ public class StaticIamRoleVaultCredentialsProvider extends BaseAwsCredentialsPro
         super(urlResolver);
     }
 
-    private String getAccountIdFromArn(String arn) {
-        Matcher matcher = Pattern.compile("arn:aws:iam::(.*?):role.*").matcher(arn);
-        boolean found = matcher.find();
-        if (found) {
-            return matcher.group(1);
-        }
+    private String generateIamRoleArn(String accountId, String roleName) {
 
-        throw new IllegalArgumentException("Invalid IAM role ARN supplied, expected arn:aws:iam::%s:role/%s");
-    }
-
-    private String getRoleNameFromArn(String arn) {
-        Matcher matcher = Pattern.compile("arn:aws:iam::.*?:role/(.*)").matcher(arn);
-        boolean found = matcher.find();
-        if (found) {
-            return matcher.group(1);
-        }
-
-        throw new IllegalArgumentException("Invalid IAM role ARN supplied, expected arn:aws:iam::%s:role/%s");
+        return String.format(IAM_ROLE_ARN_FORMAT, accountId, roleName);
     }
 
     @Override
     protected void authenticate() {
-        getAndSetToken(accountId, roleName, region);
+        getAndSetToken(iamPrincipalArn, region);
     }
 }

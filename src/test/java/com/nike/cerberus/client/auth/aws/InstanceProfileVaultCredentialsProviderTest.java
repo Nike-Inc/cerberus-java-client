@@ -25,32 +25,12 @@ public class InstanceProfileVaultCredentialsProviderTest {
         provider = new InstanceProfileVaultCredentialsProvider(new StaticVaultUrlResolver("foo"));
     }
 
-    @Test
-    public void test_that_valid_arn_gets_parsed() {
-        InstanceProfileVaultCredentialsProvider.IamAuthInfo info = provider.getIamAuthInfo("arn:aws:iam::1234:inst" +
-                "ance-profile/base/prod-base-sdfgsdfg-be5c-47ff-b82f-sdfgsdfgsfdg-CmsInstanceProfile-sdfgsdfgsdfg");
-
-        assertEquals("1234", info.accountId);
-        assertEquals("base/prod-base-sdfgsdfg-be5c-47ff-b82f-sdfgsdfgsfdg-CmsInstanceProfile-sdfgsdfgsdfg",
-                info.roleName);
-    }
-
-    @Test(expected = VaultClientException.class)
-    public void test_that_invalid_arn_fails() {
-        provider.getIamAuthInfo("");
-    }
-
-    @Test(expected = VaultClientException.class)
-    public void test_that_null_arn_fails() {
-        provider.getIamAuthInfo(null);
-    }
-
     @Test(expected = VaultClientException.class)
     public void test_that_authenticate_catches_exceptions_and_throws_vault_exception() {
         InstanceProfileVaultCredentialsProvider providerSpy = spy(provider);
 
-        doThrow(new RuntimeException("Foo")).when(providerSpy).getAndSetToken(anyString(), anyString(), any(Region.class));
-        doReturn(new InstanceProfileVaultCredentialsProvider.IamAuthInfo()).when(providerSpy).getIamAuthInfo(anyString());
+        doThrow(new RuntimeException("Foo")).when(providerSpy).getAndSetToken(anyString(), any(Region.class));
+
         EC2MetadataUtils.IAMInfo iamInfo = new EC2MetadataUtils.IAMInfo();
         iamInfo.instanceProfileArn = "foo";
         doReturn(iamInfo).when(providerSpy).getIamInfo();

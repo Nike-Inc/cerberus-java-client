@@ -103,18 +103,15 @@ public class LambdaRoleVaultCredentialsProvider extends BaseAwsCredentialsProvid
             throw new IllegalStateException("Lambda function assigned role is not a valid IAM role ARN.");
         }
 
-        final String accountId = roleArnMatcher.group("accountId");
-        final String iamRoleArn = roleArnMatcher.group("roleName");
-
         try {
-            getAndSetToken(accountId, iamRoleArn, currentRegion);
+            getAndSetToken(roleArn, currentRegion);
             return;
         } catch (AmazonClientException ace) {
             LOGGER.warn("Unexpected error communicating with AWS services.", ace);
         } catch (JsonSyntaxException jse) {
             LOGGER.error("The decrypted auth response was not in the expected format!", jse);
         } catch (VaultClientException sce) {
-            LOGGER.warn("Unable to acquire Vault token for IAM role: " + iamRoleArn, sce);
+            LOGGER.warn("Unable to acquire Vault token for IAM role: " + roleArn, sce);
         }
 
         throw new VaultClientException("Unable to acquire token with Lambda instance role.");
