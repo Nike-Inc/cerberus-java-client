@@ -104,6 +104,22 @@ The IAM role assigned to the Lambda function must contain the following policy s
     final VaultClient vaultClient = DefaultCerberusClientFactory.getClientForLambda(invokedFunctionArn);
 ```
 
+## Run Integration Tests
+
+First, make sure the following environment variables are set before running the Java Client integration tests:
+
+``` bash
+    export CERBERUS_ADDR=https://example.cerberus.com
+    export TEST_ACCOUNT_ID=12345678910
+    export TEST_ROLE_NAME=integration-test-role
+    export TEST_REGION=us-west-2
+```
+
+Next, in the project directory run:
+```gradle
+    ./gradlew integration
+```
+
 ## Further Details
 
 Cerberus client is a small project. It only has a few classes and they are all fully documented. For further details please see the source code, including javadocs and unit tests.
