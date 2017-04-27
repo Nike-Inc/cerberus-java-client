@@ -59,6 +59,8 @@ import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import static com.nike.cerberus.client.auth.aws.StaticIamRoleVaultCredentialsProvider.IAM_ROLE_ARN_FORMAT;
+
 /**
  * {@link VaultCredentialsProvider} implementation that uses some AWS
  * credentials provider to authenticate with Cerberus and decrypt the auth
@@ -141,28 +143,28 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
      *
      * @param accountId
      *          AWS account ID used to auth with cerberus
-     * @param iamRole
+     * @param iamRoleName
      *          IAM role name used to auth with cerberus
      */
-    protected void getAndSetToken(final String accountId, final String iamRole) {
-        getAndSetToken(accountId, iamRole, Regions.getCurrentRegion());
+    protected void getAndSetToken(final String accountId, final String iamRoleName) {
+        final String iamRoleArn = String.format(IAM_ROLE_ARN_FORMAT, accountId, iamRoleName);
+
+        getAndSetToken(iamRoleArn, Regions.getCurrentRegion());
     }
 
     /**
      * Authenticates with Cerberus and decrypts and sets the token and expiration details.
      *
-     * @param accountId
-     *          AWS account ID used to auth with cerberus
-     * @param iamRole
-     *          IAM role name used to auth with cerberus
+     * @param iamPrincipalArn
+     *          AWS IAM principal ARN used to auth with cerberus
      * @param region
      *          AWS Region used in auth with cerberus
      */
-    protected void getAndSetToken(final String accountId, final String iamRole, final Region region) {
+    protected void getAndSetToken(final String iamPrincipalArn, final Region region) {
         final AWSKMSClient kmsClient = new AWSKMSClient();
         kmsClient.setRegion(region);
 
-        final String encryptedAuthData = getEncryptedAuthData(accountId, iamRole, region);
+        final String encryptedAuthData = getEncryptedAuthData(iamPrincipalArn, region);
         final VaultAuthResponse decryptedToken = decryptToken(kmsClient, encryptedAuthData);
         final DateTime expires = DateTime.now(DateTimeZone.UTC)
                 .plusSeconds(decryptedToken.getLeaseDuration() - paddingTimeInSeconds);
@@ -173,16 +175,13 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
 
     /**
      * Retrieves the encrypted auth response from Cerberus.
-     *
-     * @param accountId
-     *            AWS account ID used in the row key
-     * @param roleName
-     *            IAM role name used in the row key
+     * @param iamPrincipalArn
+     *          IAM principal ARN used in the row key
      * @param region
-     *            Current region of the running function or instance
+     *          Current region of the running function or instance
      * @return Base64 and encrypted token
      */
-    protected String getEncryptedAuthData(final String accountId, final String roleName, Region region) {
+    protected String getEncryptedAuthData(final String iamPrincipalArn, Region region) {
         final String url = urlResolver.resolve();
 
         if (StringUtils.isBlank(url)) {
@@ -191,14 +190,14 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
 
         final OkHttpClient httpClient = new OkHttpClient();
 
-        LOGGER.info(String.format("Attempting to authenticate with AWS account id [%s] and role [%s] against [%s]",
-                accountId, roleName, url));
+        LOGGER.info(String.format("Attempting to authenticate with AWS IAM principal ARN [%s] against [%s]",
+                iamPrincipalArn, url));
 
         try {
-            Request.Builder requestBuilder = new Request.Builder().url(url + "/v1/auth/iam-role")
+            Request.Builder requestBuilder = new Request.Builder().url(url + "/v2/auth/iam-principal")
                     .addHeader(HttpHeader.ACCEPT, DEFAULT_MEDIA_TYPE.toString())
                     .addHeader(HttpHeader.CONTENT_TYPE, DEFAULT_MEDIA_TYPE.toString())
-                    .method(HttpMethod.POST, buildCredentialsRequestBody(accountId, roleName, region));
+                    .method(HttpMethod.POST, buildCredentialsRequestBody(iamPrincipalArn, region));
 
             Response response = httpClient.newCall(requestBuilder.build()).execute();
 
@@ -249,12 +248,11 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
         return gson.fromJson(decryptedAuthData, VaultAuthResponse.class);
     }
 
-    private RequestBody buildCredentialsRequestBody(final String accountId, final String roleName, Region region) {
+    private RequestBody buildCredentialsRequestBody(final String iamPrincipalArn, Region region) {
         final String regionName = region == null ? Regions.getCurrentRegion().getName() : region.getName();
 
         final Map<String, String> credentials = new HashMap<>();
-        credentials.put("account_id", accountId);
-        credentials.put("role_name", roleName);
+        credentials.put("iam_principal_arn", iamPrincipalArn);
         credentials.put("region", regionName);
 
         return RequestBody.create(DEFAULT_MEDIA_TYPE, gson.toJson(credentials));

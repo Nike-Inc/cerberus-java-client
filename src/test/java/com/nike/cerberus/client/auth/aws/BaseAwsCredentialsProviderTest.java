@@ -23,8 +23,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
 
 public class BaseAwsCredentialsProviderTest extends BaseCredentialsProviderTest{
     public static final Region REGION = RegionUtils.getRegion("us-west-2");
-    public static final String ACCOUNT_ID = "123456789012";
-    public static final String CERBERUS_TEST_ROLE = "cerberus-test-role";
+    public static final String CERBERUS_TEST_ARN = "arn:aws:iam::123456789012:role/cerberus-test-role";
     public static final String ERROR_RESPONSE = "Error calling vault";
 
     protected static final String MISSING_AUTH_DATA = "{}";
@@ -56,7 +55,7 @@ public class BaseAwsCredentialsProviderTest extends BaseCredentialsProviderTest{
     public void getEncryptedAuthData_blank_url_throws_exception() throws Exception {
         when(urlResolver.resolve()).thenReturn("");
 
-        provider.getEncryptedAuthData(ACCOUNT_ID, CERBERUS_TEST_ROLE, REGION);
+        provider.getEncryptedAuthData(CERBERUS_TEST_ARN, REGION);
     }
 
     @Test(expected = VaultClientException.class)
@@ -71,7 +70,7 @@ public class BaseAwsCredentialsProviderTest extends BaseCredentialsProviderTest{
         System.setProperty(DefaultCerberusUrlResolver.CERBERUS_ADDR_SYS_PROPERTY, vaultUrl);
         mockWebServer.enqueue(new MockResponse().setResponseCode(400).setBody(ERROR_RESPONSE));
 
-        provider.getEncryptedAuthData(ACCOUNT_ID, CERBERUS_TEST_ROLE, REGION);
+        provider.getEncryptedAuthData(CERBERUS_TEST_ARN, REGION);
     }
 
     @Test(expected = VaultClientException.class)
@@ -81,7 +80,7 @@ public class BaseAwsCredentialsProviderTest extends BaseCredentialsProviderTest{
         System.setProperty(DefaultCerberusUrlResolver.CERBERUS_ADDR_SYS_PROPERTY, vaultUrl);
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody(MISSING_AUTH_DATA));
 
-        provider.getEncryptedAuthData(ACCOUNT_ID, CERBERUS_TEST_ROLE, REGION);
+        provider.getEncryptedAuthData(CERBERUS_TEST_ARN, REGION);
     }
 
     class TestAwsCredentialsProvider extends BaseAwsCredentialsProvider {

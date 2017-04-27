@@ -24,8 +24,7 @@ public class StaticIamRoleVaultCredentialsProviderTest {
               REGION_STRING
         );
 
-        assertEquals(ACCOUNT_ID, provider.accountId);
-        assertEquals(ROLE_NAME, provider.roleName);
+        assertEquals(ROLE_ARN, provider.iamPrincipalArn);
         assertEquals(REGION, provider.region);
     }
 
@@ -38,8 +37,7 @@ public class StaticIamRoleVaultCredentialsProviderTest {
                 REGION_STRING
         );
 
-        assertEquals(ACCOUNT_ID, provider.accountId);
-        assertEquals(ROLE_NAME, provider.roleName);
+        assertEquals(ROLE_ARN, provider.iamPrincipalArn);
         assertEquals(REGION, provider.region);
     }
 
@@ -52,8 +50,7 @@ public class StaticIamRoleVaultCredentialsProviderTest {
                 REGION
         );
 
-        assertEquals(ACCOUNT_ID, provider.accountId);
-        assertEquals(ROLE_NAME, provider.roleName);
+        assertEquals(ROLE_ARN, provider.iamPrincipalArn);
         assertEquals(REGION, provider.region);
     }
 
@@ -66,8 +63,7 @@ public class StaticIamRoleVaultCredentialsProviderTest {
                 REGION
         );
 
-        assertEquals(ACCOUNT_ID, provider.accountId);
-        assertEquals(ROLE_NAME, provider.roleName);
+        assertEquals(ROLE_ARN, provider.iamPrincipalArn);
         assertEquals(REGION, provider.region);
     }
 
@@ -79,8 +75,7 @@ public class StaticIamRoleVaultCredentialsProviderTest {
                 REGION_STRING
         );
 
-        assertEquals(ACCOUNT_ID, provider.accountId);
-        assertEquals(ROLE_NAME, provider.roleName);
+        assertEquals(ROLE_ARN, provider.iamPrincipalArn);
         assertEquals(REGION, provider.region);
     }
 
@@ -92,8 +87,7 @@ public class StaticIamRoleVaultCredentialsProviderTest {
                 REGION_STRING
         );
 
-        assertEquals(ACCOUNT_ID, provider.accountId);
-        assertEquals(ROLE_NAME, provider.roleName);
+        assertEquals(ROLE_ARN, provider.iamPrincipalArn);
         assertEquals(REGION, provider.region);
     }
 
@@ -105,8 +99,7 @@ public class StaticIamRoleVaultCredentialsProviderTest {
                 REGION
         );
 
-        assertEquals(ACCOUNT_ID, provider.accountId);
-        assertEquals(ROLE_NAME, provider.roleName);
+        assertEquals(ROLE_ARN, provider.iamPrincipalArn);
         assertEquals(REGION, provider.region);
     }
 
@@ -118,27 +111,8 @@ public class StaticIamRoleVaultCredentialsProviderTest {
                 REGION
         );
 
-        assertEquals(ACCOUNT_ID, provider.accountId);
-        assertEquals(ROLE_NAME, provider.roleName);
+        assertEquals(ROLE_ARN, provider.iamPrincipalArn);
         assertEquals(REGION, provider.region);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void test_constructor_bad_arn1() {
-        StaticIamRoleVaultCredentialsProvider provider = new StaticIamRoleVaultCredentialsProvider(
-                "foo",
-                "foo",
-                REGION
-        );
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void test_constructor_bad_arn2() {
-        StaticIamRoleVaultCredentialsProvider provider = new StaticIamRoleVaultCredentialsProvider(
-                "foo",
-                "arn:aws:iam::123:rolefoo",
-                REGION
-        );
     }
 
 }
