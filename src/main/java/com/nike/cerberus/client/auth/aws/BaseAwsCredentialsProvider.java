@@ -164,8 +164,8 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
 
         final String encryptedAuthData = getEncryptedAuthData(accountId, iamRole, region);
         final VaultAuthResponse decryptedToken = decryptToken(kmsClient, encryptedAuthData);
-        final DateTime expires = DateTime.now(DateTimeZone.UTC);
-        expires.plusSeconds(decryptedToken.getLeaseDuration() - paddingTimeInSeconds);
+        final DateTime expires = DateTime.now(DateTimeZone.UTC)
+                .plusSeconds(decryptedToken.getLeaseDuration() - paddingTimeInSeconds);
 
         credentials = new TokenVaultCredentials(decryptedToken.getClientToken());
         expireDateTime = expires;
