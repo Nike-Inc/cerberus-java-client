@@ -100,6 +100,7 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
     public BaseAwsCredentialsProvider(UrlResolver urlResolver) {
         super();
         this.urlResolver = urlResolver;
+        LOGGER.info("Cerberus URL={}", urlResolver.resolve());
     }
 
     /**
@@ -112,7 +113,17 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
     public VaultCredentials getCredentials() {
         readLock.lock();
         try {
-            if (credentials == null || expireDateTime.isBeforeNow()) {
+            boolean needsToAuthenticate = false;
+            if (credentials == null) {
+                // initial state: no credentials
+                needsToAuthenticate = true;
+            }
+            else if (expireDateTime.isBeforeNow()) {
+                // credentials have expired
+                needsToAuthenticate = true;
+                LOGGER.info("Cerberus credentials have expired {}, re-authenticating...", expireDateTime);
+            }
+            if (needsToAuthenticate) {
                 // Release the read lock and acquire a write lock
                 readLock.unlock();
                 writeLock.lock();
@@ -211,10 +222,11 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
             final String key = "auth_data";
 
             if (authData.containsKey(key)) {
+                LOGGER.info(String.format("Authentication successful with AWS IAM principal ARN [%s] against [%s]",
+                        iamPrincipalArn, url));
                 return authData.get(key);
             } else {
-                throw new VaultClientException(
-                        "Success response from IAM role authenticate endpoint missing auth data!");
+                throw new VaultClientException("Success response from IAM role authenticate endpoint missing auth data!");
             }
         } catch (IOException e) {
             throw new VaultClientException("I/O error while communicating with Cerberus", e);
