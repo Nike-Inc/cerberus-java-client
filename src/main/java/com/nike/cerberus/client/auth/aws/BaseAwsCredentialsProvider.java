@@ -27,6 +27,7 @@ import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.nike.cerberus.client.ClientVersion;
 import com.nike.vault.client.UrlResolver;
 import com.nike.vault.client.VaultClientException;
 import com.nike.vault.client.VaultServerException;
@@ -91,6 +92,8 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
 
     private final UrlResolver urlResolver;
 
+    private final String cerberusJavaClientHeaderValue;
+
     /**
      * Constructor to setup credentials provider using the specified
      * implementation of {@link UrlResolver}
@@ -100,6 +103,8 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
     public BaseAwsCredentialsProvider(UrlResolver urlResolver) {
         super();
         this.urlResolver = urlResolver;
+
+        cerberusJavaClientHeaderValue = ClientVersion.getClientHeaderValue();
     }
 
     /**
@@ -197,6 +202,7 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
             Request.Builder requestBuilder = new Request.Builder().url(url + "/v2/auth/iam-principal")
                     .addHeader(HttpHeader.ACCEPT, DEFAULT_MEDIA_TYPE.toString())
                     .addHeader(HttpHeader.CONTENT_TYPE, DEFAULT_MEDIA_TYPE.toString())
+                    .addHeader(ClientVersion.CERBERUS_CLIENT_HEADER, cerberusJavaClientHeaderValue)
                     .method(HttpMethod.POST, buildCredentialsRequestBody(iamPrincipalArn, region));
 
             Response response = httpClient.newCall(requestBuilder.build()).execute();
