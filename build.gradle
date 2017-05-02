@@ -27,6 +27,14 @@ apply plugin: "com.github.johnrengelman.shadow"
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
+task copyProjectVersion() {
+    def releaseVersion = version
+    doLast {
+        ant.replace(file: "$buildDir/resources/main/cerberus-java-client.properties", token: "@@JAVA_CLIENT_RELEASE@@", value: releaseVersion)
+    }
+}
+tasks.jar.dependsOn copyProjectVersion
+
 apply from: file('gradle/dependencies.gradle')
 apply from: file('gradle/check.gradle')
 apply from: file('gradle/integration.gradle')
