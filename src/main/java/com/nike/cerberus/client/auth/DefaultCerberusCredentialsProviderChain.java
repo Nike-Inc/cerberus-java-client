@@ -17,6 +17,7 @@
 package com.nike.cerberus.client.auth;
 
 import com.nike.cerberus.client.DefaultCerberusUrlResolver;
+import com.nike.cerberus.client.auth.aws.InstanceProfileArnVaultCredentialsProvider;
 import com.nike.cerberus.client.auth.aws.InstanceProfileVaultCredentialsProvider;
 import com.nike.cerberus.client.auth.aws.InstanceRoleVaultCredentialsProvider;
 import com.nike.vault.client.UrlResolver;
@@ -53,6 +54,7 @@ public class DefaultCerberusCredentialsProviderChain extends VaultCredentialsPro
         super(new EnvironmentCerberusCredentialsProvider(),
                 new SystemPropertyCerberusCredentialsProvider(),
                 new InstanceProfileVaultCredentialsProvider(urlResolver),
+                new InstanceProfileArnVaultCredentialsProvider(urlResolver),
                 new InstanceRoleVaultCredentialsProvider(urlResolver));
     }
 }
