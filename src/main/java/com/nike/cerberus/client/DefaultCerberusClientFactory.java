@@ -24,6 +24,9 @@ import com.nike.vault.client.VaultClient;
 import com.nike.vault.client.VaultClientFactory;
 import com.nike.vault.client.auth.VaultCredentialsProviderChain;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Client factory for creating a Vault client with a URL resolver and credentials provider specific to Cerberus.
  */
@@ -36,8 +39,13 @@ public final class DefaultCerberusClientFactory {
      * @return Vault client
      */
     public static VaultClient getClient() {
-        return VaultClientFactory.getClient(new DefaultCerberusUrlResolver(),
-                new DefaultCerberusCredentialsProviderChain());
+        final Map<String, String> defaultHeaders = new HashMap<>();
+        defaultHeaders.put(ClientVersion.CERBERUS_CLIENT_HEADER, ClientVersion.getClientHeaderValue());
+
+        return VaultClientFactory.getClient(
+                new DefaultCerberusUrlResolver(),
+                new DefaultCerberusCredentialsProviderChain(),
+                defaultHeaders);
     }
 
     /**
@@ -49,11 +57,16 @@ public final class DefaultCerberusClientFactory {
      * @return Vault client
      */
     public static VaultClient getClientForLambda(final String invokedFunctionArn) {
+        final Map<String, String> defaultHeaders = new HashMap<>();
+        defaultHeaders.put(ClientVersion.CERBERUS_CLIENT_HEADER, ClientVersion.getClientHeaderValue());
+
         final DefaultCerberusUrlResolver urlResolver = new DefaultCerberusUrlResolver();
-        return VaultClientFactory.getClient(urlResolver,
+        return VaultClientFactory.getClient(
+                urlResolver,
                 new VaultCredentialsProviderChain(
                         new EnvironmentCerberusCredentialsProvider(),
                         new SystemPropertyCerberusCredentialsProvider(),
-                        new LambdaRoleVaultCredentialsProvider(urlResolver, invokedFunctionArn)));
+                        new LambdaRoleVaultCredentialsProvider(urlResolver, invokedFunctionArn)),
+                defaultHeaders);
     }
 }
