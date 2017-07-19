@@ -19,7 +19,7 @@ repositories {
 }
 
 def AWS_SDK_VERSION = '1.11.123'
-def VAULT_CLIENT_COORDINATES = "com.nike:vault-client:1.3.0"
+def VAULT_CLIENT_COORDINATES = "com.nike:vault-client:1.5.0"
 
 //noinspection GroovyAssignabilityCheck
 dependencies {
