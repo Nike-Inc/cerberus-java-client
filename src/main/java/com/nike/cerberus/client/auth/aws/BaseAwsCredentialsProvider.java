@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Nike, Inc.
+ * Copyright (c) 2017 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,6 +104,20 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
         super();
         this.urlResolver = urlResolver;
         cerberusJavaClientHeaderValue = ClientVersion.getClientHeaderValue();
+        LOGGER.info("Cerberus URL={}", urlResolver.resolve());
+    }
+
+    /**
+     * Constructor to setup credentials provider using the specified
+     * implementation of {@link UrlResolver}
+     *
+     * @param urlResolver Resolver for resolving the Cerberus URL
+     * @param xCerberusClientOverride - Overrides the default header value for the 'X-Cerberus-Client' header
+     */
+    public BaseAwsCredentialsProvider(UrlResolver urlResolver, String xCerberusClientOverride) {
+        super();
+        this.urlResolver = urlResolver;
+        cerberusJavaClientHeaderValue = xCerberusClientOverride;
         LOGGER.info("Cerberus URL={}", urlResolver.resolve());
     }
 

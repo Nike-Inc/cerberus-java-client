@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Nike, Inc.
+ * Copyright (c) 2017 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,5 +56,28 @@ public class DefaultCerberusCredentialsProviderChain extends VaultCredentialsPro
                 new InstanceProfileVaultCredentialsProvider(urlResolver),
                 new InstanceProfileArnVaultCredentialsProvider(urlResolver),
                 new InstanceRoleVaultCredentialsProvider(urlResolver));
+    }
+
+    /**
+     * Constructor that sets up a provider chain using the specified implementation of UrlResolver.
+     *
+     * @param xCerberusClientOverride - Overrides the default header value for the 'X-Cerberus-Client' header
+     */
+    public DefaultCerberusCredentialsProviderChain(String xCerberusClientOverride) {
+        this(new DefaultCerberusUrlResolver(), xCerberusClientOverride);
+    }
+
+    /**
+     * Constructor that sets up a provider chain using the specified implementation of UrlResolver.
+     *
+     * @param urlResolver Resolves the Cerberus URL
+     * @param xCerberusClientOverride - Overrides the default header value for the 'X-Cerberus-Client' header
+     */
+    public DefaultCerberusCredentialsProviderChain(UrlResolver urlResolver, String xCerberusClientOverride) {
+        super(new EnvironmentCerberusCredentialsProvider(),
+                new SystemPropertyCerberusCredentialsProvider(),
+                new InstanceProfileVaultCredentialsProvider(urlResolver, xCerberusClientOverride),
+                new InstanceProfileArnVaultCredentialsProvider(urlResolver, xCerberusClientOverride),
+                new InstanceRoleVaultCredentialsProvider(urlResolver, xCerberusClientOverride));
     }
 }
