@@ -1,6 +1,8 @@
 language: java
 jdk:
-- oraclejdk7
+- oraclejdk8
+install:
+- ./gradlew assemble --info
 cache:
   directories:
   - "$HOME/.m2"
