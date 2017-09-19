@@ -2,7 +2,7 @@ language: java
 jdk:
 - oraclejdk8
 install:
-- ./gradlew assemble --info
+- ./gradlew assemble --info -x shadowJar
 cache:
   directories:
   - "$HOME/.m2"
