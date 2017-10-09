@@ -81,3 +81,5 @@ shadowJar {
     relocate 'mozilla.', 'cerberus.mozilla.'
     relocate 'software.', 'cerberus.software.'
 }
+
+shadowJar.dependsOn copyProjectVersion
