@@ -38,6 +38,7 @@ import com.nike.vault.client.http.HttpHeader;
 import com.nike.vault.client.http.HttpMethod;
 import com.nike.vault.client.http.HttpStatus;
 import com.nike.vault.client.model.VaultAuthResponse;
+import okhttp3.ConnectionSpec;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -61,6 +62,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static com.nike.cerberus.client.auth.aws.StaticIamRoleVaultCredentialsProvider.IAM_ROLE_ARN_FORMAT;
+import static com.nike.vault.client.VaultClientFactory.DEFAULT_TIMEOUT;
+import static com.nike.vault.client.VaultClientFactory.DEFAULT_TIMEOUT_UNIT;
+import static com.nike.vault.client.VaultClientFactory.TLS_1_2_OR_NEWER;
+import static okhttp3.ConnectionSpec.CLEARTEXT;
 
 /**
  * {@link VaultCredentialsProvider} implementation that uses some AWS
@@ -94,6 +99,8 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
 
     private final String cerberusJavaClientHeaderValue;
 
+    private final OkHttpClient httpClient;
+
     /**
      * Constructor to setup credentials provider using the specified
      * implementation of {@link UrlResolver}
@@ -105,6 +112,9 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
         this.urlResolver = urlResolver;
         cerberusJavaClientHeaderValue = ClientVersion.getClientHeaderValue();
         LOGGER.info("Cerberus URL={}", urlResolver.resolve());
+
+        this.httpClient = createHttpClient();
+
     }
 
     /**
@@ -119,6 +129,8 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
         this.urlResolver = urlResolver;
         cerberusJavaClientHeaderValue = xCerberusClientOverride;
         LOGGER.info("Cerberus URL={}", urlResolver.resolve());
+
+        this.httpClient = createHttpClient();
     }
 
     /**
@@ -217,8 +229,6 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
             throw new VaultClientException("Unable to find the Vault URL.");
         }
 
-        final OkHttpClient httpClient = new OkHttpClient();
-
         LOGGER.info(String.format("Attempting to authenticate with AWS IAM principal ARN [%s] against [%s]",
                 iamPrincipalArn, url));
 
@@ -295,5 +305,20 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
         List<String> errors = new ArrayList<>(1);
         errors.add(message);
         throw new VaultServerException(responseCode, errors);
+    }
+
+    private OkHttpClient createHttpClient() {
+
+        List<ConnectionSpec> connectionSpecs = new ArrayList<>();
+        connectionSpecs.add(TLS_1_2_OR_NEWER);
+        // for unit tests
+        connectionSpecs.add(CLEARTEXT);
+
+        return new OkHttpClient.Builder()
+                .connectTimeout(DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_UNIT)
+                .writeTimeout(DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_UNIT)
+                .readTimeout(DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_UNIT)
+                .connectionSpecs(connectionSpecs)
+                .build();
     }
 }
