@@ -11,39 +11,89 @@ This library acts as a wrapper around the Nike developed Vault client by configu
 
 To learn more about Cerberus, please see the [Cerberus website](http://engineering.nike.com/cerberus/).
 
-## Quickstart
+## Quickstart for EC2
 
-### Default Client
+1. Start with the [quick start guide](http://engineering.nike.com/cerberus/docs/user-guide/quick-start).
+2. Add the [Cerberus client dependency](https://bintray.com/nike/maven/cerberus-client) to your build (e.g. Maven, Gradle)
+3. Provide an authentication mechanism.
+   - For local development it is easiest to export a `CERBERUS_TOKEN` that you copied from the Cerberus dashboard.
+     When running in AWS, your application will not need this environmetal variable, instead it will automatically 
+     authenticate using its IAM role.
+   - If you would like to test IAM authentication locally, you can do that by [assuming a role](http://docs.aws.amazon.com/cli/latest/userguide/cli-roles.html).
+4. Access secrets from Cerberus using Java
+``` java
+    String cerberusUrl = "https://cerberus.example.com";
+    VaultClient vaultClient = DefaultCerberusClientFactory.getClient(cerberusUrl);
+    Map<String,String> secrets = vaultClient.read("/app/my-sdb-name");
+```
+
+## Lambdas
+
+Generally it does NOT make sense to store Lambda secrets in Cerberus for two reasons:
+
+1. Cerberus cannot support the scale that lambdas may need, e.g. thousands of requests per second
+1. Lambdas will not want the extra latency needed to authenticate and read from Cerberus
+
+A better solution for Lambda secrets is using the [encrypted environmental variables](http://docs.aws.amazon.com/lambda/latest/dg/env_variables.html)
+feature provided by AWS.
+
+Another option is to store Lambda secrets in Cerberus but only read them at Lambda deploy time, then storing them as encrypted
+environmental variables, to avoid the extra Cerberus runtime latency.
+
+### Additional permissions
+
+The IAM role assigned to the Lambda function must contain the following policy statement in addition to the above KMS decrypt policy, this is so the Lambda can look up its metadata to automatically authenticate with the Cerberus IAM auth endpoint:
+
+``` json
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "AllowGetFunctionConfig",
+                "Effect": "Allow",
+                "Action": [
+                    "lambda:GetFunctionConfiguration"
+                ],
+                "Resource": [
+                    "*"
+                ]
+            }
+        ]
+    }
+```
+
+### Configure the Client
+
+Setup the CERBERUS_ADDR environmental variable and access Cerberus using Java:
+
+``` java
+    String invokedFunctionArn = context.getInvokedFunctionArn();
+    VaultClient vaultClient = DefaultCerberusClientFactory.getClientForLambda(invokedFunctionArn);
+    Map<String,String> secrets = vaultClient.read("/app/my-sdb-name");
+```
+
+## More Configuration Options
+
+There are other ways of using this library than the quick start above.
+
+### Configuring the Cerberus URL
+
+Provide the URL directly using the factory method `DefaultCerberusClientFactory.getClient(cerberusUrl)` or use the
+`DefaultCerberusUrlResolver` by setting the environment variable `CERBERUS_ADDR` or the JVM system property `cerberus.addr`
+and then use the factory method that does not require a URL:
 
 ``` java
     final VaultClient vaultClient = DefaultCerberusClientFactory.getClient();
+    Map<String,String> secrets = vaultClient.read("/app/my-sdb-name");
 ```
 
-#### Default URL Assumptions
+### Configuring Credentials
 
-The example above uses the `DefaultCerberusUrlResolver` to resolve the URL for Vault.
+#### Default Credentials Provider Chain
 
-For that to succeed, the environment variable, `CERBERUS_ADDR`, must be set:
+This client uses a provider chain to resolve the token needed to interact with Cerberus.
 
-    CERBERUS_ADDR=https://cerberus
-
-or the JVM system property, `cerberus.addr`, must be set:
-
-    cerberus.addr=https://cerberus
-
-#### Default Credentials Provider Assumptions
-
-Again, for the example above, the `DefaultCerberusCredentialsProviderChain` is used to resolve the token needed to interact with Vault.
-
-For that to succeed, the environment variable, `CERBERUS_TOKEN`, must be set:
-
-    CERBERUS_TOKEN=TOKEN
-
-or the JVM system property, `vault.token`, must be set:
-
-    cerberus.token=TOKEN
-    
-or the EC2 IAM role authentication flow:
+See `DefaultCerberusCredentialsProviderChain.java` for full usage.
 
 If the client library is running on an EC2 instance, it will attempt to use the instance's assigned IAM role to authenticate 
 with Cerberus and obtain a token.
@@ -73,38 +123,9 @@ The following policy statement must also be assigned to the IAM role, so that th
 The account ID in the ARN should be the account ID where Cerberus is deployed.  See your company's internal
 documentation for the account ID that you should use.
 
-### Client that can authenticate from Lambdas
+## Development
 
-#### Prerequisites
-
-The IAM role assigned to the Lambda function must contain the following policy statement in addition to the above KMS decrypt policy, this is so the Lambda can look up its metadata to automatically authenticate with the Cerberus IAM auth endpoint:
-
-``` json
-    {
-        "Version": "2012-10-17",
-        "Statement": [
-            {
-                "Sid": "AllowGetFunctionConfig",
-                "Effect": "Allow",
-                "Action": [
-                    "lambda:GetFunctionConfiguration"
-                ],
-                "Resource": [
-                    "*"
-                ]
-            }
-        ]
-    }
-```
-
-#### Configure the Client
-
-``` java
-    final String invokedFunctionArn = context.getInvokedFunctionArn();
-    final VaultClient vaultClient = DefaultCerberusClientFactory.getClientForLambda(invokedFunctionArn);
-```
-
-## Run Integration Tests
+### Run Integration Tests
 
 First, make sure the following environment variables are set before running the Java Client integration tests:
 
