@@ -20,6 +20,7 @@ import com.nike.cerberus.client.auth.DefaultCerberusCredentialsProviderChain;
 import com.nike.cerberus.client.auth.EnvironmentCerberusCredentialsProvider;
 import com.nike.cerberus.client.auth.SystemPropertyCerberusCredentialsProvider;
 import com.nike.cerberus.client.auth.aws.LambdaRoleVaultCredentialsProvider;
+import com.nike.vault.client.StaticVaultUrlResolver;
 import com.nike.vault.client.VaultClient;
 import com.nike.vault.client.VaultClientFactory;
 import com.nike.vault.client.auth.VaultCredentialsProviderChain;
@@ -46,6 +47,24 @@ public final class DefaultCerberusClientFactory {
                 new DefaultCerberusUrlResolver(),
                 new DefaultCerberusCredentialsProviderChain(),
                 defaultHeaders);
+    }
+
+    /**
+     * Creates a new {@link VaultClient} for the supplied Cerberus URL
+     * and {@link DefaultCerberusCredentialsProviderChain} for obtaining credentials.
+     * @param cerberusUrl e.g. https://dev.cerberus.example.com
+     * @return Vault client
+     */
+    public static VaultClient getClient(String cerberusUrl) {
+
+        final Map<String, String> defaultHeaders = new HashMap<>();
+        defaultHeaders.put(ClientVersion.CERBERUS_CLIENT_HEADER, ClientVersion.getClientHeaderValue());
+
+        return VaultClientFactory.getClient(
+                new StaticVaultUrlResolver(cerberusUrl),
+                new DefaultCerberusCredentialsProviderChain(),
+                defaultHeaders);
+
     }
 
     /**
