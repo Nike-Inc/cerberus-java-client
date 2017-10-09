@@ -24,7 +24,7 @@ To learn more about Cerberus, please see the [Cerberus website](http://engineeri
 ``` java
     String cerberusUrl = "https://cerberus.example.com";
     VaultClient vaultClient = DefaultCerberusClientFactory.getClient(cerberusUrl);
-    Map<String,String> secrets = vaultClient.read("/app/my-sdb-name");
+    Map<String,String> secrets = vaultClient.read("/app/my-sdb-name").getData();
 ```
 
 ## Lambdas
@@ -69,7 +69,7 @@ Setup the CERBERUS_ADDR environmental variable and access Cerberus using Java:
 ``` java
     String invokedFunctionArn = context.getInvokedFunctionArn();
     VaultClient vaultClient = DefaultCerberusClientFactory.getClientForLambda(invokedFunctionArn);
-    Map<String,String> secrets = vaultClient.read("/app/my-sdb-name");
+    Map<String,String> secrets = vaultClient.read("/app/my-sdb-name").getData();
 ```
 
 ## More Configuration Options
@@ -84,7 +84,7 @@ and then use the factory method that does not require a URL:
 
 ``` java
     final VaultClient vaultClient = DefaultCerberusClientFactory.getClient();
-    Map<String,String> secrets = vaultClient.read("/app/my-sdb-name");
+    Map<String,String> secrets = vaultClient.read("/app/my-sdb-name").getData();
 ```
 
 ### Configuring Credentials
