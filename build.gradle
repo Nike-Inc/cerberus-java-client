@@ -30,20 +30,10 @@ targetCompatibility = 1.7
 task copyProjectVersion() {
     def releaseVersion = version
     doLast {
-        System.out.println("build dir: ${buildDir}");
-        System.out.println("release version: ${releaseVersion}");
         ant.replace(file: "$buildDir/resources/main/cerberus-java-client.properties", token: "@@JAVA_CLIENT_RELEASE@@", value: releaseVersion)
-        System.out.println("file contents: ${new File("$buildDir/resources/main/cerberus-java-client.properties").text}")
-    }
-}
-
-task printFileContents() {
-    doLast {
-        System.out.println("file contents: ${new File("$buildDir/resources/main/cerberus-java-client.properties").text}")
     }
 }
 tasks.jar.dependsOn copyProjectVersion
-tasks.assemble.dependsOn printFileContents
 
 apply from: file('gradle/dependencies.gradle')
 apply from: file('gradle/check.gradle')

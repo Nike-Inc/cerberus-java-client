@@ -50,7 +50,6 @@ task sourcesJar(type: Jar) {
     from sourceSets.main.allSource
     classifier = 'sources'
 }
-tasks.printFileContents.dependsOn sourcesJar
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
@@ -73,4 +72,4 @@ publishing {
     }
 }
 
-//bintrayUpload.dependsOn(shadowJar)
+bintrayUpload.dependsOn(shadowJar)
