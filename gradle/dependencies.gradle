@@ -65,6 +65,7 @@ shadowJar {
     dependencies {
       // exclude these from the shadow jar
       project.configurations.shadow.each {
+        println(it)
         exclude it.name
       }
     }
