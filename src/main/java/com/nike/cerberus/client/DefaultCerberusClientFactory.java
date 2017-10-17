@@ -21,6 +21,7 @@ import com.nike.cerberus.client.auth.EnvironmentCerberusCredentialsProvider;
 import com.nike.cerberus.client.auth.SystemPropertyCerberusCredentialsProvider;
 import com.nike.cerberus.client.auth.aws.LambdaRoleVaultCredentialsProvider;
 import com.nike.vault.client.StaticVaultUrlResolver;
+import com.nike.vault.client.UrlResolver;
 import com.nike.vault.client.VaultClient;
 import com.nike.vault.client.VaultClientFactory;
 import com.nike.vault.client.auth.VaultCredentialsProviderChain;
@@ -60,9 +61,11 @@ public final class DefaultCerberusClientFactory {
         final Map<String, String> defaultHeaders = new HashMap<>();
         defaultHeaders.put(ClientVersion.CERBERUS_CLIENT_HEADER, ClientVersion.getClientHeaderValue());
 
+        UrlResolver urlResolver = new StaticVaultUrlResolver(cerberusUrl);
+
         return VaultClientFactory.getClient(
-                new StaticVaultUrlResolver(cerberusUrl),
-                new DefaultCerberusCredentialsProviderChain(),
+                urlResolver,
+                new DefaultCerberusCredentialsProviderChain(urlResolver),
                 defaultHeaders);
 
     }
