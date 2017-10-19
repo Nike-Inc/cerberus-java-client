@@ -47,7 +47,7 @@ public class ClientVersion {
 
             clientVersion = properties.getProperty(JAVA_CLIENT_VERSION_PROPERTY);
         } catch (Exception e) {
-            LOGGER.error("Failed to load client properties file", e);
+            LOGGER.error("Failed to load file '" + CLIENT_VERSION_PROPERTY_FILE + "' from cerberus-client jar", e);
         }
 
         return clientVersion;
