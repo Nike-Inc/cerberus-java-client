@@ -18,7 +18,7 @@ To learn more about Cerberus, please see the [Cerberus website](http://engineeri
 3. Provide an authentication mechanism.
    - For local development it is easiest to export a `CERBERUS_TOKEN` that you copied from the Cerberus dashboard.
      When running in AWS, your application will not need this environmetal variable, instead it will automatically 
-     authenticate using its IAM role.
+     authenticate using its IAM role. Alternatively, set a `cerberus.token` System property.
    - If you would like to test IAM authentication locally, you can do that by [assuming a role](http://docs.aws.amazon.com/cli/latest/userguide/cli-roles.html).
 4. Access secrets from Cerberus using Java
 ``` java
