@@ -17,8 +17,6 @@
 package com.nike.cerberus.client.auth;
 
 import com.nike.cerberus.client.DefaultCerberusUrlResolver;
-import com.nike.cerberus.client.auth.aws.InstanceProfileArnVaultCredentialsProvider;
-import com.nike.cerberus.client.auth.aws.InstanceProfileVaultCredentialsProvider;
 import com.nike.cerberus.client.auth.aws.InstanceRoleVaultCredentialsProvider;
 import com.nike.vault.client.UrlResolver;
 import com.nike.vault.client.auth.VaultCredentialsProviderChain;
@@ -53,8 +51,6 @@ public class DefaultCerberusCredentialsProviderChain extends VaultCredentialsPro
     public DefaultCerberusCredentialsProviderChain(UrlResolver urlResolver) {
         super(new EnvironmentCerberusCredentialsProvider(),
                 new SystemPropertyCerberusCredentialsProvider(),
-                new InstanceProfileVaultCredentialsProvider(urlResolver),
-                new InstanceProfileArnVaultCredentialsProvider(urlResolver),
                 new InstanceRoleVaultCredentialsProvider(urlResolver));
     }
 
@@ -76,8 +72,6 @@ public class DefaultCerberusCredentialsProviderChain extends VaultCredentialsPro
     public DefaultCerberusCredentialsProviderChain(UrlResolver urlResolver, String xCerberusClientOverride) {
         super(new EnvironmentCerberusCredentialsProvider(),
                 new SystemPropertyCerberusCredentialsProvider(),
-                new InstanceProfileVaultCredentialsProvider(urlResolver, xCerberusClientOverride),
-                new InstanceProfileArnVaultCredentialsProvider(urlResolver, xCerberusClientOverride),
                 new InstanceRoleVaultCredentialsProvider(urlResolver, xCerberusClientOverride));
     }
 }
