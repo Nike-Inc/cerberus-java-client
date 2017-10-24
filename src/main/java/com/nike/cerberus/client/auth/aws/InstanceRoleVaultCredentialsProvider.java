@@ -180,6 +180,7 @@ public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProv
 
     /**
      * Parse the path out of a instanceProfileName or return null for no path
+     *
      * e.g. parse "foo/bar" out of "foo/bar/name"
      */
     protected static String parsePathFromInstanceProfileName(String instanceProfileName) {
@@ -198,7 +199,11 @@ public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProv
     }
 
     /**
-     * If a path is supplied, prepend it to the role name
+     * If a path is supplied, prepend it to the role name.
+     *
+     * e.g. roleWithPath(null, "foo") returns "foo".
+     * e.g. roleWithPath("bar", "foo") returns "bar/foo".
+     * e.g. roleWithPath("bar/more", "foo") returns "bar/more/foo".
      */
     protected static String roleWithPath(String path, String role) {
         if (StringUtils.isBlank(path)) {
@@ -212,7 +217,9 @@ public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProv
      * Bean for holding Instance Profile parse results
      */
     protected static class InstanceProfileInfo {
+        /** AWS Account ID */
         String accountId;
+        /** Name found after "instance-profile/" in the instance profile ARN, includes paths e.g. "foo/bar/name" */
         String profileName;
     }
 }
