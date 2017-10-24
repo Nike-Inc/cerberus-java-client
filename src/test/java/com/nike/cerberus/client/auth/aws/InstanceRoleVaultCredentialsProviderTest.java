@@ -215,8 +215,20 @@ public class InstanceRoleVaultCredentialsProviderTest extends BaseCredentialsPro
     }
 
     @Test
+    public void test_buildRoleArn_with_null_path() {
+        String accountId = "1234567890123";
+        assertEquals("arn:aws:iam::1234567890123:role/foo", buildRoleArn(accountId, null, "foo"));
+    }
+
+    @Test
     public void test_buildRoleArn_with_path() {
         String accountId = "1234567890123";
         assertEquals("arn:aws:iam::1234567890123:role/bar/foo", buildRoleArn(accountId, "bar", "foo"));
+    }
+
+    @Test
+    public void test_buildRoleArn_with_longer_path() {
+        String accountId = "1234567890123";
+        assertEquals("arn:aws:iam::1234567890123:role/bar/more/foo", buildRoleArn(accountId, "bar/more", "foo"));
     }
 }
