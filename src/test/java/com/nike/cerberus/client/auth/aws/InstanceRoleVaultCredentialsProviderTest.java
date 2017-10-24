@@ -26,9 +26,11 @@ import com.nike.vault.client.VaultClientException;
 import com.nike.vault.client.auth.VaultCredentials;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.internal.util.collections.Sets;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -37,8 +39,13 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
+import static com.nike.cerberus.client.auth.aws.InstanceRoleVaultCredentialsProvider.buildIamRoleArns;
+import static com.nike.cerberus.client.auth.aws.InstanceRoleVaultCredentialsProvider.buildRoleArn;
+import static com.nike.cerberus.client.auth.aws.StaticIamRoleVaultCredentialsProvider.IAM_ROLE_ARN_FORMAT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -142,4 +149,86 @@ public class InstanceRoleVaultCredentialsProviderTest extends BaseCredentialsPro
         when(EC2MetadataUtils.getIAMInstanceProfileInfo()).thenReturn(iamInfo);
     }
 
+    @Test
+    public void test_buildIamRoleArns_with_path() {
+        String instanceProfileArn = "arn:aws:iam::1234567890123:instance-profile/brewmaster/foo/brewmaster-foo-cerberus";
+        Set<String> roles = Sets.newSet("brewmaster-foo-cerberus");
+
+        Set<String> results = buildIamRoleArns(instanceProfileArn, roles);
+        assertEquals(1, results.size());
+        String result = results.iterator().next();
+
+        assertEquals("arn:aws:iam::1234567890123:role/brewmaster/foo/brewmaster-foo-cerberus", result);
+    }
+
+    @Test
+    public void test_buildIamRoleArns_with_CloudFormation_style_names() {
+        String instanceProfileArn = "arn:aws:iam::1234567890123:instance-profile/foo-cerberus-LKSJDFIWERWER";
+        Set<String> roles = Sets.newSet("foo-cerberus-SDFLKJRWE234");
+
+        Set<String> results = buildIamRoleArns(instanceProfileArn, roles);
+        assertEquals(1, results.size());
+        String result = results.iterator().next();
+
+        assertEquals("arn:aws:iam::1234567890123:role/foo-cerberus-SDFLKJRWE234", result);
+    }
+
+    @Test
+    public void test_buildIamRoleArns_CloudFormation_style_names_with_paths() {
+        String instanceProfileArn = "arn:aws:iam::1234567890123:instance-profile/brewmaster/foo/foo-cerberus-LKSJDFIWERWER";
+        Set<String> roles = Sets.newSet("foo-cerberus-SDFLKJRWE234");
+
+        Set<String> results = buildIamRoleArns(instanceProfileArn, roles);
+        assertEquals(1, results.size());
+        String result = results.iterator().next();
+
+        assertEquals("arn:aws:iam::1234567890123:role/brewmaster/foo/foo-cerberus-SDFLKJRWE234", result);
+    }
+
+    @Test
+    public void test_parseInstanceProfileArn_with_path() {
+        String instanceProfileArn = "arn:aws:iam::1234567890123:instance-profile/brewmaster/foo/brewmaster-foo-cerberus";
+        InstanceRoleVaultCredentialsProvider.InstanceProfileInfo info = InstanceRoleVaultCredentialsProvider.parseInstanceProfileArn(instanceProfileArn);
+        assertEquals("1234567890123", info.accountId);
+        assertEquals("brewmaster/foo/brewmaster-foo-cerberus", info.profileName);
+    }
+
+    @Test
+    public void test_parseInstanceProfileArn_without_path() {
+        String instanceProfileArn = "arn:aws:iam::1234567890123:instance-profile/foo-cerberus";
+        InstanceRoleVaultCredentialsProvider.InstanceProfileInfo info = InstanceRoleVaultCredentialsProvider.parseInstanceProfileArn(instanceProfileArn);
+        assertEquals("1234567890123", info.accountId);
+        assertEquals("foo-cerberus", info.profileName);
+    }
+
+    @Test
+    public void test_parsePathFromInstanceProfileName() {
+        String instanceProfileName = "brewmaster/foo/brewmaster-foo-cerberus";
+        String path = InstanceRoleVaultCredentialsProvider.parsePathFromInstanceProfileName(instanceProfileName);
+        assertEquals("brewmaster/foo", path);
+    }
+
+    @Test
+    public void test_buildRoleArn_without_path() {
+        String accountId = "1234567890123";
+        assertEquals("arn:aws:iam::1234567890123:role/foo", buildRoleArn(accountId, "", "foo"));
+    }
+
+    @Test
+    public void test_buildRoleArn_with_null_path() {
+        String accountId = "1234567890123";
+        assertEquals("arn:aws:iam::1234567890123:role/foo", buildRoleArn(accountId, null, "foo"));
+    }
+
+    @Test
+    public void test_buildRoleArn_with_path() {
+        String accountId = "1234567890123";
+        assertEquals("arn:aws:iam::1234567890123:role/bar/foo", buildRoleArn(accountId, "bar", "foo"));
+    }
+
+    @Test
+    public void test_buildRoleArn_with_longer_path() {
+        String accountId = "1234567890123";
+        assertEquals("arn:aws:iam::1234567890123:role/bar/more/foo", buildRoleArn(accountId, "bar/more", "foo"));
+    }
 }

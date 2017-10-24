@@ -186,6 +186,7 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
      *          AWS account ID used to auth with cerberus
      * @param iamRoleName
      *          IAM role name used to auth with cerberus
+     * @deprecated no longer used, will be removed
      */
     protected void getAndSetToken(final String accountId, final String iamRoleName) {
         final String iamRoleArn = String.format(IAM_ROLE_ARN_FORMAT, accountId, iamRoleName);
