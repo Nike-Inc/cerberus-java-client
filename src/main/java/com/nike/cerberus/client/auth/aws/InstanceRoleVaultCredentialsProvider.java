@@ -42,6 +42,10 @@ import static com.nike.cerberus.client.auth.aws.StaticIamRoleVaultCredentialsPro
  * response using KMS. If the assigned role has been granted the appropriate
  * provisioned for usage of Vault, it will succeed and have a token that can be
  * used to interact with Vault.
+ *
+ * This class uses the AWS Instance Metadata endpoint to look-up information automatically.
+ *
+ * @see <a href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html">AWS Instance Metadata</a>
  */
 public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProvider {
 
