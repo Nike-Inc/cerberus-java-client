@@ -43,6 +43,6 @@ public class EnvironmentCerberusCredentialsProvider implements VaultCredentialsP
             return new TokenVaultCredentials(token);
         }
 
-        throw new VaultClientException("Cerberus token not found in the environment property.");
+        throw new VaultClientException("Cerberus token not found in the environment property: " + CERBERUS_TOKEN_ENV_PROPERTY);
     }
 }
