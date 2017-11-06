@@ -43,6 +43,6 @@ public class SystemPropertyCerberusCredentialsProvider implements VaultCredentia
             return new TokenVaultCredentials(token);
         }
 
-        throw new VaultClientException("Cerberus token not found in the java system property.");
+        throw new VaultClientException("Cerberus token not found in the java system property: " + CERBERUS_TOKEN_SYS_PROPERTY);
     }
 }
