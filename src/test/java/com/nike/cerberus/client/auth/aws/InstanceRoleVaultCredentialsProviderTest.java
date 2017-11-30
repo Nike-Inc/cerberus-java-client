@@ -38,6 +38,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -155,10 +156,10 @@ public class InstanceRoleVaultCredentialsProviderTest extends BaseCredentialsPro
         Set<String> roles = Sets.newSet("brewmaster-foo-cerberus");
 
         Set<String> results = buildIamRoleArns(instanceProfileArn, roles);
-        assertEquals(1, results.size());
-        String result = results.iterator().next();
-
-        assertEquals("arn:aws:iam::1234567890123:role/brewmaster/foo/brewmaster-foo-cerberus", result);
+        assertEquals(2, results.size());
+        Iterator<String> iterator = results.iterator();
+        assertEquals("arn:aws:iam::1234567890123:role/brewmaster/foo/brewmaster-foo-cerberus", iterator.next());
+        assertEquals("arn:aws:iam::1234567890123:role/brewmaster-foo-cerberus", iterator.next());
     }
 
     @Test
@@ -179,10 +180,7 @@ public class InstanceRoleVaultCredentialsProviderTest extends BaseCredentialsPro
         Set<String> roles = Sets.newSet("foo-cerberus-SDFLKJRWE234");
 
         Set<String> results = buildIamRoleArns(instanceProfileArn, roles);
-        assertEquals(1, results.size());
-        String result = results.iterator().next();
-
-        assertEquals("arn:aws:iam::1234567890123:role/brewmaster/foo/foo-cerberus-SDFLKJRWE234", result);
+        assertEquals(2, results.size());
     }
 
     @Test

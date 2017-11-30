@@ -154,6 +154,10 @@ public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProv
 
         for (String roleName : securityCredentialsKeySet) {
             result.add(buildRoleArn(accountId, path, roleName));
+            if (path != null) {
+                // sometimes the path isn't needed
+                result.add(buildRoleArn(accountId, null, roleName));
+            }
         }
 
         return result;
