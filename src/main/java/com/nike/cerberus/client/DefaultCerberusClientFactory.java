@@ -20,6 +20,7 @@ import com.nike.cerberus.client.auth.DefaultCerberusCredentialsProviderChain;
 import com.nike.cerberus.client.auth.EnvironmentCerberusCredentialsProvider;
 import com.nike.cerberus.client.auth.SystemPropertyCerberusCredentialsProvider;
 import com.nike.cerberus.client.auth.aws.LambdaRoleVaultCredentialsProvider;
+import com.nike.cerberus.client.auth.aws.StaticIamRoleVaultCredentialsProvider;
 import com.nike.vault.client.StaticVaultUrlResolver;
 import com.nike.vault.client.UrlResolver;
 import com.nike.vault.client.VaultClient;
@@ -53,6 +54,7 @@ public final class DefaultCerberusClientFactory {
     /**
      * Creates a new {@link VaultClient} for the supplied Cerberus URL
      * and {@link DefaultCerberusCredentialsProviderChain} for obtaining credentials.
+     *
      * @param cerberusUrl e.g. https://dev.cerberus.example.com
      * @return Vault client
      */
@@ -68,6 +70,36 @@ public final class DefaultCerberusClientFactory {
                 new DefaultCerberusCredentialsProviderChain(urlResolver),
                 defaultHeaders);
 
+    }
+
+    /**
+     * Creates a new {@link VaultClient} for the supplied Cerberus URL and a credentials provider chain
+     * that includes the {@link StaticIamRoleVaultCredentialsProvider} for obtaining credentials.
+     * <p>
+     * This method is used when you want to use a particular iamPrincipalArn during authentication rather
+     * than auto-determining the ARN to use.  Generally, it is simpler to use the {@code getClient()} or the
+     * {@code getClient(cerberusUrl)} factory methods.  This method is ONLY needed when those methods aren't
+     * producing the desired behavior.
+     *
+     * @param cerberusUrl     e.g. https://dev.cerberus.example.com
+     * @param iamPrincipalArn the IAM principal to use in authentication, e.g. "arn:aws:iam::123456789012:role/some-role"
+     * @param region          the Region for the KMS key used in auth.  Usually, this is your current region.
+     * @return Vault client
+     */
+    public static VaultClient getClient(String cerberusUrl, String iamPrincipalArn, String region) {
+
+        final Map<String, String> defaultHeaders = new HashMap<>();
+        defaultHeaders.put(ClientVersion.CERBERUS_CLIENT_HEADER, ClientVersion.getClientHeaderValue());
+
+        UrlResolver urlResolver = new StaticVaultUrlResolver(cerberusUrl);
+
+        return VaultClientFactory.getClient(
+                urlResolver,
+                new VaultCredentialsProviderChain(
+                        new EnvironmentCerberusCredentialsProvider(),
+                        new SystemPropertyCerberusCredentialsProvider(),
+                        new StaticIamRoleVaultCredentialsProvider(urlResolver, iamPrincipalArn, region)),
+                defaultHeaders);
     }
 
     /**
