@@ -42,7 +42,7 @@ import static com.nike.cerberus.client.auth.aws.StaticIamRoleVaultCredentialsPro
  * response using KMS. If the assigned role has been granted the appropriate
  * provisioned for usage of Vault, it will succeed and have a token that can be
  * used to interact with Vault.
- *
+ * <p>
  * This class uses the AWS Instance Metadata endpoint to look-up information automatically.
  *
  * @see <a href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html">AWS Instance Metadata</a>
@@ -152,8 +152,17 @@ public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProv
         final String accountId = instanceProfileInfo.accountId;
         final String path = parsePathFromInstanceProfileName(instanceProfileInfo.profileName);
 
+        // There isn't a 100% reliable method for constructing the role ARN from the meta-data endpoint.
+        // So here we try both with and without the path that was used in the instanceProfileArn.
+        // The only reason we don't try and auth with the instanceProfileArn is it isn't a valid ARN type
+        // that can be included in a KMS key policy.
         for (String roleName : securityCredentialsKeySet) {
-            result.add(buildRoleArn(accountId, path, roleName));
+            if (path != null) {
+                // if path was supplied in instanceProfileArn, we'll try using it first
+                // there is no guarantee that the path used in the instanceProfileArn was also used in the roleArn but it is a common pattern
+                result.add(buildRoleArn(accountId, path, roleName));
+            }
+            result.add(buildRoleArn(accountId, null, roleName));
         }
 
         return result;
@@ -184,7 +193,7 @@ public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProv
 
     /**
      * Parse the path out of a instanceProfileName or return null for no path
-     *
+     * <p>
      * e.g. parse "foo/bar" out of "foo/bar/name"
      */
     protected static String parsePathFromInstanceProfileName(String instanceProfileName) {
@@ -204,7 +213,7 @@ public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProv
 
     /**
      * If a path is supplied, prepend it to the role name.
-     *
+     * <p>
      * e.g. roleWithPath(null, "foo") returns "foo".
      * e.g. roleWithPath("bar", "foo") returns "bar/foo".
      * e.g. roleWithPath("bar/more", "foo") returns "bar/more/foo".
@@ -221,9 +230,13 @@ public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProv
      * Bean for holding Instance Profile parse results
      */
     protected static class InstanceProfileInfo {
-        /** AWS Account ID */
+        /**
+         * AWS Account ID
+         */
         String accountId;
-        /** Name found after "instance-profile/" in the instance profile ARN, includes paths e.g. "foo/bar/name" */
+        /**
+         * Name found after "instance-profile/" in the instance profile ARN, includes paths e.g. "foo/bar/name"
+         */
         String profileName;
     }
 }
