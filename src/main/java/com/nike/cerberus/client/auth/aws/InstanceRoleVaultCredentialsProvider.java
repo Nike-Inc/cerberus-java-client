@@ -152,6 +152,10 @@ public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProv
         final String accountId = instanceProfileInfo.accountId;
         final String path = parsePathFromInstanceProfileName(instanceProfileInfo.profileName);
 
+        // There isn't a 100% reliable method for constructing the role ARN from the meta-data endpoint.
+        // So here we try both with and without the path that was used in the instanceProfileArn.
+        // The only reason we don't try and auth with the instanceProfileArn is it isn't a valid ARN type
+        // that can be included in a KMS key policy.
         for (String roleName : securityCredentialsKeySet) {
             result.add(buildRoleArn(accountId, path, roleName));
             if (path != null) {
