@@ -110,7 +110,7 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
     public BaseAwsCredentialsProvider(UrlResolver urlResolver) {
         super();
         this.urlResolver = urlResolver;
-        cerberusJavaClientHeaderValue = ClientVersion.getClientHeaderValue();
+        this.cerberusJavaClientHeaderValue = ClientVersion.getClientHeaderValue();
         LOGGER.info("Cerberus URL={}", urlResolver.resolve());
 
         this.httpClient = createHttpClient();
@@ -121,16 +121,32 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
      * Constructor to setup credentials provider using the specified
      * implementation of {@link UrlResolver}
      *
-     * @param urlResolver Resolver for resolving the Cerberus URL
-     * @param xCerberusClientOverride - Overrides the default header value for the 'X-Cerberus-Client' header
+     * @param urlResolver             Resolver for resolving the Cerberus URL
+     * @param xCerberusClientOverride Overrides the default header value for the 'X-Cerberus-Client' header
      */
     public BaseAwsCredentialsProvider(UrlResolver urlResolver, String xCerberusClientOverride) {
         super();
         this.urlResolver = urlResolver;
-        cerberusJavaClientHeaderValue = xCerberusClientOverride;
+        this.cerberusJavaClientHeaderValue = xCerberusClientOverride;
         LOGGER.info("Cerberus URL={}", urlResolver.resolve());
 
         this.httpClient = createHttpClient();
+    }
+
+    /**
+     * Constructor to setup credentials provider using the specified
+     * implementation of {@link UrlResolver} and {@link OkHttpClient}
+     *
+     * @param urlResolver Resolver for resolving the Cerberus URL
+     * @param httpClient  the client to use for auth
+     */
+    public BaseAwsCredentialsProvider(UrlResolver urlResolver, OkHttpClient httpClient) {
+        super();
+        this.urlResolver = urlResolver;
+        this.cerberusJavaClientHeaderValue = ClientVersion.getClientHeaderValue();
+        LOGGER.info("Cerberus URL={}", urlResolver.resolve());
+
+        this.httpClient = httpClient;
     }
 
     /**
@@ -147,8 +163,7 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
             if (credentials == null) {
                 // initial state: no credentials
                 needsToAuthenticate = true;
-            }
-            else if (expireDateTime.isBeforeNow()) {
+            } else if (expireDateTime.isBeforeNow()) {
                 // credentials have expired
                 needsToAuthenticate = true;
                 LOGGER.info("Cerberus credentials have expired {}, re-authenticating...", expireDateTime);
@@ -182,10 +197,8 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
     /**
      * Authenticates with Cerberus and decrypts and sets the token and expiration details.
      *
-     * @param accountId
-     *          AWS account ID used to auth with cerberus
-     * @param iamRoleName
-     *          IAM role name used to auth with cerberus
+     * @param accountId   AWS account ID used to auth with cerberus
+     * @param iamRoleName IAM role name used to auth with cerberus
      * @deprecated no longer used, will be removed
      */
     protected void getAndSetToken(final String accountId, final String iamRoleName) {
@@ -197,10 +210,8 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
     /**
      * Authenticates with Cerberus and decrypts and sets the token and expiration details.
      *
-     * @param iamPrincipalArn
-     *          AWS IAM principal ARN used to auth with cerberus
-     * @param region
-     *          AWS Region used in auth with cerberus
+     * @param iamPrincipalArn AWS IAM principal ARN used to auth with cerberus
+     * @param region          AWS Region used in auth with cerberus
      */
     protected void getAndSetToken(final String iamPrincipalArn, final Region region) {
         final AWSKMSClient kmsClient = new AWSKMSClient();
@@ -217,10 +228,9 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
 
     /**
      * Retrieves the encrypted auth response from Cerberus.
-     * @param iamPrincipalArn
-     *          IAM principal ARN used in the row key
-     * @param region
-     *          Current region of the running function or instance
+     *
+     * @param iamPrincipalArn IAM principal ARN used in the row key
+     * @param region          Current region of the running function or instance
      * @return Base64 and encrypted token
      */
     protected String getEncryptedAuthData(final String iamPrincipalArn, Region region) {
@@ -267,10 +277,8 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
      * Decodes the encrypted token and attempts to decrypt it using AWS KMS. If
      * successful, the token is returned.
      *
-     * @param kmsClient
-     *            KMS client
-     * @param encryptedToken
-     *            Token to decode and decrypt
+     * @param kmsClient      KMS client
+     * @param encryptedToken Token to decode and decrypt
      * @return Decrypted token
      */
     protected VaultAuthResponse decryptToken(AWSKMS kmsClient, String encryptedToken) {

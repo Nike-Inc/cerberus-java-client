@@ -20,14 +20,15 @@ import com.nike.cerberus.client.DefaultCerberusUrlResolver;
 import com.nike.cerberus.client.auth.aws.InstanceRoleVaultCredentialsProvider;
 import com.nike.vault.client.UrlResolver;
 import com.nike.vault.client.auth.VaultCredentialsProviderChain;
+import okhttp3.OkHttpClient;
 
 /**
  * Default credentials provider chain that will attempt to retrieve a token in the following order:
- *
+ * <p>
  * <ul>
- *     <li>Environment Variable - <code>CERBERUS_TOKEN</code></li>
- *     <li>Java System Property - <code>cerberus.token</code></li>
- *     <li>Custom lookup using instance profile from EC2 metadata service</li>
+ * <li>Environment Variable - <code>CERBERUS_TOKEN</code></li>
+ * <li>Java System Property - <code>cerberus.token</code></li>
+ * <li>Custom lookup using instance profile from EC2 metadata service</li>
  * </ul>
  *
  * @see EnvironmentCerberusCredentialsProvider
@@ -55,6 +56,19 @@ public class DefaultCerberusCredentialsProviderChain extends VaultCredentialsPro
     }
 
     /**
+     * Constructor that sets up a provider chain using the specified implementation of UrlResolver
+     * and OkHttpClient
+     *
+     * @param urlResolver Resolves the Cerberus URL
+     * @param httpClient  the client to use
+     */
+    public DefaultCerberusCredentialsProviderChain(UrlResolver urlResolver, OkHttpClient httpClient) {
+        super(new EnvironmentCerberusCredentialsProvider(),
+                new SystemPropertyCerberusCredentialsProvider(),
+                new InstanceRoleVaultCredentialsProvider(urlResolver, httpClient));
+    }
+
+    /**
      * Constructor that sets up a provider chain using the specified implementation of UrlResolver.
      *
      * @param xCerberusClientOverride - Overrides the default header value for the 'X-Cerberus-Client' header
@@ -66,7 +80,7 @@ public class DefaultCerberusCredentialsProviderChain extends VaultCredentialsPro
     /**
      * Constructor that sets up a provider chain using the specified implementation of UrlResolver.
      *
-     * @param urlResolver Resolves the Cerberus URL
+     * @param urlResolver             Resolves the Cerberus URL
      * @param xCerberusClientOverride - Overrides the default header value for the 'X-Cerberus-Client' header
      */
     public DefaultCerberusCredentialsProviderChain(UrlResolver urlResolver, String xCerberusClientOverride) {
