@@ -21,9 +21,6 @@ import com.amazonaws.regions.Regions;
 import com.nike.vault.client.StaticVaultUrlResolver;
 import com.nike.vault.client.UrlResolver;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * Provider for allowing users to explicitly set the account id, rolename and region that they want to authenticate as.
  */
