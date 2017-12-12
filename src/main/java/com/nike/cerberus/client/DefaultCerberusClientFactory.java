@@ -26,8 +26,14 @@ import com.nike.vault.client.UrlResolver;
 import com.nike.vault.client.VaultClient;
 import com.nike.vault.client.VaultClientFactory;
 import com.nike.vault.client.auth.VaultCredentialsProviderChain;
+import okhttp3.ConnectionSpec;
+import okhttp3.OkHttpClient;
 
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.X509TrustManager;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -70,6 +76,42 @@ public final class DefaultCerberusClientFactory {
                 new DefaultCerberusCredentialsProviderChain(urlResolver),
                 defaultHeaders);
 
+    }
+
+    /**
+     * Creates a new {@link VaultClient} with the specified SSLSocketFactory and TrustManager.
+     * <p>
+     * This factory method is generally not recommended unless you have a specific need
+     * to configure your TLS for your httpClient differently than the default, e.g. Java 7.
+     *
+     * @param cerberusUrl      e.g. https://dev.cerberus.example.com
+     * @param sslSocketFactory the factory to use for TLS
+     * @param trustManager     the trust manager to use for TLS
+     * @return Vault client
+     */
+    public static VaultClient getClient(String cerberusUrl, SSLSocketFactory sslSocketFactory, X509TrustManager trustManager) {
+
+        final Map<String, String> defaultHeaders = new HashMap<>();
+        defaultHeaders.put(ClientVersion.CERBERUS_CLIENT_HEADER, ClientVersion.getClientHeaderValue());
+
+        UrlResolver urlResolver = new StaticVaultUrlResolver(cerberusUrl);
+
+        List<ConnectionSpec> connectionSpecs = new ArrayList<>();
+        connectionSpecs.add(VaultClientFactory.TLS_1_2_OR_NEWER);
+
+        OkHttpClient httpClient = new OkHttpClient.Builder()
+                .connectTimeout(VaultClientFactory.DEFAULT_TIMEOUT, VaultClientFactory.DEFAULT_TIMEOUT_UNIT)
+                .writeTimeout(VaultClientFactory.DEFAULT_TIMEOUT, VaultClientFactory.DEFAULT_TIMEOUT_UNIT)
+                .readTimeout(VaultClientFactory.DEFAULT_TIMEOUT, VaultClientFactory.DEFAULT_TIMEOUT_UNIT)
+                .sslSocketFactory(sslSocketFactory, trustManager)
+                .connectionSpecs(connectionSpecs)
+                .build();
+
+        return VaultClientFactory.getClient(
+                urlResolver,
+                new DefaultCerberusCredentialsProviderChain(urlResolver, httpClient),
+                defaultHeaders,
+                httpClient);
     }
 
     /**

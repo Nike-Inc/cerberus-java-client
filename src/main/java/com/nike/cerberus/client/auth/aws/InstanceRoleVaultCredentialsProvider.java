@@ -24,6 +24,7 @@ import com.google.gson.JsonSyntaxException;
 import com.nike.vault.client.UrlResolver;
 import com.nike.vault.client.VaultClientException;
 import com.nike.vault.client.auth.VaultCredentialsProvider;
+import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,10 +68,21 @@ public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProv
 
     /**
      * Constructor to setup credentials provider using the specified
+     * implementation of {@link UrlResolver} and {@link OkHttpClient}
+     *
+     * @param urlResolver Resolver for resolving the Cerberus URL
+     * @param httpClient the client for interacting with Cerberus
+     */
+    public InstanceRoleVaultCredentialsProvider(UrlResolver urlResolver, OkHttpClient httpClient) {
+        super(urlResolver, httpClient);
+    }
+
+    /**
+     * Constructor to setup credentials provider using the specified
      * implementation of {@link UrlResolver}
      *
      * @param urlResolver             Resolver for resolving the Cerberus URL
-     * @param xCerberusClientOverride - Overrides the default header value for the 'X-Cerberus-Client' header
+     * @param xCerberusClientOverride Overrides the default header value for the 'X-Cerberus-Client' header
      */
     public InstanceRoleVaultCredentialsProvider(UrlResolver urlResolver, String xCerberusClientOverride) {
         super(urlResolver, xCerberusClientOverride);
