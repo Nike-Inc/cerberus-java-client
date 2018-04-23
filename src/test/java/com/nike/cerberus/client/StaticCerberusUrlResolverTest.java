@@ -28,7 +28,7 @@ public class StaticCerberusUrlResolverTest {
     private final String testUrl = "https://localhost";
 
     @Test(expected = IllegalArgumentException.class)
-    public void test_constructor_throws_error_if_vault_url_is_blank() {
+    public void test_constructor_throws_error_if_cerberus_url_is_blank() {
         new StaticCerberusUrlResolver(" ");
     }
 

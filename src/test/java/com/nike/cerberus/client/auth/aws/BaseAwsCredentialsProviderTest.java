@@ -38,14 +38,14 @@ import static org.powermock.api.mockito.PowerMockito.when;
 public class BaseAwsCredentialsProviderTest extends BaseCredentialsProviderTest{
     public static final Region REGION = RegionUtils.getRegion("us-west-2");
     public static final String CERBERUS_TEST_ARN = "arn:aws:iam::123456789012:role/cerberus-test-role";
-    public static final String ERROR_RESPONSE = "Error calling vault";
+    public static final String ERROR_RESPONSE = "Error calling cerberus";
 
     protected static final String MISSING_AUTH_DATA = "{}";
 
 
     private BaseAwsCredentialsProvider provider;
     private UrlResolver urlResolver;
-    private String vaultUrl;
+    private String cerberusUrl;
     private MockWebServer mockWebServer;
 
     @Before
@@ -57,7 +57,7 @@ public class BaseAwsCredentialsProviderTest extends BaseCredentialsProviderTest{
         mockWebServer = new MockWebServer();
         mockWebServer.start();
 
-        vaultUrl = "http://localhost:" + mockWebServer.getPort();
+        cerberusUrl = "http://localhost:" + mockWebServer.getPort();
     }
 
     @After
@@ -79,9 +79,9 @@ public class BaseAwsCredentialsProviderTest extends BaseCredentialsProviderTest{
 
     @Test(expected = CerberusServerException.class)
     public void getEncryptedAuthData_throws_exception_on_bad_response_code() throws IOException {
-        when(urlResolver.resolve()).thenReturn(vaultUrl);
+        when(urlResolver.resolve()).thenReturn(cerberusUrl);
 
-        System.setProperty(DefaultCerberusUrlResolver.CERBERUS_ADDR_SYS_PROPERTY, vaultUrl);
+        System.setProperty(DefaultCerberusUrlResolver.CERBERUS_ADDR_SYS_PROPERTY, cerberusUrl);
         mockWebServer.enqueue(new MockResponse().setResponseCode(400).setBody(ERROR_RESPONSE));
 
         provider.getEncryptedAuthData(CERBERUS_TEST_ARN, REGION);
@@ -89,9 +89,9 @@ public class BaseAwsCredentialsProviderTest extends BaseCredentialsProviderTest{
 
     @Test(expected = CerberusClientException.class)
     public void getEncryptedAuthData_throws_exception_on_missing_auth_data() throws IOException {
-        when(urlResolver.resolve()).thenReturn(vaultUrl);
+        when(urlResolver.resolve()).thenReturn(cerberusUrl);
 
-        System.setProperty(DefaultCerberusUrlResolver.CERBERUS_ADDR_SYS_PROPERTY, vaultUrl);
+        System.setProperty(DefaultCerberusUrlResolver.CERBERUS_ADDR_SYS_PROPERTY, cerberusUrl);
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody(MISSING_AUTH_DATA));
 
         provider.getEncryptedAuthData(CERBERUS_TEST_ARN, REGION);

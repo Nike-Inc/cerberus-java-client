@@ -45,21 +45,21 @@ public class DefaultCerberusUrlResolverTest {
     }
 
     @Test
-    public void lookupVaultUrl_returns_url_if_env_variable_is_set() {
+    public void lookupCerberusUrl_returns_url_if_env_variable_is_set() {
         when(System.getenv(DefaultCerberusUrlResolver.CERBERUS_ADDR_ENV_PROPERTY)).thenReturn(url);
 
         assertThat(subject.resolve()).isEqualTo(url);
     }
 
     @Test
-    public void lookupVaultUrl_returns_url_if_sys_property_is_set() {
+    public void lookupCerberusUrl_returns_url_if_sys_property_is_set() {
         when(System.getProperty(DefaultCerberusUrlResolver.CERBERUS_ADDR_SYS_PROPERTY)).thenReturn(url);
 
         assertThat(subject.resolve()).isEqualTo(url);
     }
 
     @Test
-    public void lookupVaultUrl_returns_null_if_env_and_sys_not_set() {
+    public void lookupCerberusUrl_returns_null_if_env_and_sys_not_set() {
         assertThat(subject.resolve()).isNull();
     }
 }

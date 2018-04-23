@@ -85,14 +85,14 @@ public class InstanceRoleCerberusCredentialsProviderTest extends BaseCredentials
 
         MockWebServer mockWebServer = new MockWebServer();
         mockWebServer.start();
-        final String vaultUrl = "http://localhost:" + mockWebServer.getPort();
+        final String cerberusUrl = "http://localhost:" + mockWebServer.getPort();
 
         mockGetIamSecurityCredentials(DEFAULT_ROLE);
         mockGetIamInstanceProfileInfo(GOOD_INSTANCE_PROFILE_ARN);
         mockDecrypt(kmsClient, DECODED_AUTH_DATA);
-        when(urlResolver.resolve()).thenReturn(vaultUrl);
+        when(urlResolver.resolve()).thenReturn(cerberusUrl);
 
-        System.setProperty(DefaultCerberusUrlResolver.CERBERUS_ADDR_SYS_PROPERTY, vaultUrl);
+        System.setProperty(DefaultCerberusUrlResolver.CERBERUS_ADDR_SYS_PROPERTY, cerberusUrl);
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody(AUTH_RESPONSE));
 
         CerberusCredentials credentials = provider.getCredentials();
