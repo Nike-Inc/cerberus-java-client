@@ -19,7 +19,6 @@ repositories {
 }
 
 def AWS_SDK_VERSION = '1.11.123'
-def VAULT_CLIENT_COORDINATES = "com.nike:vault-client:2.1.0"
 
 //noinspection GroovyAssignabilityCheck
 dependencies {
@@ -35,13 +34,17 @@ dependencies {
  ***********************************************************************************************************************/
 
     // these will be added to the POM and excluded from the shadow jar
-    shadow VAULT_CLIENT_COORDINATES
-    compile VAULT_CLIENT_COORDINATES
     shadow "joda-time:joda-time:2.8.1"
     shadow "org.apache.commons:commons-lang3:3.4"
     shadow "org.slf4j:slf4j-api:1.7.25"
+    shadow "com.google.code.gson:gson:2.5"
+    shadow "com.google.code.findbugs:jsr305:3.0.1"
 
     compile "com.squareup.okhttp3:okhttp:3.9.0"
+    compile "org.apache.commons:commons-lang3:3.4"
+    compile "com.google.code.gson:gson:2.5"
+    compile "com.google.code.findbugs:jsr305:3.0.1"
+    compile "org.slf4j:slf4j-api:1.7.25"
 
     compile "com.amazonaws:aws-java-sdk-core:${AWS_SDK_VERSION}"
     compile "com.amazonaws:aws-java-sdk-kms:${AWS_SDK_VERSION}"
@@ -60,6 +63,7 @@ dependencies {
     }
     testCompile "org.assertj:assertj-core:2.3.0"
     testCompile "com.squareup.okhttp3:mockwebserver:3.7.0"
+    testCompile "commons-io:commons-io:2.4"
 }
 
 shadowJar {

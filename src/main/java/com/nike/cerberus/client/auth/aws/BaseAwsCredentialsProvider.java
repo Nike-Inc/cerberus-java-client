@@ -27,17 +27,17 @@ import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.nike.cerberus.client.CerberusClientException;
+import com.nike.cerberus.client.CerberusServerException;
 import com.nike.cerberus.client.ClientVersion;
-import com.nike.vault.client.UrlResolver;
-import com.nike.vault.client.VaultClientException;
-import com.nike.vault.client.VaultServerException;
-import com.nike.vault.client.auth.TokenVaultCredentials;
-import com.nike.vault.client.auth.VaultCredentials;
-import com.nike.vault.client.auth.VaultCredentialsProvider;
-import com.nike.vault.client.http.HttpHeader;
-import com.nike.vault.client.http.HttpMethod;
-import com.nike.vault.client.http.HttpStatus;
-import com.nike.vault.client.model.VaultAuthResponse;
+import com.nike.cerberus.client.UrlResolver;
+import com.nike.cerberus.client.auth.CerberusCredentials;
+import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
+import com.nike.cerberus.client.auth.TokenCerberusCredentials;
+import com.nike.cerberus.client.http.HttpHeader;
+import com.nike.cerberus.client.http.HttpMethod;
+import com.nike.cerberus.client.http.HttpStatus;
+import com.nike.cerberus.client.model.CerberusAuthResponse;
 import okhttp3.ConnectionSpec;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -61,20 +61,20 @@ import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static com.nike.cerberus.client.auth.aws.StaticIamRoleVaultCredentialsProvider.IAM_ROLE_ARN_FORMAT;
-import static com.nike.vault.client.VaultClientFactory.DEFAULT_TIMEOUT;
-import static com.nike.vault.client.VaultClientFactory.DEFAULT_TIMEOUT_UNIT;
-import static com.nike.vault.client.VaultClientFactory.TLS_1_2_OR_NEWER;
+import static com.nike.cerberus.client.CerberusClientFactory.DEFAULT_TIMEOUT;
+import static com.nike.cerberus.client.CerberusClientFactory.DEFAULT_TIMEOUT_UNIT;
+import static com.nike.cerberus.client.CerberusClientFactory.TLS_1_2_OR_NEWER;
+import static com.nike.cerberus.client.auth.aws.StaticIamRoleCerberusCredentialsProvider.IAM_ROLE_ARN_FORMAT;
 import static okhttp3.ConnectionSpec.CLEARTEXT;
 
 /**
- * {@link VaultCredentialsProvider} implementation that uses some AWS
+ * {@link CerberusCredentialsProvider} implementation that uses some AWS
  * credentials provider to authenticate with Cerberus and decrypt the auth
  * response using KMS. If the assigned role has been granted the appropriate
- * provisioned for usage of Vault, it will succeed and have a token that can be
- * used to interact with Vault.
+ * provisioned for usage of Cerberus, it will succeed and have a token that can be
+ * used to interact with Cerberus.
  */
-public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProvider {
+public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsProvider {
 
     public static final MediaType DEFAULT_MEDIA_TYPE = MediaType.parse("application/json; charset=utf-8");
 
@@ -91,7 +91,7 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
 
     protected final int paddingTimeInSeconds = 60;
 
-    protected volatile TokenVaultCredentials credentials;
+    protected volatile TokenCerberusCredentials credentials;
 
     protected volatile DateTime expireDateTime = DateTime.now().minus(paddingTimeInSeconds);
 
@@ -150,13 +150,13 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
     }
 
     /**
-     * Returns the Vault credentials. If none have been acquired yet or has
+     * Returns the Cerberus credentials. If none have been acquired yet or has
      * expired, triggers a refresh.
      *
-     * @return Vault credentials
+     * @return Cerberus credentials
      */
     @Override
-    public VaultCredentials getCredentials() {
+    public CerberusCredentials getCredentials() {
         readLock.lock();
         try {
             boolean needsToAuthenticate = false;
@@ -182,7 +182,7 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
                 }
             }
 
-            return new TokenVaultCredentials(credentials.getToken());
+            return new TokenCerberusCredentials(credentials.getToken());
         } finally {
             readLock.unlock();
         }
@@ -218,11 +218,11 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
         kmsClient.setRegion(region);
 
         final String encryptedAuthData = getEncryptedAuthData(iamPrincipalArn, region);
-        final VaultAuthResponse decryptedToken = decryptToken(kmsClient, encryptedAuthData);
+        final CerberusAuthResponse decryptedToken = decryptToken(kmsClient, encryptedAuthData);
         final DateTime expires = DateTime.now(DateTimeZone.UTC)
                 .plusSeconds(decryptedToken.getLeaseDuration() - paddingTimeInSeconds);
 
-        credentials = new TokenVaultCredentials(decryptedToken.getClientToken());
+        credentials = new TokenCerberusCredentials(decryptedToken.getClientToken());
         expireDateTime = expires;
     }
 
@@ -237,7 +237,7 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
         final String url = urlResolver.resolve();
 
         if (StringUtils.isBlank(url)) {
-            throw new VaultClientException("Unable to find the Vault URL.");
+            throw new CerberusClientException("Unable to find the Cerberus URL.");
         }
 
         LOGGER.info(String.format("Attempting to authenticate with AWS IAM principal ARN [%s] against [%s]",
@@ -266,10 +266,10 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
                         iamPrincipalArn, url));
                 return authData.get(key);
             } else {
-                throw new VaultClientException("Success response from IAM role authenticate endpoint missing auth data!");
+                throw new CerberusClientException("Success response from IAM role authenticate endpoint missing auth data!");
             }
         } catch (IOException e) {
-            throw new VaultClientException("I/O error while communicating with Cerberus", e);
+            throw new CerberusClientException("I/O error while communicating with Cerberus", e);
         }
     }
 
@@ -281,13 +281,13 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
      * @param encryptedToken Token to decode and decrypt
      * @return Decrypted token
      */
-    protected VaultAuthResponse decryptToken(AWSKMS kmsClient, String encryptedToken) {
+    protected CerberusAuthResponse decryptToken(AWSKMS kmsClient, String encryptedToken) {
         byte[] decodedToken;
 
         try {
             decodedToken = Base64.decode(encryptedToken);
         } catch (IllegalArgumentException iae) {
-            throw new VaultClientException("Encrypted token not Base64 encoded", iae);
+            throw new CerberusClientException("Encrypted token not Base64 encoded", iae);
         }
 
         final DecryptRequest request = new DecryptRequest().withCiphertextBlob(ByteBuffer.wrap(decodedToken));
@@ -295,7 +295,7 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
 
         final String decryptedAuthData = new String(result.getPlaintext().array(), Charset.forName("UTF-8"));
 
-        return gson.fromJson(decryptedAuthData, VaultAuthResponse.class);
+        return gson.fromJson(decryptedAuthData, CerberusAuthResponse.class);
     }
 
     private RequestBody buildCredentialsRequestBody(final String iamPrincipalArn, Region region) {
@@ -313,7 +313,7 @@ public abstract class BaseAwsCredentialsProvider implements VaultCredentialsProv
         LOGGER.warn(message);
         List<String> errors = new ArrayList<>(1);
         errors.add(message);
-        throw new VaultServerException(responseCode, errors);
+        throw new CerberusServerException(responseCode, errors);
     }
 
     private OkHttpClient createHttpClient() {

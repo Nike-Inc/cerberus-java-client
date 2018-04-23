@@ -21,9 +21,9 @@ import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.util.EC2MetadataUtils;
 import com.google.gson.JsonSyntaxException;
-import com.nike.vault.client.UrlResolver;
-import com.nike.vault.client.VaultClientException;
-import com.nike.vault.client.auth.VaultCredentialsProvider;
+import com.nike.cerberus.client.CerberusClientException;
+import com.nike.cerberus.client.UrlResolver;
+import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -34,23 +34,23 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.nike.cerberus.client.auth.aws.StaticIamRoleVaultCredentialsProvider.IAM_ROLE_ARN_FORMAT;
+import static com.nike.cerberus.client.auth.aws.StaticIamRoleCerberusCredentialsProvider.IAM_ROLE_ARN_FORMAT;
 
 
 /**
- * {@link VaultCredentialsProvider} implementation that uses the assigned role
+ * {@link CerberusCredentialsProvider} implementation that uses the assigned role
  * to an EC2 instance to authenticate with Cerberus and decrypt the auth
  * response using KMS. If the assigned role has been granted the appropriate
- * provisioned for usage of Vault, it will succeed and have a token that can be
- * used to interact with Vault.
+ * provisioned for usage of Cerberus, it will succeed and have a token that can be
+ * used to interact with Cerberus.
  * <p>
  * This class uses the AWS Instance Metadata endpoint to look-up information automatically.
  *
  * @see <a href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html">AWS Instance Metadata</a>
  */
-public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProvider {
+public class InstanceRoleCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InstanceRoleVaultCredentialsProvider.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(InstanceRoleCerberusCredentialsProvider.class);
 
     public static final Pattern IAM_ARN_PATTERN = Pattern.compile("(arn\\:aws\\:iam\\:\\:)(?<accountId>[0-9].*)(\\:.*)");
 
@@ -62,7 +62,7 @@ public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProv
      *
      * @param urlResolver Resolver for resolving the Cerberus URL
      */
-    public InstanceRoleVaultCredentialsProvider(UrlResolver urlResolver) {
+    public InstanceRoleCerberusCredentialsProvider(UrlResolver urlResolver) {
         super(urlResolver);
     }
 
@@ -73,7 +73,7 @@ public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProv
      * @param urlResolver Resolver for resolving the Cerberus URL
      * @param httpClient the client for interacting with Cerberus
      */
-    public InstanceRoleVaultCredentialsProvider(UrlResolver urlResolver, OkHttpClient httpClient) {
+    public InstanceRoleCerberusCredentialsProvider(UrlResolver urlResolver, OkHttpClient httpClient) {
         super(urlResolver, httpClient);
     }
 
@@ -84,14 +84,14 @@ public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProv
      * @param urlResolver             Resolver for resolving the Cerberus URL
      * @param xCerberusClientOverride Overrides the default header value for the 'X-Cerberus-Client' header
      */
-    public InstanceRoleVaultCredentialsProvider(UrlResolver urlResolver, String xCerberusClientOverride) {
+    public InstanceRoleCerberusCredentialsProvider(UrlResolver urlResolver, String xCerberusClientOverride) {
         super(urlResolver, xCerberusClientOverride);
     }
 
     /**
      * Looks up the IAM roles assigned to the instance via the EC2 metadata
      * service. For each role assigned, an attempt is made to authenticate and
-     * decrypt the Vault auth response with KMS. If successful, the token
+     * decrypt the Cerberus auth response with KMS. If successful, the token
      * retrieved is cached locally for future calls to
      * {@link BaseAwsCredentialsProvider#getCredentials()}.
      */
@@ -106,8 +106,8 @@ public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProv
                 try {
                     getAndSetToken(iamRole, region);
                     return;
-                } catch (VaultClientException sce) {
-                    LOGGER.warn("Unable to acquire Vault token for IAM role: " + iamRole + ", instance profile was " + instanceProfileArn, sce);
+                } catch (CerberusClientException sce) {
+                    LOGGER.warn("Unable to acquire Cerberus token for IAM role: " + iamRole + ", instance profile was " + instanceProfileArn, sce);
                 }
             }
         } catch (AmazonClientException ace) {
@@ -116,7 +116,7 @@ public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProv
             LOGGER.error("The decrypted auth response was not in the expected format!", jse);
         }
 
-        throw new VaultClientException("Unable to acquire token with EC2 instance role.");
+        throw new CerberusClientException("Unable to acquire token with EC2 instance role.");
     }
 
     /**
@@ -135,7 +135,7 @@ public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProv
             }
         }
 
-        throw new VaultClientException("Unable to obtain AWS account ID from instance profile ARN.");
+        throw new CerberusClientException("Unable to obtain AWS account ID from instance profile ARN.");
     }
 
     protected String getInstanceProfileArn() {
@@ -144,7 +144,7 @@ public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProv
         if (iamInfo == null) {
             final String errorMessage = "No IAM Instance Profile assigned to running instance.";
             LOGGER.error(errorMessage);
-            throw new VaultClientException(errorMessage);
+            throw new CerberusClientException(errorMessage);
         }
         return iamInfo.instanceProfileArn;
     }
@@ -185,14 +185,14 @@ public class InstanceRoleVaultCredentialsProvider extends BaseAwsCredentialsProv
      */
     protected static InstanceProfileInfo parseInstanceProfileArn(String instanceProfileArn) {
         if (instanceProfileArn == null) {
-            throw new VaultClientException("instanceProfileArn provided was null rather than valid arn");
+            throw new CerberusClientException("instanceProfileArn provided was null rather than valid arn");
         }
 
         InstanceProfileInfo info = new InstanceProfileInfo();
         Matcher matcher = INSTANCE_PROFILE_ARN_PATTERN.matcher(instanceProfileArn);
         boolean found = matcher.find();
         if (!found) {
-            throw new VaultClientException(String.format(
+            throw new CerberusClientException(String.format(
                     "Failed to find account id and role / instance profile name from ARN: %s using pattern %s",
                     instanceProfileArn, INSTANCE_PROFILE_ARN_PATTERN.pattern()));
         }

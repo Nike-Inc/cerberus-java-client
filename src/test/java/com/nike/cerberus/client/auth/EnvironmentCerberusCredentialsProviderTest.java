@@ -16,8 +16,7 @@
 
 package com.nike.cerberus.client.auth;
 
-import com.nike.vault.client.VaultClientException;
-import com.nike.vault.client.auth.VaultCredentials;
+import com.nike.cerberus.client.CerberusClientException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,13 +48,13 @@ public class EnvironmentCerberusCredentialsProviderTest {
         mockStatic(System.class);
         when(System.getenv(EnvironmentCerberusCredentialsProvider.CERBERUS_TOKEN_ENV_PROPERTY)).thenReturn(TOKEN);
 
-        VaultCredentials credentials = credentialsProvider.getCredentials();
+        CerberusCredentials credentials = credentialsProvider.getCredentials();
 
         assertThat(credentials).isNotNull();
         assertThat(credentials.getToken()).isEqualTo(TOKEN);
     }
 
-    @Test(expected = VaultClientException.class)
+    @Test(expected = CerberusClientException.class)
     public void getCredentials_throws_client_exception_when_not_set() {
         mockStatic(System.class);
         when(System.getenv(EnvironmentCerberusCredentialsProvider.CERBERUS_TOKEN_ENV_PROPERTY)).thenReturn(null);
@@ -63,7 +62,7 @@ public class EnvironmentCerberusCredentialsProviderTest {
         credentialsProvider.getCredentials();
     }
 
-    @Test(expected = VaultClientException.class)
+    @Test(expected = CerberusClientException.class)
     public void getCredentials_returns_empty_creds_object_when_env_variable_is_blank() {
         mockStatic(System.class);
         when(System.getenv(EnvironmentCerberusCredentialsProvider.CERBERUS_TOKEN_ENV_PROPERTY)).thenReturn("");

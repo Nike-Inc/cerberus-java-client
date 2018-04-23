@@ -16,7 +16,6 @@
 
 package com.nike.cerberus.client.auth;
 
-import com.nike.vault.client.auth.VaultCredentials;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,7 +52,7 @@ public class DefaultCerberusCredentialsProviderChainTest {
         when(System.getenv(EnvironmentCerberusCredentialsProvider.CERBERUS_TOKEN_ENV_PROPERTY)).thenReturn(ENV_VALUE);
         when(System.getProperty(SystemPropertyCerberusCredentialsProvider.CERBERUS_TOKEN_SYS_PROPERTY)).thenReturn(SYS_VALUE);
 
-        VaultCredentials credentials = credentialsProviderChain.getCredentials();
+        CerberusCredentials credentials = credentialsProviderChain.getCredentials();
 
         assertThat(credentials).isNotNull();
         assertThat(credentials.getToken()).isEqualTo(ENV_VALUE);
@@ -65,7 +64,7 @@ public class DefaultCerberusCredentialsProviderChainTest {
         when(System.getenv(EnvironmentCerberusCredentialsProvider.CERBERUS_TOKEN_ENV_PROPERTY)).thenReturn("");
         when(System.getProperty(SystemPropertyCerberusCredentialsProvider.CERBERUS_TOKEN_SYS_PROPERTY)).thenReturn(SYS_VALUE);
 
-        VaultCredentials credentials = credentialsProviderChain.getCredentials();
+        CerberusCredentials credentials = credentialsProviderChain.getCredentials();
 
         assertThat(credentials).isNotNull();
         assertThat(credentials.getToken()).isEqualTo(SYS_VALUE);

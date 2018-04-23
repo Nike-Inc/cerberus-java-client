@@ -17,9 +17,8 @@
 package com.nike.cerberus.client.auth;
 
 import com.nike.cerberus.client.DefaultCerberusUrlResolver;
-import com.nike.cerberus.client.auth.aws.InstanceRoleVaultCredentialsProvider;
-import com.nike.vault.client.UrlResolver;
-import com.nike.vault.client.auth.VaultCredentialsProviderChain;
+import com.nike.cerberus.client.UrlResolver;
+import com.nike.cerberus.client.auth.aws.InstanceRoleCerberusCredentialsProvider;
 import okhttp3.OkHttpClient;
 
 /**
@@ -33,9 +32,9 @@ import okhttp3.OkHttpClient;
  *
  * @see EnvironmentCerberusCredentialsProvider
  * @see SystemPropertyCerberusCredentialsProvider
- * @see InstanceRoleVaultCredentialsProvider
+ * @see InstanceRoleCerberusCredentialsProvider
  */
-public class DefaultCerberusCredentialsProviderChain extends VaultCredentialsProviderChain {
+public class DefaultCerberusCredentialsProviderChain extends CerberusCredentialsProviderChain {
 
     /**
      * Default constructor that sets up a default provider chain.
@@ -52,7 +51,7 @@ public class DefaultCerberusCredentialsProviderChain extends VaultCredentialsPro
     public DefaultCerberusCredentialsProviderChain(UrlResolver urlResolver) {
         super(new EnvironmentCerberusCredentialsProvider(),
                 new SystemPropertyCerberusCredentialsProvider(),
-                new InstanceRoleVaultCredentialsProvider(urlResolver));
+                new InstanceRoleCerberusCredentialsProvider(urlResolver));
     }
 
     /**
@@ -65,7 +64,7 @@ public class DefaultCerberusCredentialsProviderChain extends VaultCredentialsPro
     public DefaultCerberusCredentialsProviderChain(UrlResolver urlResolver, OkHttpClient httpClient) {
         super(new EnvironmentCerberusCredentialsProvider(),
                 new SystemPropertyCerberusCredentialsProvider(),
-                new InstanceRoleVaultCredentialsProvider(urlResolver, httpClient));
+                new InstanceRoleCerberusCredentialsProvider(urlResolver, httpClient));
     }
 
     /**
@@ -86,6 +85,6 @@ public class DefaultCerberusCredentialsProviderChain extends VaultCredentialsPro
     public DefaultCerberusCredentialsProviderChain(UrlResolver urlResolver, String xCerberusClientOverride) {
         super(new EnvironmentCerberusCredentialsProvider(),
                 new SystemPropertyCerberusCredentialsProvider(),
-                new InstanceRoleVaultCredentialsProvider(urlResolver, xCerberusClientOverride));
+                new InstanceRoleCerberusCredentialsProvider(urlResolver, xCerberusClientOverride));
     }
 }
