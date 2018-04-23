@@ -1,6 +1,5 @@
 package com.nike.cerberus.client;
 
-import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -10,6 +9,8 @@ import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
 import com.nike.cerberus.client.http.HttpHeader;
 import com.nike.cerberus.client.http.HttpMethod;
 import com.nike.cerberus.client.http.HttpStatus;
+import com.nike.cerberus.client.model.CerberusListResponse;
+import com.nike.cerberus.client.model.CerberusResponse;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;

@@ -18,10 +18,10 @@ package com.nike.cerberus.client.auth.aws;
 
 import com.fieldju.commons.EnvUtils;
 import com.nike.cerberus.client.CerberusClient;
-import com.nike.cerberus.client.CerberusListResponse;
-import com.nike.cerberus.client.CerberusResponse;
 import com.nike.cerberus.client.CerberusServerException;
 import com.nike.cerberus.client.DefaultCerberusUrlResolver;
+import com.nike.cerberus.client.model.CerberusListResponse;
+import com.nike.cerberus.client.model.CerberusResponse;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.BeforeClass;

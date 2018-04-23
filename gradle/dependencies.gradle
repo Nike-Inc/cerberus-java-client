@@ -40,6 +40,8 @@ dependencies {
     shadow "joda-time:joda-time:2.8.1"
     shadow "org.apache.commons:commons-lang3:3.4"
     shadow "org.slf4j:slf4j-api:1.7.25"
+    shadow "com.google.code.gson:gson:2.5"
+    shadow "com.google.code.findbugs:jsr305:3.0.1"
 
     compile "com.squareup.okhttp3:okhttp:3.9.0"
     compile "org.apache.commons:commons-lang3:3.4"
