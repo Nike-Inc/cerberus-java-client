@@ -18,69 +18,69 @@ package com.nike.cerberus.client.auth.aws;
 
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
-import com.nike.vault.client.StaticVaultUrlResolver;
-import com.nike.vault.client.UrlResolver;
+import com.nike.cerberus.client.StaticCerberusUrlResolver;
+import com.nike.cerberus.client.UrlResolver;
 
 /**
- * Provider for allowing users to explicitly set the account id, rolename and region that they want to authenticate as.
+ * Provider for allowing users to explicitly set the account id, role name and region that they want to authenticate as.
  */
-public class StaticIamRoleVaultCredentialsProvider extends BaseAwsCredentialsProvider {
+public class StaticIamRoleCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
 
     public static final String IAM_ROLE_ARN_FORMAT = "arn:aws:iam::%s:role/%s";
     protected String iamPrincipalArn;
     protected Region region;
 
-    public StaticIamRoleVaultCredentialsProvider(UrlResolver urlResolver, String accountId, String roleName, String region) {
+    public StaticIamRoleCerberusCredentialsProvider(UrlResolver urlResolver, String accountId, String roleName, String region) {
         this(urlResolver);
         this.iamPrincipalArn = generateIamRoleArn(accountId, roleName);
         this.region = Region.getRegion(Regions.fromName(region));
     }
 
-    public StaticIamRoleVaultCredentialsProvider(String vaultUrl, String accountId, String roleName, String region) {
-        this(new StaticVaultUrlResolver(vaultUrl));
+    public StaticIamRoleCerberusCredentialsProvider(String cerberusUrl, String accountId, String roleName, String region) {
+        this(new StaticCerberusUrlResolver(cerberusUrl));
         this.iamPrincipalArn = generateIamRoleArn(accountId, roleName);
         this.region = Region.getRegion(Regions.fromName(region));
     }
 
-    public StaticIamRoleVaultCredentialsProvider(UrlResolver urlResolver, String accountId, String roleName, Region region) {
+    public StaticIamRoleCerberusCredentialsProvider(UrlResolver urlResolver, String accountId, String roleName, Region region) {
         this(urlResolver);
         this.iamPrincipalArn = generateIamRoleArn(accountId, roleName);
         this.region = region;
     }
 
-    public StaticIamRoleVaultCredentialsProvider(String vaultUrl, String accountId, String roleName, Region region) {
-        this(new StaticVaultUrlResolver(vaultUrl));
+    public StaticIamRoleCerberusCredentialsProvider(String cerberusUrl, String accountId, String roleName, Region region) {
+        this(new StaticCerberusUrlResolver(cerberusUrl));
         this.iamPrincipalArn = generateIamRoleArn(accountId, roleName);
         this.region = region;
     }
 
-    public StaticIamRoleVaultCredentialsProvider(UrlResolver urlResolver, String iamRoleArn, String region) {
+    public StaticIamRoleCerberusCredentialsProvider(UrlResolver urlResolver, String iamRoleArn, String region) {
         this(urlResolver);
         this.iamPrincipalArn = iamRoleArn;
         this.region = Region.getRegion(Regions.fromName(region));
     }
 
 
-    public StaticIamRoleVaultCredentialsProvider(String vaultUrl, String iamRoleArn, String region) {
-        this(new StaticVaultUrlResolver(vaultUrl));
+    public StaticIamRoleCerberusCredentialsProvider(String cerberusUrl, String iamRoleArn, String region) {
+        this(new StaticCerberusUrlResolver(cerberusUrl));
         this.iamPrincipalArn = iamRoleArn;
         this.region = Region.getRegion(Regions.fromName(region));
     }
 
 
-    public StaticIamRoleVaultCredentialsProvider(UrlResolver urlResolver, String iamRoleArn, Region region) {
+    public StaticIamRoleCerberusCredentialsProvider(UrlResolver urlResolver, String iamRoleArn, Region region) {
         this(urlResolver);
         this.iamPrincipalArn = iamRoleArn;
         this.region = region;
     }
 
-    public StaticIamRoleVaultCredentialsProvider(String vaultUrl, String iamRoleArn, Region region) {
-        this(new StaticVaultUrlResolver(vaultUrl));
+    public StaticIamRoleCerberusCredentialsProvider(String cerberusUrl, String iamRoleArn, Region region) {
+        this(new StaticCerberusUrlResolver(cerberusUrl));
         this.iamPrincipalArn = iamRoleArn;
         this.region = region;
     }
 
-    private StaticIamRoleVaultCredentialsProvider(UrlResolver urlResolver) {
+    private StaticIamRoleCerberusCredentialsProvider(UrlResolver urlResolver) {
         super(urlResolver);
     }
 

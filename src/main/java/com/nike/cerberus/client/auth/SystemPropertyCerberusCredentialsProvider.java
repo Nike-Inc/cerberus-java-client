@@ -16,17 +16,14 @@
 
 package com.nike.cerberus.client.auth;
 
-import com.nike.vault.client.VaultClientException;
-import com.nike.vault.client.auth.TokenVaultCredentials;
-import com.nike.vault.client.auth.VaultCredentials;
-import com.nike.vault.client.auth.VaultCredentialsProvider;
+import com.nike.cerberus.client.CerberusClientException;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * {@link VaultCredentialsProvider} implementation that attempts to acquire the token
+ * {@link CerberusCredentialsProvider} implementation that attempts to acquire the token
  * via the system property, <code>cerberus.token</code>.
  */
-public class SystemPropertyCerberusCredentialsProvider implements VaultCredentialsProvider {
+public class SystemPropertyCerberusCredentialsProvider implements CerberusCredentialsProvider {
 
     public static final String CERBERUS_TOKEN_SYS_PROPERTY = "cerberus.token";
 
@@ -36,13 +33,13 @@ public class SystemPropertyCerberusCredentialsProvider implements VaultCredentia
      * @return credentials
      */
     @Override
-    public VaultCredentials getCredentials() {
+    public CerberusCredentials getCredentials() {
         final String token = System.getProperty(CERBERUS_TOKEN_SYS_PROPERTY);
 
         if (StringUtils.isNotBlank(token)) {
-            return new TokenVaultCredentials(token);
+            return new TokenCerberusCredentials(token);
         }
 
-        throw new VaultClientException("Cerberus token not found in the java system property: " + CERBERUS_TOKEN_SYS_PROPERTY);
+        throw new CerberusClientException("Cerberus token not found in the java system property: " + CERBERUS_TOKEN_SYS_PROPERTY);
     }
 }

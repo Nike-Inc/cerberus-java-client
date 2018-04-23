@@ -19,11 +19,10 @@ package com.nike.cerberus.client.auth.aws;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.RegionUtils;
 import com.amazonaws.services.kms.AWSKMSClient;
+import com.nike.cerberus.client.CerberusClientException;
+import com.nike.cerberus.client.CerberusServerException;
 import com.nike.cerberus.client.DefaultCerberusUrlResolver;
-import com.nike.vault.client.UrlResolver;
-import com.nike.vault.client.VaultClientException;
-import com.nike.vault.client.VaultServerException;
-import com.nike.vault.client.auth.VaultCredentials;
+import com.nike.cerberus.client.UrlResolver;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.After;
@@ -32,7 +31,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.reset;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
@@ -67,19 +65,19 @@ public class BaseAwsCredentialsProviderTest extends BaseCredentialsProviderTest{
         reset(urlResolver);
     }
 
-    @Test(expected = VaultClientException.class)
+    @Test(expected = CerberusClientException.class)
     public void getEncryptedAuthData_blank_url_throws_exception() throws Exception {
         when(urlResolver.resolve()).thenReturn("");
 
         provider.getEncryptedAuthData(CERBERUS_TEST_ARN, REGION);
     }
 
-    @Test(expected = VaultClientException.class)
+    @Test(expected = CerberusClientException.class)
     public void decryptToken_throws_exception_when_non_encrypted_data_provided() {
         provider.decryptToken(mock(AWSKMSClient.class), "non-encrypted-token");
     }
 
-    @Test(expected = VaultServerException.class)
+    @Test(expected = CerberusServerException.class)
     public void getEncryptedAuthData_throws_exception_on_bad_response_code() throws IOException {
         when(urlResolver.resolve()).thenReturn(vaultUrl);
 
@@ -89,7 +87,7 @@ public class BaseAwsCredentialsProviderTest extends BaseCredentialsProviderTest{
         provider.getEncryptedAuthData(CERBERUS_TEST_ARN, REGION);
     }
 
-    @Test(expected = VaultClientException.class)
+    @Test(expected = CerberusClientException.class)
     public void getEncryptedAuthData_throws_exception_on_missing_auth_data() throws IOException {
         when(urlResolver.resolve()).thenReturn(vaultUrl);
 

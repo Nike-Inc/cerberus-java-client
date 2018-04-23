@@ -22,10 +22,10 @@ import com.amazonaws.services.kms.AWSKMSClient;
 import com.amazonaws.services.lambda.AWSLambdaClient;
 import com.amazonaws.services.lambda.model.GetFunctionConfigurationRequest;
 import com.amazonaws.services.lambda.model.GetFunctionConfigurationResult;
+import com.nike.cerberus.client.CerberusClientException;
 import com.nike.cerberus.client.DefaultCerberusUrlResolver;
-import com.nike.vault.client.UrlResolver;
-import com.nike.vault.client.VaultClientException;
-import com.nike.vault.client.auth.VaultCredentials;
+import com.nike.cerberus.client.UrlResolver;
+import com.nike.cerberus.client.auth.CerberusCredentials;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.After;
@@ -38,15 +38,18 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.*;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
+import static org.powermock.api.mockito.PowerMockito.whenNew;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({AWSKMSClient.class, Regions.class, AWSLambdaClient.class, LambdaRoleVaultCredentialsProvider.class})
+@PrepareForTest({AWSKMSClient.class, Regions.class, AWSLambdaClient.class, LambdaRoleCerberusCredentialsProvider.class})
 @PowerMockIgnore({"javax.management.*", "javax.net.*"})
-public class LambdaRoleVaultCredentialsProviderTest extends BaseCredentialsProviderTest {
+public class LambdaRoleCerberusCredentialsProviderTest extends BaseCredentialsProviderTest {
     private static final String VALID_LAMBDA_ARN = "arn:aws:lambda:us-west-2:123456789012:function:lambda-test:1.1.0";
     private static final String VALID_LAMBDA_ARN_NO_QUALIFIER = "arn:aws:lambda:us-west-2:012345678912:function:lambda-test";
     private static final String VALID_IAM_ARN = "arn:aws:iam::123456789012:role/cerberus-role";
@@ -56,7 +59,7 @@ public class LambdaRoleVaultCredentialsProviderTest extends BaseCredentialsProvi
     private UrlResolver urlResolver;
     private AWSLambdaClient lambdaClient;
     private MockWebServer mockWebServer;
-    private String vaultUrl;
+    private String cerberusUrl;
 
     @Before
     public void setup() throws Exception {
@@ -66,9 +69,9 @@ public class LambdaRoleVaultCredentialsProviderTest extends BaseCredentialsProvi
 
         mockWebServer = new MockWebServer();
         mockWebServer.start();
-        vaultUrl = "http://localhost:" + mockWebServer.getPort();
+        cerberusUrl = "http://localhost:" + mockWebServer.getPort();
 
-        when(urlResolver.resolve()).thenReturn(vaultUrl);
+        when(urlResolver.resolve()).thenReturn(cerberusUrl);
 
 
         mockStatic(Regions.class);
@@ -80,41 +83,41 @@ public class LambdaRoleVaultCredentialsProviderTest extends BaseCredentialsProvi
 
     @Test(expected = IllegalArgumentException.class)
     public void provider_creation_fails_on_invalid_arn() {
-        LambdaRoleVaultCredentialsProvider provider = new LambdaRoleVaultCredentialsProvider(urlResolver, "invalid-lambda-arn");
+        LambdaRoleCerberusCredentialsProvider provider = new LambdaRoleCerberusCredentialsProvider(urlResolver, "invalid-lambda-arn");
     }
 
     @Test
     public void valid_arn_and_no_qualifier_matched_properly_on_provider_creation() {
-        LambdaRoleVaultCredentialsProvider provider = new LambdaRoleVaultCredentialsProvider(urlResolver, VALID_LAMBDA_ARN_NO_QUALIFIER);
+        LambdaRoleCerberusCredentialsProvider provider = new LambdaRoleCerberusCredentialsProvider(urlResolver, VALID_LAMBDA_ARN_NO_QUALIFIER);
     }
 
     @Test
     public void getCredentials_returns_valid_creds() throws Exception {
-        final LambdaRoleVaultCredentialsProvider provider = PowerMockito.spy(new LambdaRoleVaultCredentialsProvider(urlResolver, VALID_LAMBDA_ARN));
+        final LambdaRoleCerberusCredentialsProvider provider = PowerMockito.spy(new LambdaRoleCerberusCredentialsProvider(urlResolver, VALID_LAMBDA_ARN));
         final GetFunctionConfigurationRequest request = new GetFunctionConfigurationRequest().withFunctionName("lambda-test").withQualifier("1.1.0");
 
-        when(urlResolver.resolve()).thenReturn(vaultUrl);
+        when(urlResolver.resolve()).thenReturn(cerberusUrl);
 
-        System.setProperty(DefaultCerberusUrlResolver.CERBERUS_ADDR_SYS_PROPERTY, vaultUrl);
+        System.setProperty(DefaultCerberusUrlResolver.CERBERUS_ADDR_SYS_PROPERTY, cerberusUrl);
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody(AUTH_RESPONSE));
 
         mockDecrypt(kmsClient, DECODED_AUTH_DATA);
 
         when(lambdaClient.getFunctionConfiguration(request)).thenReturn(new GetFunctionConfigurationResult().withRole(VALID_IAM_ARN));
 
-        final VaultCredentials credentials = provider.getCredentials();
+        final CerberusCredentials credentials = provider.getCredentials();
 
         assertThat(credentials.getToken()).isEqualTo(AUTH_TOKEN);
         verify(lambdaClient, times(1)).getFunctionConfiguration(request);
     }
 
-    @Test(expected = VaultClientException.class)
-    public void VaultClientException_thrown_when_bad_json_returned() throws Exception {
-        final LambdaRoleVaultCredentialsProvider provider = PowerMockito.spy(new LambdaRoleVaultCredentialsProvider(urlResolver, VALID_LAMBDA_ARN));
+    @Test(expected = CerberusClientException.class)
+    public void CerberusClientException_thrown_when_bad_json_returned() throws Exception {
+        final LambdaRoleCerberusCredentialsProvider provider = PowerMockito.spy(new LambdaRoleCerberusCredentialsProvider(urlResolver, VALID_LAMBDA_ARN));
         final GetFunctionConfigurationRequest request = new GetFunctionConfigurationRequest().withFunctionName("lambda-test").withQualifier("1.1.0");
 
 
-        System.setProperty(DefaultCerberusUrlResolver.CERBERUS_ADDR_SYS_PROPERTY, vaultUrl);
+        System.setProperty(DefaultCerberusUrlResolver.CERBERUS_ADDR_SYS_PROPERTY, cerberusUrl);
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody(BAD_AUTH_RESPONSE_JSON));
 
         mockDecrypt(kmsClient, DECODED_AUTH_DATA);
@@ -126,7 +129,7 @@ public class LambdaRoleVaultCredentialsProviderTest extends BaseCredentialsProvi
 
     @Test(expected = IllegalStateException.class)
     public void authenticate_fails_when_lambda_has_invalid_assigned_role() throws Exception {
-        final LambdaRoleVaultCredentialsProvider provider = new LambdaRoleVaultCredentialsProvider(urlResolver, VALID_LAMBDA_ARN);
+        final LambdaRoleCerberusCredentialsProvider provider = new LambdaRoleCerberusCredentialsProvider(urlResolver, VALID_LAMBDA_ARN);
         final GetFunctionConfigurationRequest request = new GetFunctionConfigurationRequest().withFunctionName("lambda-test").withQualifier("1.1.0");
 
         when(lambdaClient.getFunctionConfiguration(request)).thenReturn(new GetFunctionConfigurationResult().withRole(INVALID_ARN));
@@ -137,7 +140,7 @@ public class LambdaRoleVaultCredentialsProviderTest extends BaseCredentialsProvi
 
     @Test(expected = IllegalStateException.class)
     public void authenticate_fails_when_lambda_has_no_assigned_role() throws Exception {
-        final LambdaRoleVaultCredentialsProvider provider = new LambdaRoleVaultCredentialsProvider(urlResolver, VALID_LAMBDA_ARN);
+        final LambdaRoleCerberusCredentialsProvider provider = new LambdaRoleCerberusCredentialsProvider(urlResolver, VALID_LAMBDA_ARN);
         final GetFunctionConfigurationRequest request = new GetFunctionConfigurationRequest().withFunctionName("lambda-test").withQualifier("1.1.0");
 
         when(lambdaClient.getFunctionConfiguration(request)).thenReturn(new GetFunctionConfigurationResult().withRole(""));

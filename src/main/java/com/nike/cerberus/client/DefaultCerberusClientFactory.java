@@ -16,16 +16,12 @@
 
 package com.nike.cerberus.client;
 
+import com.nike.cerberus.client.auth.CerberusCredentialsProviderChain;
 import com.nike.cerberus.client.auth.DefaultCerberusCredentialsProviderChain;
 import com.nike.cerberus.client.auth.EnvironmentCerberusCredentialsProvider;
 import com.nike.cerberus.client.auth.SystemPropertyCerberusCredentialsProvider;
-import com.nike.cerberus.client.auth.aws.LambdaRoleVaultCredentialsProvider;
-import com.nike.cerberus.client.auth.aws.StaticIamRoleVaultCredentialsProvider;
-import com.nike.vault.client.StaticVaultUrlResolver;
-import com.nike.vault.client.UrlResolver;
-import com.nike.vault.client.VaultClient;
-import com.nike.vault.client.VaultClientFactory;
-import com.nike.vault.client.auth.VaultCredentialsProviderChain;
+import com.nike.cerberus.client.auth.aws.LambdaRoleCerberusCredentialsProvider;
+import com.nike.cerberus.client.auth.aws.StaticIamRoleCerberusCredentialsProvider;
 import okhttp3.ConnectionSpec;
 import okhttp3.OkHttpClient;
 
@@ -37,41 +33,41 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Client factory for creating a Vault client with a URL resolver and credentials provider specific to Cerberus.
+ * Client factory for creating a Cerberus client with a URL resolver and credentials provider specific to Cerberus.
  */
 public final class DefaultCerberusClientFactory {
 
     /**
-     * Creates a new {@link VaultClient} with the {@link DefaultCerberusUrlResolver} for URL resolving
+     * Creates a new {@link CerberusClient} with the {@link DefaultCerberusUrlResolver} for URL resolving
      * and {@link DefaultCerberusCredentialsProviderChain} for obtaining credentials.
      *
-     * @return Vault client
+     * @return Cerberus client
      */
-    public static VaultClient getClient() {
+    public static CerberusClient getClient() {
         final Map<String, String> defaultHeaders = new HashMap<>();
         defaultHeaders.put(ClientVersion.CERBERUS_CLIENT_HEADER, ClientVersion.getClientHeaderValue());
 
-        return VaultClientFactory.getClient(
+        return CerberusClientFactory.getClient(
                 new DefaultCerberusUrlResolver(),
                 new DefaultCerberusCredentialsProviderChain(),
                 defaultHeaders);
     }
 
     /**
-     * Creates a new {@link VaultClient} for the supplied Cerberus URL
+     * Creates a new {@link CerberusClient} for the supplied Cerberus URL
      * and {@link DefaultCerberusCredentialsProviderChain} for obtaining credentials.
      *
      * @param cerberusUrl e.g. https://dev.cerberus.example.com
-     * @return Vault client
+     * @return Cerberus client
      */
-    public static VaultClient getClient(String cerberusUrl) {
+    public static CerberusClient getClient(String cerberusUrl) {
 
         final Map<String, String> defaultHeaders = new HashMap<>();
         defaultHeaders.put(ClientVersion.CERBERUS_CLIENT_HEADER, ClientVersion.getClientHeaderValue());
 
-        UrlResolver urlResolver = new StaticVaultUrlResolver(cerberusUrl);
+        UrlResolver urlResolver = new StaticCerberusUrlResolver(cerberusUrl);
 
-        return VaultClientFactory.getClient(
+        return CerberusClientFactory.getClient(
                 urlResolver,
                 new DefaultCerberusCredentialsProviderChain(urlResolver),
                 defaultHeaders);
@@ -79,7 +75,7 @@ public final class DefaultCerberusClientFactory {
     }
 
     /**
-     * Creates a new {@link VaultClient} with the specified SSLSocketFactory and TrustManager.
+     * Creates a new {@link CerberusClient} with the specified SSLSocketFactory and TrustManager.
      * <p>
      * This factory method is generally not recommended unless you have a specific need
      * to configure your TLS for your httpClient differently than the default, e.g. Java 7.
@@ -87,27 +83,27 @@ public final class DefaultCerberusClientFactory {
      * @param cerberusUrl      e.g. https://dev.cerberus.example.com
      * @param sslSocketFactory the factory to use for TLS
      * @param trustManager     the trust manager to use for TLS
-     * @return Vault client
+     * @return Cerberus client
      */
-    public static VaultClient getClient(String cerberusUrl, SSLSocketFactory sslSocketFactory, X509TrustManager trustManager) {
+    public static CerberusClient getClient(String cerberusUrl, SSLSocketFactory sslSocketFactory, X509TrustManager trustManager) {
 
         final Map<String, String> defaultHeaders = new HashMap<>();
         defaultHeaders.put(ClientVersion.CERBERUS_CLIENT_HEADER, ClientVersion.getClientHeaderValue());
 
-        UrlResolver urlResolver = new StaticVaultUrlResolver(cerberusUrl);
+        UrlResolver urlResolver = new StaticCerberusUrlResolver(cerberusUrl);
 
         List<ConnectionSpec> connectionSpecs = new ArrayList<>();
-        connectionSpecs.add(VaultClientFactory.TLS_1_2_OR_NEWER);
+        connectionSpecs.add(CerberusClientFactory.TLS_1_2_OR_NEWER);
 
         OkHttpClient httpClient = new OkHttpClient.Builder()
-                .connectTimeout(VaultClientFactory.DEFAULT_TIMEOUT, VaultClientFactory.DEFAULT_TIMEOUT_UNIT)
-                .writeTimeout(VaultClientFactory.DEFAULT_TIMEOUT, VaultClientFactory.DEFAULT_TIMEOUT_UNIT)
-                .readTimeout(VaultClientFactory.DEFAULT_TIMEOUT, VaultClientFactory.DEFAULT_TIMEOUT_UNIT)
+                .connectTimeout(CerberusClientFactory.DEFAULT_TIMEOUT, CerberusClientFactory.DEFAULT_TIMEOUT_UNIT)
+                .writeTimeout(CerberusClientFactory.DEFAULT_TIMEOUT, CerberusClientFactory.DEFAULT_TIMEOUT_UNIT)
+                .readTimeout(CerberusClientFactory.DEFAULT_TIMEOUT, CerberusClientFactory.DEFAULT_TIMEOUT_UNIT)
                 .sslSocketFactory(sslSocketFactory, trustManager)
                 .connectionSpecs(connectionSpecs)
                 .build();
 
-        return VaultClientFactory.getClient(
+        return CerberusClientFactory.getClient(
                 urlResolver,
                 new DefaultCerberusCredentialsProviderChain(urlResolver, httpClient),
                 defaultHeaders,
@@ -115,8 +111,8 @@ public final class DefaultCerberusClientFactory {
     }
 
     /**
-     * Creates a new {@link VaultClient} for the supplied Cerberus URL and a credentials provider chain
-     * that includes the {@link StaticIamRoleVaultCredentialsProvider} for obtaining credentials.
+     * Creates a new {@link CerberusClient} for the supplied Cerberus URL and a credentials provider chain
+     * that includes the {@link StaticIamRoleCerberusCredentialsProvider} for obtaining credentials.
      * <p>
      * This method is used when you want to use a particular iamPrincipalArn during authentication rather
      * than auto-determining the ARN to use.  Generally, it is simpler to use the {@code getClient()} or the
@@ -126,43 +122,43 @@ public final class DefaultCerberusClientFactory {
      * @param cerberusUrl     e.g. https://dev.cerberus.example.com
      * @param iamPrincipalArn the IAM principal to use in authentication, e.g. "arn:aws:iam::123456789012:role/some-role"
      * @param region          the Region for the KMS key used in auth.  Usually, this is your current region.
-     * @return Vault client
+     * @return Cerberus client
      */
-    public static VaultClient getClient(String cerberusUrl, String iamPrincipalArn, String region) {
+    public static CerberusClient getClient(String cerberusUrl, String iamPrincipalArn, String region) {
 
         final Map<String, String> defaultHeaders = new HashMap<>();
         defaultHeaders.put(ClientVersion.CERBERUS_CLIENT_HEADER, ClientVersion.getClientHeaderValue());
 
-        UrlResolver urlResolver = new StaticVaultUrlResolver(cerberusUrl);
+        UrlResolver urlResolver = new StaticCerberusUrlResolver(cerberusUrl);
 
-        return VaultClientFactory.getClient(
+        return CerberusClientFactory.getClient(
                 urlResolver,
-                new VaultCredentialsProviderChain(
+                new CerberusCredentialsProviderChain(
                         new EnvironmentCerberusCredentialsProvider(),
                         new SystemPropertyCerberusCredentialsProvider(),
-                        new StaticIamRoleVaultCredentialsProvider(urlResolver, iamPrincipalArn, region)),
+                        new StaticIamRoleCerberusCredentialsProvider(urlResolver, iamPrincipalArn, region)),
                 defaultHeaders);
     }
 
     /**
-     * Creates a new {@link VaultClient} with the {@link DefaultCerberusUrlResolver} for URL resolving
-     * and a credentials provider chain that includes the {@link LambdaRoleVaultCredentialsProvider} for obtaining
+     * Creates a new {@link CerberusClient} with the {@link DefaultCerberusUrlResolver} for URL resolving
+     * and a credentials provider chain that includes the {@link LambdaRoleCerberusCredentialsProvider} for obtaining
      * credentials.
      *
      * @param invokedFunctionArn The ARN for the AWS Lambda function being invoked.
-     * @return Vault client
+     * @return Cerberus client
      */
-    public static VaultClient getClientForLambda(final String invokedFunctionArn) {
+    public static CerberusClient getClientForLambda(final String invokedFunctionArn) {
         final Map<String, String> defaultHeaders = new HashMap<>();
         defaultHeaders.put(ClientVersion.CERBERUS_CLIENT_HEADER, ClientVersion.getClientHeaderValue());
 
         final DefaultCerberusUrlResolver urlResolver = new DefaultCerberusUrlResolver();
-        return VaultClientFactory.getClient(
+        return CerberusClientFactory.getClient(
                 urlResolver,
-                new VaultCredentialsProviderChain(
+                new CerberusCredentialsProviderChain(
                         new EnvironmentCerberusCredentialsProvider(),
                         new SystemPropertyCerberusCredentialsProvider(),
-                        new LambdaRoleVaultCredentialsProvider(urlResolver, invokedFunctionArn)),
+                        new LambdaRoleCerberusCredentialsProvider(urlResolver, invokedFunctionArn)),
                 defaultHeaders);
     }
 }

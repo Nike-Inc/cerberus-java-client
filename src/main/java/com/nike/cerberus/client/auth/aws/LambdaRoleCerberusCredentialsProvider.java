@@ -24,9 +24,9 @@ import com.amazonaws.services.lambda.AWSLambdaClient;
 import com.amazonaws.services.lambda.model.GetFunctionConfigurationRequest;
 import com.amazonaws.services.lambda.model.GetFunctionConfigurationResult;
 import com.google.gson.JsonSyntaxException;
-import com.nike.vault.client.UrlResolver;
-import com.nike.vault.client.VaultClientException;
-import com.nike.vault.client.auth.VaultCredentialsProvider;
+import com.nike.cerberus.client.CerberusClientException;
+import com.nike.cerberus.client.UrlResolver;
+import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,15 +35,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * {@link VaultCredentialsProvider} implementation that uses the assigned role
+ * {@link CerberusCredentialsProvider} implementation that uses the assigned role
  * to lambda function to authenticate with Cerberus and decrypt the auth
  * response using KMS. If the assigned role has been granted the appropriate
- * provisioned for usage of Vault, it will succeed and have a token that can be
- * used to interact with Vault.
+ * provisioned for usage of Cerberus, it will succeed and have a token that can be
+ * used to interact with Cerberus.
  */
-public class LambdaRoleVaultCredentialsProvider extends BaseAwsCredentialsProvider {
+public class LambdaRoleCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(LambdaRoleVaultCredentialsProvider.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(LambdaRoleCerberusCredentialsProvider.class);
 
     public static final Pattern LAMBDA_FUNCTION_ARN_PATTERN =
             Pattern.compile("arn:aws:lambda:(?<awsRegion>[a-zA-Z0-9-]+):(?<accountId>[0-9]{12}):function:(?<functionName>[a-zA-Z0-9-_]+)(:(?<qualifier>.*))?");
@@ -62,7 +62,7 @@ public class LambdaRoleVaultCredentialsProvider extends BaseAwsCredentialsProvid
      * @param urlResolver        Resolver for resolving the Cerberus URL
      * @param invokedFunctionArn The invoked lambda function's ARN
      */
-    public LambdaRoleVaultCredentialsProvider(final UrlResolver urlResolver, final String invokedFunctionArn) {
+    public LambdaRoleCerberusCredentialsProvider(final UrlResolver urlResolver, final String invokedFunctionArn) {
         super(urlResolver);
         final Matcher matcher = LAMBDA_FUNCTION_ARN_PATTERN.matcher(invokedFunctionArn);
 
@@ -110,11 +110,11 @@ public class LambdaRoleVaultCredentialsProvider extends BaseAwsCredentialsProvid
             LOGGER.warn("Unexpected error communicating with AWS services.", ace);
         } catch (JsonSyntaxException jse) {
             LOGGER.error("The decrypted auth response was not in the expected format!", jse);
-        } catch (VaultClientException sce) {
-            LOGGER.warn("Unable to acquire Vault token for IAM role: " + roleArn, sce);
+        } catch (CerberusClientException sce) {
+            LOGGER.warn("Unable to acquire Cerberus token for IAM role: " + roleArn, sce);
         }
 
-        throw new VaultClientException("Unable to acquire token with Lambda instance role.");
+        throw new CerberusClientException("Unable to acquire token with Lambda instance role.");
     }
 
 

@@ -16,8 +16,7 @@
 
 package com.nike.cerberus.client.auth;
 
-import com.nike.vault.client.VaultClientException;
-import com.nike.vault.client.auth.VaultCredentials;
+import com.nike.cerberus.client.CerberusClientException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,13 +48,13 @@ public class SystemPropertyCerberusCredentialsProviderTest {
         mockStatic(System.class);
         when(System.getProperty(SystemPropertyCerberusCredentialsProvider.CERBERUS_TOKEN_SYS_PROPERTY)).thenReturn(TOKEN);
 
-        VaultCredentials credentials = credentialsProvider.getCredentials();
+        CerberusCredentials credentials = credentialsProvider.getCredentials();
 
         assertThat(credentials).isNotNull();
         assertThat(credentials.getToken()).isEqualTo(TOKEN);
     }
 
-    @Test(expected = VaultClientException.class)
+    @Test(expected = CerberusClientException.class)
     public void getCredentials_returns_empty_creds_object_when_sys_property_not_set() {
         mockStatic(System.class);
         when(System.getProperty(SystemPropertyCerberusCredentialsProvider.CERBERUS_TOKEN_SYS_PROPERTY)).thenReturn(null);
@@ -63,7 +62,7 @@ public class SystemPropertyCerberusCredentialsProviderTest {
         credentialsProvider.getCredentials();
     }
 
-    @Test(expected = VaultClientException.class)
+    @Test(expected = CerberusClientException.class)
     public void getCredentials_returns_empty_creds_object_when_sys_property_is_blank() {
         mockStatic(System.class);
         when(System.getProperty(SystemPropertyCerberusCredentialsProvider.CERBERUS_TOKEN_SYS_PROPERTY)).thenReturn("");

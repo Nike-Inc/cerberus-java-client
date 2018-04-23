@@ -54,15 +54,6 @@ public class ClientVersion {
     }
 
     public static String getClientHeaderValue() {
-
-        String vaultClientVersion = "unknown";
-
-        try {
-            vaultClientVersion = com.nike.vault.client.ClientVersion.getVersion();
-        } catch (Exception e) {
-            LOGGER.error("Failed to get Vault Client version", e);
-        }
-
-        return String.format("%s/%s JavaVaultClient/%s", HEADER_VALUE_PREFIX, getVersion(), vaultClientVersion);
+        return String.format("%s/%s", HEADER_VALUE_PREFIX, getVersion());
     }
 }
