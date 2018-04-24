@@ -5,9 +5,9 @@
 [![Coverage Status](https://coveralls.io/repos/github/Nike-Inc/cerberus-java-client/badge.svg?branch=master)](https://coveralls.io/github/Nike-Inc/cerberus-java-client)
 [![][license img]][license]
 
-A java based client library for Cerberus that's built on top of Nike's Vault client.
+A java based client library for Cerberus that's built on top of Nike's Cerberus client.
 
-This library acts as a wrapper around the Nike developed Vault client by configuring the client to be Cerberus compatible.
+This library acts as a wrapper around the Nike developed Cerberus client by configuring the client to be Cerberus compatible.
 
 To learn more about Cerberus, please see the [Cerberus website](http://engineering.nike.com/cerberus/).
 
@@ -17,14 +17,14 @@ To learn more about Cerberus, please see the [Cerberus website](http://engineeri
 2. Add the [Cerberus client dependency](https://bintray.com/nike/maven/cerberus-client) to your build (e.g. Maven, Gradle)
 3. Provide an authentication mechanism.
    - For local development it is easiest to export a `CERBERUS_TOKEN` that you copied from the Cerberus dashboard.
-     When running in AWS, your application will not need this environmetal variable, instead it will automatically 
+     When running in AWS, your application will not need this environment variable, instead it will automatically 
      authenticate using its IAM role. Alternatively, set a `cerberus.token` System property.
    - If you would like to test IAM authentication locally, you can do that by [assuming a role](http://docs.aws.amazon.com/cli/latest/userguide/cli-roles.html).
 4. Access secrets from Cerberus using Java
 ``` java
     String cerberusUrl = "https://cerberus.example.com";
-    VaultClient vaultClient = DefaultCerberusClientFactory.getClient(cerberusUrl);
-    Map<String,String> secrets = vaultClient.read("/app/my-sdb-name").getData();
+    CerberusClient cerberusClient = DefaultCerberusClientFactory.getClient(cerberusUrl);
+    Map<String,String> secrets = cerberusClient.read("/app/my-sdb-name").getData();
 ```
 
 ## Lambdas
@@ -68,8 +68,8 @@ Setup the CERBERUS_ADDR environmental variable and access Cerberus using Java:
 
 ``` java
     String invokedFunctionArn = context.getInvokedFunctionArn();
-    VaultClient vaultClient = DefaultCerberusClientFactory.getClientForLambda(invokedFunctionArn);
-    Map<String,String> secrets = vaultClient.read("/app/my-sdb-name").getData();
+    CerberusClient cerberusClient = DefaultCerberusClientFactory.getClientForLambda(invokedFunctionArn);
+    Map<String,String> secrets = cerberusClient.read("/app/my-sdb-name").getData();
 ```
 
 ## More Configuration Options
@@ -83,8 +83,8 @@ Provide the URL directly using the factory method `DefaultCerberusClientFactory.
 and then use the factory method that does not require a URL:
 
 ``` java
-    final VaultClient vaultClient = DefaultCerberusClientFactory.getClient();
-    Map<String,String> secrets = vaultClient.read("/app/my-sdb-name").getData();
+    final CerberusClient cerberusClient = DefaultCerberusClientFactory.getClient();
+    Map<String,String> secrets = cerberusClient.read("/app/my-sdb-name").getData();
 ```
 
 ### Configuring Credentials

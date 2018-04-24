@@ -1,0 +1,9 @@
+{
+  "auth": null,
+  "data": {
+    "keys": ["foo", "foo/"]
+  },
+  "lease_duration": 2592000,
+  "lease_id": "",
+  "renewable": false
+}

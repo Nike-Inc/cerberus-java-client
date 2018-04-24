@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Nike, Inc.
+ * Copyright (c) 2018 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package com.nike.cerberus.client;
 
-import com.nike.vault.client.UrlResolver;
 import okhttp3.HttpUrl;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -36,9 +35,9 @@ public class DefaultCerberusUrlResolver implements UrlResolver {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
-     * Attempts to acquire the Vault URL from Archaius.
+     * Attempts to acquire the Cerberus URL from Archaius.
      *
-     * @return Vault URL
+     * @return Cerberus URL
      */
     @Nullable
     @Override

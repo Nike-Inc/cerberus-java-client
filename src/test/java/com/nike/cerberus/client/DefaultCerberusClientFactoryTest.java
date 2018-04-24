@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Nike, Inc.
+ * Copyright (c) 2018 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package com.nike.cerberus.client;
 
-import com.nike.vault.client.VaultClient;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -28,7 +27,7 @@ public class DefaultCerberusClientFactoryTest {
 
     @Test
     public void test_that_getClient_adds_client_version_as_a_default_header() {
-        VaultClient result = DefaultCerberusClientFactory.getClient();
+        CerberusClient result = DefaultCerberusClientFactory.getClient();
         assertEquals(
                 ClientVersion.getClientHeaderValue(),
                 result.getDefaultHeaders().get(ClientVersion.CERBERUS_CLIENT_HEADER));
@@ -36,7 +35,7 @@ public class DefaultCerberusClientFactoryTest {
 
     @Test
     public void test_that_getClientForLambda_adds_client_version_as_a_default_header() {
-        VaultClient result = DefaultCerberusClientFactory.getClientForLambda("arn:aws:lambda:us-west-2:000000000000:function:name:qualifier");
+        CerberusClient result = DefaultCerberusClientFactory.getClientForLambda("arn:aws:lambda:us-west-2:000000000000:function:name:qualifier");
         assertEquals(
                 ClientVersion.getClientHeaderValue(),
                 result.getDefaultHeaders().get(ClientVersion.CERBERUS_CLIENT_HEADER));

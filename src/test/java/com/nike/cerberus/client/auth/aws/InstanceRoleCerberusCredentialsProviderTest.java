@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Nike, Inc.
+ * Copyright (c) 2018 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,12 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.kms.AWSKMSClient;
 import com.amazonaws.util.EC2MetadataUtils;
+import com.nike.cerberus.client.CerberusClientException;
 import com.nike.cerberus.client.DefaultCerberusUrlResolver;
-import com.nike.vault.client.UrlResolver;
-import com.nike.vault.client.VaultClientException;
-import com.nike.vault.client.auth.VaultCredentials;
+import com.nike.cerberus.client.UrlResolver;
+import com.nike.cerberus.client.auth.CerberusCredentials;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,25 +41,23 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import static com.nike.cerberus.client.auth.aws.InstanceRoleVaultCredentialsProvider.buildIamRoleArns;
-import static com.nike.cerberus.client.auth.aws.InstanceRoleVaultCredentialsProvider.buildRoleArn;
-import static com.nike.cerberus.client.auth.aws.StaticIamRoleVaultCredentialsProvider.IAM_ROLE_ARN_FORMAT;
+import static com.nike.cerberus.client.auth.aws.InstanceRoleCerberusCredentialsProvider.buildIamRoleArns;
+import static com.nike.cerberus.client.auth.aws.InstanceRoleCerberusCredentialsProvider.buildRoleArn;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static org.powermock.api.mockito.PowerMockito.whenNew;
 
 /**
- * Tests the InstanceRoleVaultCredentialsProvider class
+ * Tests the InstanceRoleCerberusCredentialsProvider class
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({AWSKMSClient.class,
-    EC2MetadataUtils.class, InstanceRoleVaultCredentialsProvider.class})
+    EC2MetadataUtils.class, InstanceRoleCerberusCredentialsProvider.class})
 @PowerMockIgnore({"javax.management.*","javax.net.*"})
-public class InstanceRoleVaultCredentialsProviderTest extends BaseCredentialsProviderTest {
+public class InstanceRoleCerberusCredentialsProviderTest extends BaseCredentialsProviderTest {
 
     private static final String GOOD_INSTANCE_PROFILE_ARN = "arn:aws:iam::107274433934:instance-profile/rawr";
 
@@ -70,13 +67,13 @@ public class InstanceRoleVaultCredentialsProviderTest extends BaseCredentialsPro
 
     private AWSKMSClient kmsClient;
 
-    private InstanceRoleVaultCredentialsProvider provider;
+    private InstanceRoleCerberusCredentialsProvider provider;
 
     @Before
     public void setup() throws Exception {
         kmsClient = mock(AWSKMSClient.class);
         urlResolver = mock(UrlResolver.class);
-        provider = new InstanceRoleVaultCredentialsProvider(urlResolver);
+        provider = new InstanceRoleCerberusCredentialsProvider(urlResolver);
 
         whenNew(AWSKMSClient.class).withAnyArguments().thenReturn(kmsClient);
         mockStatic(EC2MetadataUtils.class);
@@ -88,22 +85,22 @@ public class InstanceRoleVaultCredentialsProviderTest extends BaseCredentialsPro
 
         MockWebServer mockWebServer = new MockWebServer();
         mockWebServer.start();
-        final String vaultUrl = "http://localhost:" + mockWebServer.getPort();
+        final String cerberusUrl = "http://localhost:" + mockWebServer.getPort();
 
         mockGetIamSecurityCredentials(DEFAULT_ROLE);
         mockGetIamInstanceProfileInfo(GOOD_INSTANCE_PROFILE_ARN);
         mockDecrypt(kmsClient, DECODED_AUTH_DATA);
-        when(urlResolver.resolve()).thenReturn(vaultUrl);
+        when(urlResolver.resolve()).thenReturn(cerberusUrl);
 
-        System.setProperty(DefaultCerberusUrlResolver.CERBERUS_ADDR_SYS_PROPERTY, vaultUrl);
+        System.setProperty(DefaultCerberusUrlResolver.CERBERUS_ADDR_SYS_PROPERTY, cerberusUrl);
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody(AUTH_RESPONSE));
 
-        VaultCredentials credentials = provider.getCredentials();
+        CerberusCredentials credentials = provider.getCredentials();
         assertThat(credentials.getToken()).isEqualTo(AUTH_TOKEN);
 
     }
 
-    @Test(expected = VaultClientException.class)
+    @Test(expected = CerberusClientException.class)
     public void getCredentials_throws_client_exception_when_accountId_missing() {
         mockGetIamSecurityCredentials(DEFAULT_ROLE);
         mockGetIamInstanceProfileInfo("arn:aws:iam:instance-profile/rawr");
@@ -111,7 +108,7 @@ public class InstanceRoleVaultCredentialsProviderTest extends BaseCredentialsPro
         provider.getCredentials();
     }
 
-    @Test(expected = VaultClientException.class)
+    @Test(expected = CerberusClientException.class)
     public void getCredentials_throws_client_exception_when_no_roles_are_set() {
         when(EC2MetadataUtils.getIAMSecurityCredentials())
         .thenReturn(Collections.<String, EC2MetadataUtils.IAMSecurityCredential>emptyMap());
@@ -120,14 +117,14 @@ public class InstanceRoleVaultCredentialsProviderTest extends BaseCredentialsPro
         provider.getCredentials();
     }
 
-    @Test(expected = VaultClientException.class)
+    @Test(expected = CerberusClientException.class)
     public void getCredentials_throws_client_exception_when_not_running_on_ec2_instance() {
         when(EC2MetadataUtils.getIAMSecurityCredentials()).thenThrow(new AmazonClientException("BAD"));
 
         provider.getCredentials();
     }
 
-    @Test(expected = VaultClientException.class)
+    @Test(expected = CerberusClientException.class)
     public void getCredentials_thorws_client_exception_when_no_instance_profile_assigned() {
         when(EC2MetadataUtils.getIAMInstanceProfileInfo()).thenReturn(null);
 
@@ -186,7 +183,7 @@ public class InstanceRoleVaultCredentialsProviderTest extends BaseCredentialsPro
     @Test
     public void test_parseInstanceProfileArn_with_path() {
         String instanceProfileArn = "arn:aws:iam::1234567890123:instance-profile/brewmaster/foo/brewmaster-foo-cerberus";
-        InstanceRoleVaultCredentialsProvider.InstanceProfileInfo info = InstanceRoleVaultCredentialsProvider.parseInstanceProfileArn(instanceProfileArn);
+        InstanceRoleCerberusCredentialsProvider.InstanceProfileInfo info = InstanceRoleCerberusCredentialsProvider.parseInstanceProfileArn(instanceProfileArn);
         assertEquals("1234567890123", info.accountId);
         assertEquals("brewmaster/foo/brewmaster-foo-cerberus", info.profileName);
     }
@@ -194,7 +191,7 @@ public class InstanceRoleVaultCredentialsProviderTest extends BaseCredentialsPro
     @Test
     public void test_parseInstanceProfileArn_without_path() {
         String instanceProfileArn = "arn:aws:iam::1234567890123:instance-profile/foo-cerberus";
-        InstanceRoleVaultCredentialsProvider.InstanceProfileInfo info = InstanceRoleVaultCredentialsProvider.parseInstanceProfileArn(instanceProfileArn);
+        InstanceRoleCerberusCredentialsProvider.InstanceProfileInfo info = InstanceRoleCerberusCredentialsProvider.parseInstanceProfileArn(instanceProfileArn);
         assertEquals("1234567890123", info.accountId);
         assertEquals("foo-cerberus", info.profileName);
     }
@@ -202,7 +199,7 @@ public class InstanceRoleVaultCredentialsProviderTest extends BaseCredentialsPro
     @Test
     public void test_parsePathFromInstanceProfileName() {
         String instanceProfileName = "brewmaster/foo/brewmaster-foo-cerberus";
-        String path = InstanceRoleVaultCredentialsProvider.parsePathFromInstanceProfileName(instanceProfileName);
+        String path = InstanceRoleCerberusCredentialsProvider.parsePathFromInstanceProfileName(instanceProfileName);
         assertEquals("brewmaster/foo", path);
     }
 

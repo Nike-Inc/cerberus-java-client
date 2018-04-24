@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Nike, Inc.
+ * Copyright (c) 2018 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,6 @@ public class ClientVersionTest {
 
         String result = ClientVersion.getClientHeaderValue();
         assertTrue(StringUtils.contains(result, ClientVersion.HEADER_VALUE_PREFIX));
-        assertTrue(StringUtils.contains(result, com.nike.vault.client.ClientVersion.getVersion()));
+        assertTrue(StringUtils.contains(result, ClientVersion.getVersion()));
     }
 }

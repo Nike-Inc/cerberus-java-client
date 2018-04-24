@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Nike, Inc.
+ * Copyright (c) 2018 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,14 @@
 
 package com.nike.cerberus.client.auth;
 
-import com.nike.vault.client.VaultClientException;
-import com.nike.vault.client.auth.TokenVaultCredentials;
-import com.nike.vault.client.auth.VaultCredentials;
-import com.nike.vault.client.auth.VaultCredentialsProvider;
+import com.nike.cerberus.client.CerberusClientException;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * {@link VaultCredentialsProvider} implementation that attempts to acquire the token
+ * {@link CerberusCredentialsProvider} implementation that attempts to acquire the token
  * via the environment variable, <code>CERBERUS_TOKEN</code>.
  */
-public class EnvironmentCerberusCredentialsProvider implements VaultCredentialsProvider {
+public class EnvironmentCerberusCredentialsProvider implements CerberusCredentialsProvider {
 
     public static final String CERBERUS_TOKEN_ENV_PROPERTY = "CERBERUS_TOKEN";
 
@@ -36,13 +33,13 @@ public class EnvironmentCerberusCredentialsProvider implements VaultCredentialsP
      * @return credentials
      */
     @Override
-    public VaultCredentials getCredentials() {
+    public CerberusCredentials getCredentials() {
         final String token = System.getenv(CERBERUS_TOKEN_ENV_PROPERTY);
 
         if (StringUtils.isNotBlank(token)) {
-            return new TokenVaultCredentials(token);
+            return new TokenCerberusCredentials(token);
         }
 
-        throw new VaultClientException("Cerberus token not found in the environment property: " + CERBERUS_TOKEN_ENV_PROPERTY);
+        throw new CerberusClientException("Cerberus token not found in the environment property: " + CERBERUS_TOKEN_ENV_PROPERTY);
     }
 }

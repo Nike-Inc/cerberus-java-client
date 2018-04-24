@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Nike, Inc.
+ * Copyright (c) 2018 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,15 +54,6 @@ public class ClientVersion {
     }
 
     public static String getClientHeaderValue() {
-
-        String vaultClientVersion = "unknown";
-
-        try {
-            vaultClientVersion = com.nike.vault.client.ClientVersion.getVersion();
-        } catch (Exception e) {
-            LOGGER.error("Failed to get Vault Client version", e);
-        }
-
-        return String.format("%s/%s JavaVaultClient/%s", HEADER_VALUE_PREFIX, getVersion(), vaultClientVersion);
+        return String.format("%s/%s", HEADER_VALUE_PREFIX, getVersion());
     }
 }

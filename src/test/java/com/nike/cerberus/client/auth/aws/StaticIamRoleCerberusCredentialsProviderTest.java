@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Nike, Inc.
+ * Copyright (c) 2018 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@ package com.nike.cerberus.client.auth.aws;
 
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
-import com.nike.vault.client.StaticVaultUrlResolver;
+import com.nike.cerberus.client.StaticCerberusUrlResolver;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class StaticIamRoleVaultCredentialsProviderTest {
+public class StaticIamRoleCerberusCredentialsProviderTest {
 
     private static final String ACCOUNT_ID = "1234";
     private static final String ROLE_NAME = "foo/base/bar";
@@ -33,8 +33,8 @@ public class StaticIamRoleVaultCredentialsProviderTest {
 
     @Test
     public void test_constructor_1() {
-        StaticIamRoleVaultCredentialsProvider provider = new StaticIamRoleVaultCredentialsProvider(
-              new StaticVaultUrlResolver("foo"),
+        StaticIamRoleCerberusCredentialsProvider provider = new StaticIamRoleCerberusCredentialsProvider(
+              new StaticCerberusUrlResolver("foo"),
               ACCOUNT_ID,
               ROLE_NAME,
               REGION_STRING
@@ -46,7 +46,7 @@ public class StaticIamRoleVaultCredentialsProviderTest {
 
     @Test
     public void test_constructor_2() {
-        StaticIamRoleVaultCredentialsProvider provider = new StaticIamRoleVaultCredentialsProvider(
+        StaticIamRoleCerberusCredentialsProvider provider = new StaticIamRoleCerberusCredentialsProvider(
                 "foo",
                 ACCOUNT_ID,
                 ROLE_NAME,
@@ -59,8 +59,8 @@ public class StaticIamRoleVaultCredentialsProviderTest {
 
     @Test
     public void test_constructor_3() {
-        StaticIamRoleVaultCredentialsProvider provider = new StaticIamRoleVaultCredentialsProvider(
-                new StaticVaultUrlResolver("foo"),
+        StaticIamRoleCerberusCredentialsProvider provider = new StaticIamRoleCerberusCredentialsProvider(
+                new StaticCerberusUrlResolver("foo"),
                 ACCOUNT_ID,
                 ROLE_NAME,
                 REGION
@@ -72,7 +72,7 @@ public class StaticIamRoleVaultCredentialsProviderTest {
 
     @Test
     public void test_constructor_4() {
-        StaticIamRoleVaultCredentialsProvider provider = new StaticIamRoleVaultCredentialsProvider(
+        StaticIamRoleCerberusCredentialsProvider provider = new StaticIamRoleCerberusCredentialsProvider(
                 "foo",
                 ACCOUNT_ID,
                 ROLE_NAME,
@@ -85,8 +85,8 @@ public class StaticIamRoleVaultCredentialsProviderTest {
 
     @Test
     public void test_constructor_5() {
-        StaticIamRoleVaultCredentialsProvider provider = new StaticIamRoleVaultCredentialsProvider(
-                new StaticVaultUrlResolver("foo"),
+        StaticIamRoleCerberusCredentialsProvider provider = new StaticIamRoleCerberusCredentialsProvider(
+                new StaticCerberusUrlResolver("foo"),
                 ROLE_ARN,
                 REGION_STRING
         );
@@ -97,7 +97,7 @@ public class StaticIamRoleVaultCredentialsProviderTest {
 
     @Test
     public void test_constructor_6() {
-        StaticIamRoleVaultCredentialsProvider provider = new StaticIamRoleVaultCredentialsProvider(
+        StaticIamRoleCerberusCredentialsProvider provider = new StaticIamRoleCerberusCredentialsProvider(
                 "foo",
                 ROLE_ARN,
                 REGION_STRING
@@ -109,8 +109,8 @@ public class StaticIamRoleVaultCredentialsProviderTest {
 
     @Test
     public void test_constructor_7() {
-        StaticIamRoleVaultCredentialsProvider provider = new StaticIamRoleVaultCredentialsProvider(
-                new StaticVaultUrlResolver("foo"),
+        StaticIamRoleCerberusCredentialsProvider provider = new StaticIamRoleCerberusCredentialsProvider(
+                new StaticCerberusUrlResolver("foo"),
                 ROLE_ARN,
                 REGION
         );
@@ -121,7 +121,7 @@ public class StaticIamRoleVaultCredentialsProviderTest {
 
     @Test
     public void test_constructor_8() {
-        StaticIamRoleVaultCredentialsProvider provider = new StaticIamRoleVaultCredentialsProvider(
+        StaticIamRoleCerberusCredentialsProvider provider = new StaticIamRoleCerberusCredentialsProvider(
                 "foo",
                 ROLE_ARN,
                 REGION
