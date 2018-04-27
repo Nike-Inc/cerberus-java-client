@@ -19,6 +19,10 @@ package com.nike.cerberus.client;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
@@ -27,20 +31,25 @@ import com.nike.cerberus.client.http.HttpMethod;
 import com.nike.cerberus.client.http.HttpStatus;
 import com.nike.cerberus.client.model.CerberusListResponse;
 import com.nike.cerberus.client.model.CerberusResponse;
+import com.nike.cerberus.client.model.SecureFileSummary;
+import com.nike.cerberus.client.model.CerberusListFilesResponse;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +60,8 @@ import java.util.Map;
 public class CerberusClient {
 
     public static final String SECRET_PATH_PREFIX = "v1/secret/";
+
+    public static final String SECURE_FILE_PATH_PREFIX = "v1/secure-file/";
 
     public static final MediaType DEFAULT_MEDIA_TYPE = MediaType.parse("application/json; charset=utf-8");
 
@@ -65,6 +76,13 @@ public class CerberusClient {
     private final Gson gson = new GsonBuilder()
             .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
             .disableHtmlEscaping()
+            .registerTypeAdapter(DateTime.class, new JsonDeserializer<DateTime>() {
+                @Override
+                public DateTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                        throws JsonParseException {
+                    return new DateTime(json.getAsString());
+                }
+            })
             .create();
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -155,6 +173,76 @@ public class CerberusClient {
     }
 
     /**
+     * Lists all files at the specified path.  Will return a {@link Map} that contains a paginated list
+     * of secure file summaries. If Cerberus returns an unexpected response code, a {@link CerberusServerException}
+     * will be thrown with the code and error details.  If an unexpected I/O error is
+     * encountered, a {@link CerberusClientException} will be thrown wrapping the underlying exception.
+     * <p>
+     * See https://www.github.com/Nike-Inc/cerberus-management-service/blob/master/API.md for details on what the
+     * list files operation returns.
+     * </p>
+     *
+     * @param path Path to the data
+     * @return List of metadata for secure files at the specified path
+     */
+    public List<SecureFileSummary> listFiles(final String path) {
+        final HttpUrl url = buildUrl("v1/secure-files/", path);
+        logger.debug("list: requestUrl={}, limit={}, offset={}", url);
+
+        final Response response = execute(url, HttpMethod.GET, null);
+
+        if (response.code() == HttpStatus.NOT_FOUND) {
+            response.close();
+            return new ArrayList<>();
+        } else if (response.code() != HttpStatus.OK) {
+            parseAndThrowApiErrorResponse(response);
+        }
+
+        final CerberusListFilesResponse fileSummaryResult = parseResponseBody(response, CerberusListFilesResponse.class);
+        return fileSummaryResult.getSecureFileSummaries();
+    }
+
+    /**
+     * Lists all files at the specified path.  Will return a {@link Map} that contains a paginated list
+     * of secure file summaries. If Cerberus returns an unexpected response code, a {@link CerberusServerException}
+     * will be thrown with the code and error details.  If an unexpected I/O error is
+     * encountered, a {@link CerberusClientException} will be thrown wrapping the underlying exception.
+     * <p>
+     * See https://www.github.com/Nike-Inc/cerberus-management-service/blob/master/API.md for details on what the
+     * list files operation returns.
+     * </p>
+     *
+     * @param path Path to the data
+     * @return List of metadata for secure files at the specified path
+     */
+    public List<SecureFileSummary> listFiles(final String path, Integer limit, Integer offset) {
+        final StringBuilder params = new StringBuilder();
+        if (limit != null) {
+            params.append("limit=");
+            params.append(limit);
+        }
+        if (offset != null) {
+            params.append("offset=");
+            params.append(offset);
+        }
+        final String fullPath = StringUtils.isEmpty(params) ? path : path + params.insert(0, "?");
+        final HttpUrl url = buildUrl("v1/secure-files", fullPath);
+        logger.debug("list: requestUrl={}, limit={}, offset={}", url, limit, offset);
+
+        final Response response = execute(url, HttpMethod.GET, null);
+
+        if (response.code() == HttpStatus.NOT_FOUND) {
+            response.close();
+            return new ArrayList<>();
+        } else if (response.code() != HttpStatus.OK) {
+            parseAndThrowApiErrorResponse(response);
+        }
+
+        final CerberusListFilesResponse fileSummaryResult = parseResponseBody(response, CerberusListFilesResponse.class);
+        return fileSummaryResult.getSecureFileSummaries();
+    }
+
+    /**
      * Read operation for a specified path.  Will return a {@link Map} of the data stored at the specified path.
      * If Cerberus returns an unexpected response code, a {@link CerberusServerException} will be thrown with the code
      * and error details.  If an unexpected I/O error is encountered, a {@link CerberusClientException} will be thrown
@@ -177,6 +265,28 @@ public class CerberusClient {
     }
 
     /**
+     * Read the binary contents of the file at the specified path. Will return a {@link Map} of the data stored at the specified path.
+     * If Cerberus returns an unexpected response code, a {@link CerberusServerException} will be thrown with the code
+     * and error details.  If an unexpected I/O error is encountered, a {@link CerberusClientException} will be thrown
+     * wrapping the underlying exception.
+     *
+     * @param path Path to the data
+     * @return File contents
+     */
+    public byte[] readFileAsBytes(final String path) {
+        final HttpUrl url = buildUrl(SECURE_FILE_PATH_PREFIX, path);
+        logger.debug("read: requestUrl={}", url);
+
+        final Response response = execute(url, HttpMethod.GET, null);
+
+        if (response.code() != HttpStatus.OK) {
+            parseAndThrowApiErrorResponse(response);
+        }
+
+        return responseBodyAsBytes(response);
+    }
+
+    /**
      * Write operation for a specified path and data set. If Cerberus returns an unexpected response code, a
      * {@link CerberusServerException} will be thrown with the code and error details.  If an unexpected I/O
      * error is encountered, a {@link CerberusClientException} will be thrown wrapping the underlying exception.
@@ -192,6 +302,58 @@ public class CerberusClient {
 
         if (response.code() != HttpStatus.NO_CONTENT) {
             parseAndThrowErrorResponse(response);
+        }
+    }
+
+    /**
+     * Write operation for file at specified path with given content. If Cerberus returns an unexpected response code, a
+     * {@link CerberusServerException} will be thrown with the code and error details.  If an unexpected I/O
+     * error is encountered, a {@link CerberusClientException} will be thrown wrapping the underlying exception.
+     *
+     * @param path     Path for where to store the data
+     * @param contents File contents to be stored
+     */
+    public void writeFile(final String path, final byte[] contents) {
+        final String fileName = StringUtils.substringAfterLast(path, "/");
+        final HttpUrl url = buildUrl(SECURE_FILE_PATH_PREFIX, path);
+        logger.debug("write: requestUrl={}", url);
+
+        RequestBody requestBody = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("file-content", fileName,
+                        RequestBody.create(MediaType.parse("application/octet-stream"), contents))
+                .build();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .headers(defaultHeaders)
+                .addHeader(HttpHeader.CERBERUS_TOKEN, credentialsProvider.getCredentials().getToken())
+                .addHeader(HttpHeader.ACCEPT, DEFAULT_MEDIA_TYPE.toString())
+                .post(requestBody)
+                .build();
+
+        final Response response = execute(request);
+
+        if (response.code() != HttpStatus.NO_CONTENT) {
+            parseAndThrowApiErrorResponse(response);
+        }
+    }
+
+    /**
+     * Delete operation for a file path.  If Cerberus returns an unexpected response code, a
+     * {@link CerberusServerException} will be thrown with the code and error details.  If an unexpected I/O
+     * error is encountered, a {@link CerberusClientException} will be thrown wrapping the underlying exception.
+     *
+     * @param path Path to file to be deleted
+     */
+    public void deleteFile(final String path) {
+        final HttpUrl url = buildUrl(SECURE_FILE_PATH_PREFIX, path);
+        logger.debug("delete: requestUrl={}", url);
+
+        final Response response = execute(url, HttpMethod.DELETE, null);
+
+        if (response.code() != HttpStatus.NO_CONTENT) {
+            parseAndThrowApiErrorResponse(response);
         }
     }
 
@@ -278,6 +440,25 @@ public class CerberusClient {
         try {
             Request request = buildRequest(url, method, requestBody);
 
+            return httpClient.newCall(request).execute();
+        } catch (IOException e) {
+            if (e instanceof SSLException
+                    && e.getMessage() != null
+                    && e.getMessage().contains("Unrecognized SSL message, plaintext connection?")) {
+                throw new CerberusClientException("I/O error while communicating with Cerberus. Unrecognized SSL message may be due to a web proxy e.g. AnyConnect", e);
+            } else {
+                throw new CerberusClientException("I/O error while communicating with Cerberus.", e);
+            }
+        }
+    }
+
+    /**
+     * Executes the HTTP request based on the input parameters.
+     *
+     * @return Response from the server
+     */
+    protected Response execute(final Request request) {
+        try {
             return httpClient.newCall(request).execute();
         } catch (IOException e) {
             if (e instanceof SSLException
@@ -378,6 +559,46 @@ public class CerberusClient {
     }
 
     /**
+     * Convenience method for parsing the errors from the HTTP response and throwing a {@link CerberusServerApiException}.
+     *
+     * @param response Response to parses the error details from
+     */
+    protected void parseAndThrowApiErrorResponse(final Response response) {
+        final String responseBodyStr = responseBodyAsString(response);
+        logger.debug("parseAndThrowApiErrorResponse: responseCode={}, requestUrl={}, response={}",
+                response.code(), response.request().url(), responseBodyStr);
+
+        try {
+            ApiErrorResponse errorResponse = gson.fromJson(responseBodyStr, ApiErrorResponse.class);
+
+            if (errorResponse != null) {
+                throw new CerberusServerApiException(response.code(), errorResponse.getErrorId(), errorResponse.getErrors());
+            } else {
+                throw new CerberusServerApiException(response.code(), null, new LinkedList<CerberusApiError>());
+            }
+        } catch (JsonSyntaxException e) {
+            logger.error("ERROR Failed to parse error message, response body received: {}", responseBodyStr);
+            throw new CerberusClientException("Error parsing the error response body from Cerberus, response code: " + response.code(), e);
+        }
+    }
+
+    /**
+     * POJO for representing error response body from Cerberus.
+     */
+    protected static class ApiErrorResponse {
+        private String errorId;
+        private List<CerberusApiError> errors;
+
+        public List<CerberusApiError> getErrors() {
+            return errors;
+        }
+
+        public String getErrorId() {
+            return errorId;
+        }
+    }
+
+    /**
      * POJO for representing error response body from Cerberus.
      */
     protected static class ErrorResponse {
@@ -394,6 +615,15 @@ public class CerberusClient {
         } catch (IOException ioe) {
             logger.debug("responseBodyAsString: response={}", gson.toJson(response));
             return "ERROR failed to print response body as str: " + ioe.getMessage();
+        }
+    }
+
+    protected byte[] responseBodyAsBytes(Response response) {
+        try {
+            return response.body().bytes();
+        } catch (IOException ioe) {
+            logger.debug("responseBodyAsString: response={}", gson.toJson(response));
+            throw new CerberusClientException("ERROR failed to print ");
         }
     }
 }
