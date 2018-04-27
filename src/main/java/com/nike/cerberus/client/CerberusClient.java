@@ -212,7 +212,9 @@ public class CerberusClient {
      * list files operation returns.
      * </p>
      *
-     * @param path Path to the data
+     * @param path   Path to the data
+     * @param limit  The max number of results to return
+     * @param offset The number offset of results to return
      * @return List of metadata for secure files at the specified path
      */
     public List<SecureFileSummary> listFiles(final String path, Integer limit, Integer offset) {
@@ -455,6 +457,7 @@ public class CerberusClient {
     /**
      * Executes the HTTP request based on the input parameters.
      *
+     * @param request The HTTP request to be made
      * @return Response from the server
      */
     protected Response execute(final Request request) {
