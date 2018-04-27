@@ -29,10 +29,9 @@ import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
 import com.nike.cerberus.client.http.HttpHeader;
 import com.nike.cerberus.client.http.HttpMethod;
 import com.nike.cerberus.client.http.HttpStatus;
+import com.nike.cerberus.client.model.CerberusListFilesResponse;
 import com.nike.cerberus.client.model.CerberusListResponse;
 import com.nike.cerberus.client.model.CerberusResponse;
-import com.nike.cerberus.client.model.SecureFileSummary;
-import com.nike.cerberus.client.model.CerberusListFilesResponse;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -49,7 +48,6 @@ import org.slf4j.LoggerFactory;
 import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -173,7 +171,7 @@ public class CerberusClient {
     }
 
     /**
-     * Lists all files at the specified path.  Will return a {@link Map} that contains a paginated list
+     * Lists all files at the specified path. Will return a {@link Map} that contains a paginated list
      * of secure file summaries. If Cerberus returns an unexpected response code, a {@link CerberusServerException}
      * will be thrown with the code and error details.  If an unexpected I/O error is
      * encountered, a {@link CerberusClientException} will be thrown wrapping the underlying exception.
@@ -183,23 +181,10 @@ public class CerberusClient {
      * </p>
      *
      * @param path Path to the data
-     * @return List of metadata for secure files at the specified path
+     * @return Cerberus response object that lists file metadata
      */
-    public List<SecureFileSummary> listFiles(final String path) {
-        final HttpUrl url = buildUrl("v1/secure-files/", path);
-        logger.debug("list: requestUrl={}, limit={}, offset={}", url);
-
-        final Response response = execute(url, HttpMethod.GET, null);
-
-        if (response.code() == HttpStatus.NOT_FOUND) {
-            response.close();
-            return new ArrayList<>();
-        } else if (response.code() != HttpStatus.OK) {
-            parseAndThrowApiErrorResponse(response);
-        }
-
-        final CerberusListFilesResponse fileSummaryResult = parseResponseBody(response, CerberusListFilesResponse.class);
-        return fileSummaryResult.getSecureFileSummaries();
+    public CerberusListFilesResponse listFiles(final String path) {
+        return listFiles(path, null, null);
     }
 
     /**
@@ -212,34 +197,22 @@ public class CerberusClient {
      * list files operation returns.
      * </p>
      *
-     * @param path Path to the data
+     * @param path   Path to the data
+     * @param limit  The max number of results to return
+     * @param offset The number offset of results to return
      * @return List of metadata for secure files at the specified path
      */
-    public List<SecureFileSummary> listFiles(final String path, Integer limit, Integer offset) {
-        final StringBuilder params = new StringBuilder();
-        if (limit != null) {
-            params.append("limit=");
-            params.append(limit);
-        }
-        if (offset != null) {
-            params.append("offset=");
-            params.append(offset);
-        }
-        final String fullPath = StringUtils.isEmpty(params) ? path : path + params.insert(0, "?");
-        final HttpUrl url = buildUrl("v1/secure-files", fullPath);
-        logger.debug("list: requestUrl={}, limit={}, offset={}", url, limit, offset);
+    public CerberusListFilesResponse listFiles(final String path, Integer limit, Integer offset) {
+        final HttpUrl url = buildUrl("v1/secure-files/", path, limit, offset);
 
+        logger.debug("list: requestUrl={}, limit={}, offset={}", url, limit, offset);
         final Response response = execute(url, HttpMethod.GET, null);
 
-        if (response.code() == HttpStatus.NOT_FOUND) {
-            response.close();
-            return new ArrayList<>();
-        } else if (response.code() != HttpStatus.OK) {
+        if (response.code() != HttpStatus.OK) {
             parseAndThrowApiErrorResponse(response);
         }
 
-        final CerberusListFilesResponse fileSummaryResult = parseResponseBody(response, CerberusListFilesResponse.class);
-        return fileSummaryResult.getSecureFileSummaries();
+        return parseResponseBody(response, CerberusListFilesResponse.class);
     }
 
     /**
@@ -265,7 +238,7 @@ public class CerberusClient {
     }
 
     /**
-     * Read the binary contents of the file at the specified path. Will return a {@link Map} of the data stored at the specified path.
+     * Read the binary contents of the file at the specified path. Will return the file contents stored at the specified path.
      * If Cerberus returns an unexpected response code, a {@link CerberusServerException} will be thrown with the code
      * and error details.  If an unexpected I/O error is encountered, a {@link CerberusClientException} will be thrown
      * wrapping the underlying exception.
@@ -416,6 +389,38 @@ public class CerberusClient {
      *
      * @param prefix Prefix between the environment URL and specified path
      * @param path   Path for the requested operation
+     * @param limit  Limit of items to return in a paginated call
+     * @param offset Number offset of items in a paginated call
+     * @return Full URL to execute a request against
+     */
+    protected HttpUrl buildUrl(final String prefix,
+                               final String path,
+                               final Integer limit,
+                               final Integer offset) {
+        String baseUrl = urlResolver.resolve();
+        baseUrl = StringUtils.appendIfMissing(baseUrl, "/");
+
+        final StringBuilder fullUrl = new StringBuilder()
+                .append(baseUrl)
+                .append(prefix)
+                .append(path);
+
+        if (limit != null && offset != null) {
+             fullUrl.append("?limit=").append(limit).append("&offset=").append(offset);
+        } else if (limit != null) {
+            fullUrl.append("?limit=").append(limit);
+        } else if (offset != null) {
+            fullUrl.append("?offset=").append(offset);
+        }
+
+        return HttpUrl.parse(fullUrl.toString());
+    }
+
+    /**
+     * Builds the full URL for preforming an operation against Cerberus.
+     *
+     * @param prefix Prefix between the environment URL and specified path
+     * @param path   Path for the requested operation
      * @return Full URL to execute a request against
      */
     protected HttpUrl buildUrl(final String prefix, final String path) {
@@ -455,6 +460,7 @@ public class CerberusClient {
     /**
      * Executes the HTTP request based on the input parameters.
      *
+     * @param request The HTTP request to be made
      * @return Response from the server
      */
     protected Response execute(final Request request) {

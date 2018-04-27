@@ -21,9 +21,9 @@ import com.nike.cerberus.client.CerberusClient;
 import com.nike.cerberus.client.CerberusServerApiException;
 import com.nike.cerberus.client.CerberusServerException;
 import com.nike.cerberus.client.DefaultCerberusUrlResolver;
+import com.nike.cerberus.client.model.CerberusListFilesResponse;
 import com.nike.cerberus.client.model.CerberusListResponse;
 import com.nike.cerberus.client.model.CerberusResponse;
-import com.nike.cerberus.client.model.SecureFileSummary;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -32,7 +32,6 @@ import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -199,8 +198,11 @@ public class CerberusClientTest {
         assertEquals(fileContentStr, resultContentStr);
 
         // list secrets
-        List<SecureFileSummary> fileSummaries = cerberusClient.listFiles(ROOT_SDB_PATH);
-        assertEquals(StringUtils.substringAfter(sdbFullSecretPath, "/"), fileSummaries.get(0).getPath());
+        CerberusListFilesResponse response = cerberusClient.listFiles(ROOT_SDB_PATH);
+        assertEquals(
+                StringUtils.substringAfter(sdbFullSecretPath, "/"),
+                response.getSecureFileSummaries().get(0).getPath()
+        );
 
         // update secret
         String newFileContentStr = "new file content string*";
