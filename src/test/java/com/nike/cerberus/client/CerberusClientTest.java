@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -257,6 +258,23 @@ public class CerberusClientTest {
         Request result = cerberusClient.buildRequest(HttpUrl.parse(cerberusUrl), "get", null);
 
         assertThat(result.headers().get(headerKey)).isEqualTo(headerValue);
+    }
+
+    @Test
+    public void buildUrl_properly_adds_limit_and_offset() {
+        String prefix = "prefix/";
+        String path = "path";
+        Integer limit = 1000;
+        Integer offset = 2;
+        HttpUrl urlWithNoLimitOrOffset = cerberusClient.buildUrl(prefix, path, null, null);
+        HttpUrl urlWithLimitAndNoOffset = cerberusClient.buildUrl(prefix, path, limit, null);
+        HttpUrl urlWithOffsetAndNoLimit = cerberusClient.buildUrl(prefix, path, null, offset);
+        HttpUrl urlWithLimitAndOffset = cerberusClient.buildUrl(prefix, path, limit, offset);
+
+        assertTrue(urlWithNoLimitOrOffset.toString().endsWith(String.format("%s%s", prefix, path)));
+        assertTrue(urlWithLimitAndNoOffset.toString().endsWith(String.format("%s%s?limit=%s", prefix, path, limit)));
+        assertTrue(urlWithOffsetAndNoLimit.toString().endsWith(String.format("%s%s?offset=%s", prefix, path, offset)));
+        assertTrue(urlWithLimitAndOffset.toString().endsWith(String.format("%s%s?limit=%s&offset=%s", prefix, path, limit, offset)));
     }
 
     private OkHttpClient buildHttpClient(int timeout, TimeUnit timeoutUnit) {

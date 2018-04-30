@@ -18,15 +18,19 @@ package com.nike.cerberus.client.auth.aws;
 
 import com.fieldju.commons.EnvUtils;
 import com.nike.cerberus.client.CerberusClient;
+import com.nike.cerberus.client.CerberusServerApiException;
 import com.nike.cerberus.client.CerberusServerException;
 import com.nike.cerberus.client.DefaultCerberusUrlResolver;
+import com.nike.cerberus.client.model.CerberusListFilesResponse;
 import com.nike.cerberus.client.model.CerberusListResponse;
 import com.nike.cerberus.client.model.CerberusResponse;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -167,6 +171,56 @@ public class CerberusClientTest {
         try {
             cerberusClient.read(sdbFullSecretPath);
         } catch (CerberusServerException cse) {
+            assertEquals(404, cse.getCode());
+        }
+    }
+
+    @Test
+    public void test_crud_for_files() {
+
+        staticIamRoleCerberusCredentialsProvider = new StaticIamRoleCerberusCredentialsProvider(
+                new DefaultCerberusUrlResolver(),
+                iam_principal_arn,
+                region);
+
+        cerberusClient = new CerberusClient(new DefaultCerberusUrlResolver(),
+                staticIamRoleCerberusCredentialsProvider, new OkHttpClient());
+
+        String fileContentStr = "file content string!";
+        byte[] fileContentArr = fileContentStr.getBytes(StandardCharsets.UTF_8);
+
+        // create file
+        cerberusClient.writeFile(sdbFullSecretPath, fileContentArr);
+
+        // read file
+        byte[] file = cerberusClient.readFileAsBytes(sdbFullSecretPath);
+        String resultContentStr = new String(file, StandardCharsets.UTF_8);
+        assertEquals(fileContentStr, resultContentStr);
+
+        // list files
+        CerberusListFilesResponse response = cerberusClient.listFiles(ROOT_SDB_PATH);
+        assertEquals(
+                StringUtils.substringAfter(sdbFullSecretPath, "/"),
+                response.getSecureFileSummaries().get(0).getPath()
+        );
+
+        // update file
+        String newFileContentStr = "new file content string*";
+        byte[] newFileContentArr = newFileContentStr.getBytes(StandardCharsets.UTF_8);
+        cerberusClient.writeFile(sdbFullSecretPath, newFileContentArr);
+
+        // confirm updated file data
+        byte[] updatedFileResult = cerberusClient.readFileAsBytes(sdbFullSecretPath);
+        String updatedFileStr = new String(updatedFileResult, StandardCharsets.UTF_8);
+        assertEquals(newFileContentStr, updatedFileStr);
+
+        // delete file
+        cerberusClient.deleteFile(sdbFullSecretPath);
+
+        // confirm file is deleted
+        try {
+            cerberusClient.readFileAsBytes(sdbFullSecretPath);
+        } catch (CerberusServerApiException cse) {
             assertEquals(404, cse.getCode());
         }
     }
