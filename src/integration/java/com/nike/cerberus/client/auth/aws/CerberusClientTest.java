@@ -189,35 +189,35 @@ public class CerberusClientTest {
         String fileContentStr = "file content string!";
         byte[] fileContentArr = fileContentStr.getBytes(StandardCharsets.UTF_8);
 
-        // create secret
+        // create file
         cerberusClient.writeFile(sdbFullSecretPath, fileContentArr);
 
-        // read secret
+        // read file
         byte[] file = cerberusClient.readFileAsBytes(sdbFullSecretPath);
         String resultContentStr = new String(file, StandardCharsets.UTF_8);
         assertEquals(fileContentStr, resultContentStr);
 
-        // list secrets
+        // list files
         CerberusListFilesResponse response = cerberusClient.listFiles(ROOT_SDB_PATH);
         assertEquals(
                 StringUtils.substringAfter(sdbFullSecretPath, "/"),
                 response.getSecureFileSummaries().get(0).getPath()
         );
 
-        // update secret
+        // update file
         String newFileContentStr = "new file content string*";
         byte[] newFileContentArr = newFileContentStr.getBytes(StandardCharsets.UTF_8);
         cerberusClient.writeFile(sdbFullSecretPath, newFileContentArr);
 
-        // confirm updated secret data
+        // confirm updated file data
         byte[] updatedFileResult = cerberusClient.readFileAsBytes(sdbFullSecretPath);
         String updatedFileStr = new String(updatedFileResult, StandardCharsets.UTF_8);
         assertEquals(newFileContentStr, updatedFileStr);
 
-        // delete secret
+        // delete file
         cerberusClient.deleteFile(sdbFullSecretPath);
 
-        // confirm secret is deleted
+        // confirm file is deleted
         try {
             cerberusClient.readFileAsBytes(sdbFullSecretPath);
         } catch (CerberusServerApiException cse) {
