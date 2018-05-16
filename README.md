@@ -69,7 +69,7 @@ Setup the CERBERUS_ADDR environmental variable and access Cerberus using Java:
 ``` java
     String invokedFunctionArn = context.getInvokedFunctionArn();
     CerberusClient cerberusClient = DefaultCerberusClientFactory.getClientForLambda(invokedFunctionArn);
-    Map<String,String> secrets = cerberusClient.read("/app/my-sdb-name").getData();
+    Map<String,String> secrets = cerberusClient.read("app/my-sdb-name").getData();
 ```
 
 ## More Configuration Options
@@ -96,6 +96,9 @@ This client uses a provider chain to resolve the token needed to interact with C
 See `DefaultCerberusCredentialsProviderChain.java` for full usage.
 
 If the client library is running on an EC2 instance, it will attempt to use the instance's assigned IAM role to authenticate 
+with Cerberus and obtain a token.
+
+If the client library is running in an ECS task, it will attempt to use the task's execution IAM role to authenticate 
 with Cerberus and obtain a token.
 
 The IAM role must be configured for access to Cerberus before this will work.

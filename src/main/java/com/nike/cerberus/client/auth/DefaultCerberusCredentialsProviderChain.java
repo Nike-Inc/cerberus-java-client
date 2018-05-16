@@ -18,6 +18,7 @@ package com.nike.cerberus.client.auth;
 
 import com.nike.cerberus.client.DefaultCerberusUrlResolver;
 import com.nike.cerberus.client.UrlResolver;
+import com.nike.cerberus.client.auth.aws.EcsTaskRoleCerberusCredentialsProvider;
 import com.nike.cerberus.client.auth.aws.InstanceRoleCerberusCredentialsProvider;
 import okhttp3.OkHttpClient;
 
@@ -51,7 +52,8 @@ public class DefaultCerberusCredentialsProviderChain extends CerberusCredentials
     public DefaultCerberusCredentialsProviderChain(UrlResolver urlResolver) {
         super(new EnvironmentCerberusCredentialsProvider(),
                 new SystemPropertyCerberusCredentialsProvider(),
-                new InstanceRoleCerberusCredentialsProvider(urlResolver));
+                new InstanceRoleCerberusCredentialsProvider(urlResolver),
+                new EcsTaskRoleCerberusCredentialsProvider(urlResolver));
     }
 
     /**
