@@ -69,7 +69,7 @@ Setup the CERBERUS_ADDR environmental variable and access Cerberus using Java:
 ``` java
     String invokedFunctionArn = context.getInvokedFunctionArn();
     CerberusClient cerberusClient = DefaultCerberusClientFactory.getClientForLambda(invokedFunctionArn);
-    Map<String,String> secrets = cerberusClient.read("app/my-sdb-name").getData();
+    Map<String,String> secrets = cerberusClient.read("/app/my-sdb-name").getData();
 ```
 
 ## More Configuration Options
