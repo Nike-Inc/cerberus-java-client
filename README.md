@@ -98,6 +98,9 @@ See `DefaultCerberusCredentialsProviderChain.java` for full usage.
 If the client library is running on an EC2 instance, it will attempt to use the instance's assigned IAM role to authenticate 
 with Cerberus and obtain a token.
 
+If the client library is running in an ECS task, it will attempt to use the task's execution IAM role to authenticate 
+with Cerberus and obtain a token.
+
 The IAM role must be configured for access to Cerberus before this will work.
 
 The following policy statement must also be assigned to the IAM role, so that the client can automatically decrypt the auth token from the Cerberus IAM auth endpoint:
