@@ -23,15 +23,23 @@ import com.nike.cerberus.client.CerberusClientException;
 import com.nike.cerberus.client.CerberusServerException;
 import com.nike.cerberus.client.DefaultCerberusUrlResolver;
 import com.nike.cerberus.client.UrlResolver;
+import okhttp3.Call;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import org.apache.http.client.CredentialsProvider;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 
+import static com.nike.cerberus.client.auth.aws.BaseAwsCredentialsProvider.DEFAULT_AUTH_RETRIES;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
@@ -39,6 +47,7 @@ public class BaseAwsCredentialsProviderTest extends BaseCredentialsProviderTest{
     public static final Region REGION = RegionUtils.getRegion("us-west-2");
     public static final String CERBERUS_TEST_ARN = "arn:aws:iam::123456789012:role/cerberus-test-role";
     public static final String ERROR_RESPONSE = "Error calling cerberus";
+    public static final String SUCCESS_RESPONSE = "{\"auth_data\": \"\"}";
 
     protected static final String MISSING_AUTH_DATA = "{}";
 
@@ -97,6 +106,50 @@ public class BaseAwsCredentialsProviderTest extends BaseCredentialsProviderTest{
         provider.getEncryptedAuthData(CERBERUS_TEST_ARN, REGION);
     }
 
+    @Test
+    public void test_that_getEncryptedAuthData_retries_on_500_errors() {
+        when(urlResolver.resolve()).thenReturn(cerberusUrl);
+
+        for (int i = 0; i < DEFAULT_AUTH_RETRIES - 1; i++) {
+            mockWebServer.enqueue(new MockResponse().setResponseCode(500).setBody(ERROR_RESPONSE));
+        }
+        mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody(SUCCESS_RESPONSE));
+
+        provider.getEncryptedAuthData(CERBERUS_TEST_ARN, REGION);
+    }
+
+    @Test
+    public void test_that_getEncryptedAuthData_retries_on_IOException_errors() throws IOException {
+        when(urlResolver.resolve()).thenReturn(cerberusUrl);
+
+        OkHttpClient httpClient = mock(OkHttpClient.class);
+        Call call = mock(Call.class);
+        when(call.execute()).thenThrow(new IOException());
+        when(httpClient.newCall(any(Request.class))).thenReturn(call);
+        TestAwsCredentialsProvider provider = new TestAwsCredentialsProvider(urlResolver, httpClient);
+
+        try {
+            provider.getEncryptedAuthData(CERBERUS_TEST_ARN, REGION);
+        } catch(CerberusClientException cce) {  // catch this error so that the remaining tests will run
+            // ensure that error is thrown because of mocked IOException
+            if ( !(cce.getCause() instanceof IOException) ) {
+                throw new AssertionError("Expected error cause to be IOException, but was " + cce.getCause().getClass());
+            }
+        }
+
+        verify(httpClient, times(DEFAULT_AUTH_RETRIES)).newCall(any(Request.class));
+    }
+
+    @Test
+    public void test_that_getEncryptedAuthData_does_not_retry_on_200() {
+        when(urlResolver.resolve()).thenReturn(cerberusUrl);
+
+        mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody(SUCCESS_RESPONSE));
+        mockWebServer.enqueue(new MockResponse().setResponseCode(500).setBody(ERROR_RESPONSE));
+
+        provider.getEncryptedAuthData(CERBERUS_TEST_ARN, REGION);
+    }
+
     class TestAwsCredentialsProvider extends BaseAwsCredentialsProvider {
         /**
          * Constructor to setup credentials provider using the specified
@@ -106,6 +159,10 @@ public class BaseAwsCredentialsProviderTest extends BaseCredentialsProviderTest{
          */
         public TestAwsCredentialsProvider(UrlResolver urlResolver) {
             super(urlResolver);
+        }
+
+        public TestAwsCredentialsProvider(UrlResolver urlResolver, OkHttpClient client) {
+            super(urlResolver, client);
         }
 
         @Override

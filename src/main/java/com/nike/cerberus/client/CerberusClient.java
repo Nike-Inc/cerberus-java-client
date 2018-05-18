@@ -51,6 +51,7 @@ import java.lang.reflect.Type;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Client for interacting with a Cerberus.
@@ -62,6 +63,10 @@ public class CerberusClient {
     public static final String SECURE_FILE_PATH_PREFIX = "v1/secure-file/";
 
     public static final MediaType DEFAULT_MEDIA_TYPE = MediaType.parse("application/json; charset=utf-8");
+
+    protected static final int DEFAULT_NUM_RETRIES = 3;
+
+    protected static final int DEFAULT_RETRY_INTERVAL_IN_MILLIS = 1000;
 
     private final CerberusCredentialsProvider credentialsProvider;
 
@@ -228,7 +233,7 @@ public class CerberusClient {
         final HttpUrl url = buildUrl(SECRET_PATH_PREFIX, path);
         logger.debug("read: requestUrl={}", url);
 
-        final Response response = execute(url, HttpMethod.GET, null);
+        final Response response = executeWithRetry(url, HttpMethod.GET, null, DEFAULT_NUM_RETRIES, DEFAULT_RETRY_INTERVAL_IN_MILLIS);
 
         if (response.code() != HttpStatus.OK) {
             parseAndThrowErrorResponse(response);
@@ -433,6 +438,32 @@ public class CerberusClient {
         return HttpUrl.parse(baseUrl + prefix + path);
     }
 
+    protected Response executeWithRetry(final HttpUrl url,
+                                        final String method,
+                                        final Object requestBody,
+                                        final int numRetries,
+                                        final int sleepIntervalInMillis) {
+        CerberusClientException exception = null;
+        Response response = null;
+        for(int retryNumber = 0; retryNumber < numRetries; retryNumber++) {
+            try {
+                response = execute(url, method, requestBody);
+                if (response.code() < 500) {
+                    return response;
+                }
+            } catch (CerberusClientException cce) {
+                exception = cce;
+            }
+            sleep(sleepIntervalInMillis);
+        }
+
+        if (exception != null) {
+            throw exception;
+        } else {
+            return response;
+        }
+    }
+
     /**
      * Executes the HTTP request based on the input parameters.
      *
@@ -630,6 +661,14 @@ public class CerberusClient {
         } catch (IOException ioe) {
             logger.debug("responseBodyAsString: response={}", gson.toJson(response));
             throw new CerberusClientException("ERROR failed to print ");
+        }
+    }
+
+    private void sleep(int milliseconds) {
+        try {
+            TimeUnit.MILLISECONDS.sleep(milliseconds);
+        } catch (InterruptedException ie) {
+            logger.warn("Sleep interval interrupted.", ie);
         }
     }
 }
