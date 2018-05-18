@@ -130,6 +130,9 @@ public class BaseAwsCredentialsProviderTest extends BaseCredentialsProviderTest{
 
         try {
             provider.getEncryptedAuthData(CERBERUS_TEST_ARN, REGION);
+
+            // code should not reach this point, throw an error if it does
+            throw new AssertionError("Expected CerberusClientException, but was not thrown");
         } catch(CerberusClientException cce) {  // catch this error so that the remaining tests will run
             // ensure that error is thrown because of mocked IOException
             if ( !(cce.getCause() instanceof IOException) ) {
