@@ -83,7 +83,7 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
 
     protected static final int DEFAULT_AUTH_RETRIES = 3;
 
-    protected static final int DEFAULT_RETRY_INTERVAL_IN_MILLIS = 1000;
+    protected static final int DEFAULT_RETRY_INTERVAL_IN_MILLIS = 200;
 
     private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
@@ -321,9 +321,10 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
                     return response;
                 }
             } catch (IOException ioe) {
+                LOGGER.debug(String.format("Failed to call %s %s. Retrying...", request.method(), request.url()), ioe);
                 exception = ioe;
             }
-            sleep(sleepIntervalInMillis);
+            sleep(sleepIntervalInMillis * (long) Math.pow(2, retryNumber));
         }
 
         if (exception != null) {
@@ -333,7 +334,7 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
         }
     }
 
-    private void sleep(int milliseconds) {
+    private void sleep(long milliseconds) {
         try {
             TimeUnit.MILLISECONDS.sleep(milliseconds);
         } catch (InterruptedException ie) {

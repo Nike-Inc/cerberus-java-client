@@ -66,7 +66,7 @@ public class CerberusClient {
 
     protected static final int DEFAULT_NUM_RETRIES = 3;
 
-    protected static final int DEFAULT_RETRY_INTERVAL_IN_MILLIS = 1000;
+    protected static final int DEFAULT_RETRY_INTERVAL_IN_MILLIS = 200;
 
     private final CerberusCredentialsProvider credentialsProvider;
 
@@ -452,9 +452,10 @@ public class CerberusClient {
                     return response;
                 }
             } catch (CerberusClientException cce) {
+                logger.debug(String.format("Failed to call %s %s. Retrying...", method, url), cce);
                 exception = cce;
             }
-            sleep(sleepIntervalInMillis);
+            sleep(sleepIntervalInMillis * (long) Math.pow(2, retryNumber));
         }
 
         if (exception != null) {
@@ -664,7 +665,7 @@ public class CerberusClient {
         }
     }
 
-    private void sleep(int milliseconds) {
+    private void sleep(long milliseconds) {
         try {
             TimeUnit.MILLISECONDS.sleep(milliseconds);
         } catch (InterruptedException ie) {
