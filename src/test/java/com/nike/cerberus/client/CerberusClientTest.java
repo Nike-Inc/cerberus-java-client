@@ -19,10 +19,9 @@ package com.nike.cerberus.client;
 import com.nike.cerberus.client.auth.DefaultCerberusCredentialsProviderChain;
 import com.nike.cerberus.client.auth.CerberusCredentials;
 import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
-import com.nike.cerberus.client.http.HttpStatus;
-import com.nike.cerberus.client.model.CerberusClientTokenResponse;
 import com.nike.cerberus.client.model.CerberusListResponse;
 import com.nike.cerberus.client.model.CerberusResponse;
+import okhttp3.Call;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -42,9 +41,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static com.nike.cerberus.client.CerberusClient.DEFAULT_NUM_RETRIES;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -136,6 +139,60 @@ public class CerberusClientTest {
     }
 
     @Test
+    public void read_does_not_retry_on_200() throws IOException {
+        mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody(getResponseJson("secret")));
+        mockWebServer.enqueue(new MockResponse().setResponseCode(500).setBody(getResponseJson("error")));
+
+        CerberusResponse cerberusResponse = cerberusClient.read("app/api-key");
+
+        assertThat(cerberusResponse).isNotNull();
+        assertThat(cerberusResponse.getData().containsKey("value")).isTrue();
+        assertThat(cerberusResponse.getData().get("value")).isEqualToIgnoringCase("world");
+    }
+
+    @Test
+    public void read_retries_on_500_errors() throws IOException {
+        for (int i = 0; i < DEFAULT_NUM_RETRIES - 1; i++) {
+            mockWebServer.enqueue(new MockResponse().setResponseCode(500).setBody(getResponseJson("error")));
+        }
+        mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody(getResponseJson("secret")));
+
+        CerberusResponse cerberusResponse = cerberusClient.read("app/api-key");
+
+        assertThat(cerberusResponse).isNotNull();
+        assertThat(cerberusResponse.getData().containsKey("value")).isTrue();
+        assertThat(cerberusResponse.getData().get("value")).isEqualToIgnoringCase("world");
+    }
+
+    @Test
+    public void read_retries_on_IOException() throws IOException {
+        UrlResolver urlResolver = mock(UrlResolver.class);
+        when(urlResolver.resolve()).thenReturn("http://localhost:" + mockWebServer.getPort());
+
+        OkHttpClient httpClient = mock(OkHttpClient.class);
+        Call call = mock(Call.class);
+        when(call.execute()).thenThrow(new IOException());
+        when(httpClient.newCall(any(Request.class))).thenReturn(call);
+        final CerberusCredentialsProvider cerberusCredentialsProvider = mock(CerberusCredentialsProvider.class);
+        when(cerberusCredentialsProvider.getCredentials()).thenReturn(new TestCerberusCredentials());
+
+        CerberusClient cerberusClient = new CerberusClient(urlResolver, cerberusCredentialsProvider, httpClient);
+        try {
+            cerberusClient.read("app/api-key");
+
+            // code should not reach this point, throw an error if it does
+            throw new AssertionError("Expected CerberusClientException, but was not thrown");
+        } catch(CerberusClientException cce) {  // catch this error so that the remaining tests will run
+            // ensure that error is thrown because of mocked IOException
+            if ( !(cce.getCause() instanceof IOException) ) {
+                throw new AssertionError("Expected error cause to be IOException, but was " + cce.getCause().getClass());
+            }
+        }
+
+        verify(httpClient, times(DEFAULT_NUM_RETRIES)).newCall(any(Request.class));
+    }
+
+    @Test
     public void read_throws_cerberus_server_exception_if_response_is_not_ok() {
         final MockResponse response = new MockResponse();
         response.setResponseCode(404);
@@ -156,7 +213,7 @@ public class CerberusClientTest {
         final String cerberusUrl = "http://localhost:" + serverSocket.getLocalPort();
         final CerberusCredentialsProvider cerberusCredentialsProvider = mock(CerberusCredentialsProvider.class);
         final OkHttpClient httpClient = buildHttpClient(1, TimeUnit.SECONDS);
-        cerberusClient = new CerberusClient(new StaticCerberusUrlResolver(cerberusUrl), cerberusCredentialsProvider, httpClient);
+        CerberusClient cerberusClient = new CerberusClient(new StaticCerberusUrlResolver(cerberusUrl), cerberusCredentialsProvider, httpClient);
 
         when(cerberusCredentialsProvider.getCredentials()).thenReturn(new TestCerberusCredentials());
 

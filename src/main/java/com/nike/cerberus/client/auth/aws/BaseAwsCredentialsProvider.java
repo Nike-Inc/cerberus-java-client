@@ -58,6 +58,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -79,6 +80,10 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
     public static final MediaType DEFAULT_MEDIA_TYPE = MediaType.parse("application/json; charset=utf-8");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseAwsCredentialsProvider.class);
+
+    protected static final int DEFAULT_AUTH_RETRIES = 3;
+
+    protected static final int DEFAULT_RETRY_INTERVAL_IN_MILLIS = 200;
 
     private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
@@ -250,7 +255,7 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
                     .addHeader(ClientVersion.CERBERUS_CLIENT_HEADER, cerberusJavaClientHeaderValue)
                     .method(HttpMethod.POST, buildCredentialsRequestBody(iamPrincipalArn, region));
 
-            Response response = httpClient.newCall(requestBuilder.build()).execute();
+            Response response = executeRequestWithRetry(requestBuilder.build(), DEFAULT_AUTH_RETRIES, DEFAULT_RETRY_INTERVAL_IN_MILLIS);
 
             if (response.code() != HttpStatus.OK) {
                 parseAndThrowErrorResponse(response.code(), response.body().string());
@@ -296,6 +301,45 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
         final String decryptedAuthData = new String(result.getPlaintext().array(), Charset.forName("UTF-8"));
 
         return gson.fromJson(decryptedAuthData, CerberusAuthResponse.class);
+    }
+
+    /**
+     * Executes an HTTP request and retries if a 500 level error is returned
+     * @param request                The request to execute
+     * @param numRetries             The maximum number of times to retry
+     * @param sleepIntervalInMillis  Time in milliseconds to sleep between retries. Zero for no sleep.
+     * @return Any HTTP response with status code below 500, or the last error response if only 500's are returned
+     * @throws IOException  If an IOException occurs during the last retry, then rethrow the error
+     */
+    protected Response executeRequestWithRetry(Request request, int numRetries, int sleepIntervalInMillis) throws IOException {
+        IOException exception = null;
+        Response response = null;
+        for(int retryNumber = 0; retryNumber < numRetries; retryNumber++) {
+            try {
+                response = httpClient.newCall(request).execute();
+                if (response.code() < 500) {
+                    return response;
+                }
+            } catch (IOException ioe) {
+                LOGGER.debug(String.format("Failed to call %s %s. Retrying...", request.method(), request.url()), ioe);
+                exception = ioe;
+            }
+            sleep(sleepIntervalInMillis * (long) Math.pow(2, retryNumber));
+        }
+
+        if (exception != null) {
+            throw exception;
+        } else {
+            return response;
+        }
+    }
+
+    private void sleep(long milliseconds) {
+        try {
+            TimeUnit.MILLISECONDS.sleep(milliseconds);
+        } catch (InterruptedException ie) {
+            LOGGER.warn("Sleep interval interrupted.", ie);
+        }
     }
 
     private RequestBody buildCredentialsRequestBody(final String iamPrincipalArn, Region region) {
