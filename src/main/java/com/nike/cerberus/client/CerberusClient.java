@@ -438,6 +438,15 @@ public class CerberusClient {
         return HttpUrl.parse(baseUrl + prefix + path);
     }
 
+    /**
+     * Executes an HTTP request and retries if a 500 level error is returned
+     * @param url                    Full URL to which to make the HTTP request
+     * @param method                 HTTP Method (e.g. GET, PUT, POST)
+     * @param requestBody            Body to add to the request. Nullable
+     * @param numRetries             Maximum number of times to retry on 500 failures
+     * @param sleepIntervalInMillis  Time in milliseconds to sleep between retries. Zero for no sleep
+     * @return Any HTTP response with status code below 500, or the last error response if only 500's are returned
+     */
     protected Response executeWithRetry(final HttpUrl url,
                                         final String method,
                                         final Object requestBody,

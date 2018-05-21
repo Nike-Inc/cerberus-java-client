@@ -304,11 +304,11 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
     }
 
     /**
-     * Executes a request and retries n times if an undesired status is returned
+     * Executes an HTTP request and retries if a 500 level error is returned
      * @param request                The request to execute
-     * @param numRetries             The number of times to retry
-     * @param sleepIntervalInMillis  Time in milliseconds to pause between retries
-     * @return The successful response returned upon executing the request
+     * @param numRetries             The maximum number of times to retry
+     * @param sleepIntervalInMillis  Time in milliseconds to sleep between retries. Zero for no sleep.
+     * @return Any HTTP response with status code below 500, or the last error response if only 500's are returned
      * @throws IOException  If an IOException occurs during the last retry, then rethrow the error
      */
     protected Response executeRequestWithRetry(Request request, int numRetries, int sleepIntervalInMillis) throws IOException {
