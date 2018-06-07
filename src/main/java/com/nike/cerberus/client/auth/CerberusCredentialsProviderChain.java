@@ -94,8 +94,9 @@ public class CerberusCredentialsProviderChain implements CerberusCredentialsProv
             } catch (Exception e) {
                 // The catch all is so that we don't break the chain of providers.
                 // If we do get an unexpected exception, we should at least log it for review.
-                String message = String.format("Unexpected error attempting to get credentials with provider: %s. %s",
-                        credentialsProvider.getClass().getName(), e.getMessage());
+                String message = String.format("Unexpected error attempting to get credentials with provider: %s. Reason: %s",
+                        credentialsProvider.getClass().getName(),
+                        e.getMessage());
                 LOGGER.debug(message, e);
 
                 logMessages.add(message);
