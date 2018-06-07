@@ -21,6 +21,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -74,6 +76,7 @@ public class CerberusCredentialsProviderChain implements CerberusCredentialsProv
             return lastUsedProvider.getCredentials();
         }
 
+        List<String> logMessages = new ArrayList<>();
         for (final CerberusCredentialsProvider credentialsProvider : credentialsProviderList) {
             try {
                 final CerberusCredentials credentials = credentialsProvider.getCredentials();
@@ -82,25 +85,28 @@ public class CerberusCredentialsProviderChain implements CerberusCredentialsProv
                     lastUsedProvider = credentialsProvider;
                     return credentials;
                 }
-            } catch (CerberusClientException sce) {
-                if(LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Failed to resolve Cerberus credentials with credential provider: {}. Moving " +
-                            "on to next provider", credentialsProvider.getClass().toString(), sce);
-                } else {
-                    LOGGER.info("Failed to resolve Cerberus credentials with credential provider: {} for reason: {} moving " +
-                            "on to next provider", credentialsProvider.getClass().toString(), sce.getMessage());
-                }
+            } catch (CerberusClientException cce) {
+                String message = String.format("Failed to resolve Cerberus credentials with credential provider: %s for" +
+                        "reason: %s moving on to next provider",
+                        credentialsProvider.getClass().toString(),
+                        cce.getMessage());
+                logMessages.add(message);
             } catch (Exception e) {
                 // The catch all is so that we don't break the chain of providers.
                 // If we do get an unexpected exception, we should at least log it for review.
-                LOGGER.warn("Unexpected error attempting to get credentials with provider: "
-                        + credentialsProvider.getClass().getName(), e);
+                String message = String.format("Unexpected error attempting to get credentials with provider: %s. %s",
+                        credentialsProvider.getClass().getName(), e.getMessage());
+                LOGGER.debug(message, e);
+
+                logMessages.add(message);
             }
         }
 
+        for (String message : logMessages) {
+            LOGGER.info(message);
+        }
         throw new CerberusClientException("Unable to find credentials from any provider in the specified chain!");
     }
-
 
     /**
      * Returns the reuse last provider flag.
