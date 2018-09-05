@@ -24,6 +24,7 @@ import com.google.gson.JsonSyntaxException;
 import com.nike.cerberus.client.CerberusClientException;
 import com.nike.cerberus.client.UrlResolver;
 import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
+import com.nike.cerberus.client.util.EnvironmentUtils;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -86,6 +87,10 @@ public class InstanceRoleCerberusCredentialsProvider extends BaseAwsCredentialsP
      */
     public InstanceRoleCerberusCredentialsProvider(UrlResolver urlResolver, String xCerberusClientOverride) {
         super(urlResolver, xCerberusClientOverride);
+    }
+
+    public boolean shouldRun() {
+        return EnvironmentUtils.isRunningInEc2();
     }
 
     /**
