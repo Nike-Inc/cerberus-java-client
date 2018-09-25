@@ -12,6 +12,7 @@ public class EnvironmentUtilsTest {
     @Test
     public void test_that_canGetSuccessfully_can_get_google_index() {
         assertTrue(EnvironmentUtils.canGetSuccessfully("http://www.google.com"));
+        assertTrue(EnvironmentUtils.canGetSuccessfully("http://www.google.com"));
     }
 
     @Test

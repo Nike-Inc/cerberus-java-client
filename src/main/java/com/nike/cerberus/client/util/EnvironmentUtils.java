@@ -6,12 +6,17 @@ import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * Simple Util for determining environment metadata
  */
 public class EnvironmentUtils {
+
+    private static final Map<String, Boolean> canGetSuccessfullyResults = new HashMap<>();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EnvironmentUtils.class);
 
@@ -40,7 +45,7 @@ public class EnvironmentUtils {
      * is available and returns a 2xx status code.  True means we are currently running on
      * an Ec2 instance.  This check should work both on Linux and Windows.
      */
-    public static boolean hasInstanceIdentity() {
+    private static boolean hasInstanceIdentity() {
         return canGetSuccessfully(INSTANCE_IDENTITY_DOCUMENT);
     }
 
@@ -52,23 +57,24 @@ public class EnvironmentUtils {
         return canGetSuccessfully(ECS_METADATA_ENDPOINT);
     }
 
-    protected static boolean canGetSuccessfully(String url) {
-        OkHttpClient httpClient = new OkHttpClient.Builder()
-                .connectTimeout(500, MILLISECONDS)
-                .readTimeout(500, MILLISECONDS)
-                .writeTimeout(500, MILLISECONDS)
-                .build();
+    static boolean canGetSuccessfully(String url) {
+        return canGetSuccessfullyResults.computeIfAbsent(url, theUrl -> {
+            OkHttpClient httpClient = new OkHttpClient.Builder()
+                    .connectTimeout(500, MILLISECONDS)
+                    .readTimeout(500, MILLISECONDS)
+                    .writeTimeout(500, MILLISECONDS)
+                    .build();
 
-        Request request = new Request.Builder().get().url(url).build();
+            Request request = new Request.Builder().get().url(theUrl).build();
 
-        try (Response response = httpClient.newCall(request).execute()) {
-            if (response.isSuccessful()) {
-                return true;
+            try (Response response = httpClient.newCall(request).execute()) {
+                if (response.isSuccessful()) {
+                    return true;
+                }
+            } catch (Exception e) {
+                LOGGER.debug("Error when trying to GET {}", theUrl, e);
             }
-        } catch (Exception e) {
-            LOGGER.debug("Error when trying to GET {}", url, e);
-        }
-        return false;
+            return false;
+        });
     }
-
 }
