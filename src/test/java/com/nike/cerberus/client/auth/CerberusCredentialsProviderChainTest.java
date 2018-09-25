@@ -26,6 +26,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -47,6 +48,8 @@ public class CerberusCredentialsProviderChainTest {
     public void setup() {
         credentialsProviderOne = mock(CerberusCredentialsProvider.class);
         credentialsProviderTwo = mock(CerberusCredentialsProvider.class);
+        when(credentialsProviderOne.shouldRun()).thenReturn(true);
+        when(credentialsProviderTwo.shouldRun()).thenReturn(true);
         credentialsProviderChain = new CerberusCredentialsProviderChain(credentialsProviderOne, credentialsProviderTwo);
     }
 
@@ -124,7 +127,7 @@ public class CerberusCredentialsProviderChainTest {
     }
 
     @Test
-    public void list_contstructor_set_provider_list() {
+    public void list_constructor_set_provider_list() {
         List<CerberusCredentialsProvider> list = new LinkedList<>();
         list.add(credentialsProviderOne);
         list.add(credentialsProviderTwo);
@@ -167,5 +170,17 @@ public class CerberusCredentialsProviderChainTest {
         public String getToken() {
             return TOKEN;
         }
+    }
+
+    @Test
+    public void test_that_if_a_provider_returns_false_for_should_run_it_is_not_ran() {
+        when(credentialsProviderOne.shouldRun()).thenReturn(false);
+        when(credentialsProviderTwo.getCredentials()).thenReturn(new TestCerberusCredentials());
+
+        CerberusCredentials credentials = credentialsProviderChain.getCredentials();
+
+        assertThat(credentials).isNotNull();
+
+        verify(credentialsProviderOne, never()).getCredentials();
     }
 }

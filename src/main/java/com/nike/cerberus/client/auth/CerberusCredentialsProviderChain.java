@@ -77,6 +77,11 @@ public class CerberusCredentialsProviderChain implements CerberusCredentialsProv
 
         List<String> logMessages = new ArrayList<>();
         for (final CerberusCredentialsProvider credentialsProvider : credentialsProviderList) {
+
+            if (! credentialsProvider.shouldRun()) {
+                continue;
+            }
+
             try {
                 final CerberusCredentials credentials = credentialsProvider.getCredentials();
 
