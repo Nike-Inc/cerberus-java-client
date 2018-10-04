@@ -20,6 +20,7 @@ import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.kms.AWSKMS;
 import com.amazonaws.services.kms.AWSKMSClient;
+import com.amazonaws.services.kms.model.AWSKMSException;
 import com.amazonaws.services.kms.model.DecryptRequest;
 import com.amazonaws.services.kms.model.DecryptResult;
 import com.amazonaws.util.Base64;
@@ -295,26 +296,34 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
             throw new CerberusClientException("Encrypted token not Base64 encoded", iae);
         }
 
-        final DecryptRequest request = new DecryptRequest().withCiphertextBlob(ByteBuffer.wrap(decodedToken));
-        final DecryptResult result = kmsClient.decrypt(request);
+        try {
+            final DecryptRequest request = new DecryptRequest().withCiphertextBlob(ByteBuffer.wrap(decodedToken));
+            final DecryptResult result = kmsClient.decrypt(request);
 
-        final String decryptedAuthData = new String(result.getPlaintext().array(), Charset.forName("UTF-8"));
+            final String decryptedAuthData = new String(result.getPlaintext().array(), Charset.forName("UTF-8"));
 
-        return gson.fromJson(decryptedAuthData, CerberusAuthResponse.class);
+            return gson.fromJson(decryptedAuthData, CerberusAuthResponse.class);
+
+        } catch (AWSKMSException e) {
+            new DefaultAWSCredentialsProviderChainDebugger().logExtraDebuggingIfAppropriate(e);
+            throw e;
+        }
     }
+
 
     /**
      * Executes an HTTP request and retries if a 500 level error is returned
-     * @param request                The request to execute
-     * @param numRetries             The maximum number of times to retry
-     * @param sleepIntervalInMillis  Time in milliseconds to sleep between retries. Zero for no sleep.
+     *
+     * @param request               The request to execute
+     * @param numRetries            The maximum number of times to retry
+     * @param sleepIntervalInMillis Time in milliseconds to sleep between retries. Zero for no sleep.
      * @return Any HTTP response with status code below 500, or the last error response if only 500's are returned
-     * @throws IOException  If an IOException occurs during the last retry, then rethrow the error
+     * @throws IOException If an IOException occurs during the last retry, then rethrow the error
      */
     protected Response executeRequestWithRetry(Request request, int numRetries, int sleepIntervalInMillis) throws IOException {
         IOException exception = null;
         Response response = null;
-        for(int retryNumber = 0; retryNumber < numRetries; retryNumber++) {
+        for (int retryNumber = 0; retryNumber < numRetries; retryNumber++) {
             try {
                 response = httpClient.newCall(request).execute();
                 if (response.code() < 500) {
