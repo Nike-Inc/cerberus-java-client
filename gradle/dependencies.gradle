@@ -49,6 +49,8 @@ dependencies {
     compile "com.amazonaws:aws-java-sdk-core:${AWS_SDK_VERSION}"
     compile "com.amazonaws:aws-java-sdk-kms:${AWS_SDK_VERSION}"
     compile "com.amazonaws:aws-java-sdk-lambda:${AWS_SDK_VERSION}"
+    compile "com.amazonaws:aws-java-sdk-sts:${AWS_SDK_VERSION}"
+
 
     testRuntime 'org.slf4j:slf4j-simple:1.7.25'
     testCompile "junit:junit:4.12"

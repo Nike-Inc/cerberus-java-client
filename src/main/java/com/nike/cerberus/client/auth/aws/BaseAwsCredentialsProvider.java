@@ -117,7 +117,7 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
         super();
         this.urlResolver = urlResolver;
         this.cerberusJavaClientHeaderValue = ClientVersion.getClientHeaderValue();
-        LOGGER.info("Cerberus URL={}", urlResolver.resolve());
+//        LOGGER.info("Cerberus URL={}", urlResolver.resolve());
 
         this.httpClient = createHttpClient();
 
@@ -351,7 +351,7 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
         }
     }
 
-    private RequestBody buildCredentialsRequestBody(final String iamPrincipalArn, Region region) {
+    protected RequestBody buildCredentialsRequestBody(final String iamPrincipalArn, Region region) {
         final String regionName = region == null ? Regions.getCurrentRegion().getName() : region.getName();
 
         final Map<String, String> credentials = new HashMap<>();
@@ -361,7 +361,7 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
         return RequestBody.create(DEFAULT_MEDIA_TYPE, gson.toJson(credentials));
     }
 
-    private void parseAndThrowErrorResponse(final int responseCode, final String responseBody) {
+    protected void parseAndThrowErrorResponse(final int responseCode, final String responseBody) {
         final String message = String.format("Failed to authenticate. Response: %s", responseBody);
         LOGGER.warn(message);
         List<String> errors = new ArrayList<>(1);
@@ -369,7 +369,11 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
         throw new CerberusServerException(responseCode, errors);
     }
 
-    private OkHttpClient createHttpClient() {
+    public UrlResolver getUrlResolver(){
+        return urlResolver;
+    }
+
+    public OkHttpClient createHttpClient() {
 
         List<ConnectionSpec> connectionSpecs = new ArrayList<>();
         connectionSpecs.add(TLS_1_2_OR_NEWER);
