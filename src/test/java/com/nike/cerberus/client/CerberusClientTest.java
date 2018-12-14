@@ -16,9 +16,9 @@
 
 package com.nike.cerberus.client;
 
-import com.nike.cerberus.client.auth.DefaultCerberusCredentialsProviderChain;
 import com.nike.cerberus.client.auth.CerberusCredentials;
 import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
+import com.nike.cerberus.client.auth.DefaultCerberusCredentialsProviderChain;
 import com.nike.cerberus.client.model.CerberusListResponse;
 import com.nike.cerberus.client.model.CerberusResponse;
 import okhttp3.Call;
@@ -59,14 +59,19 @@ public class CerberusClientTest {
 
     private MockWebServer mockWebServer;
 
+    private String cerberusUrl;
+
+    private String region;
+
     @Before
     public void setup() throws IOException {
         mockWebServer = new MockWebServer();
         mockWebServer.start();
-        final String cerberusUrl = "http://localhost:" + mockWebServer.getPort();
+        cerberusUrl = "http://localhost:" + mockWebServer.getPort();
+        region = "us-west-2";
         final CerberusCredentialsProvider cerberusCredentialsProvider = mock(CerberusCredentialsProvider.class);
         cerberusClient = CerberusClientFactory.getClient(
-                new StaticCerberusUrlResolver(cerberusUrl),
+                cerberusUrl,
                 cerberusCredentialsProvider);
 
         when(cerberusCredentialsProvider.getCredentials()).thenReturn(new TestCerberusCredentials());
@@ -78,28 +83,28 @@ public class CerberusClientTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void constructor_throws_error_if_no_resolver_set() {
+    public void constructor_throws_error_if_no_url_set() {
         new CerberusClient(null,
-                new DefaultCerberusCredentialsProviderChain(),
+                new DefaultCerberusCredentialsProviderChain(cerberusUrl, region),
                 new OkHttpClient.Builder().build());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void constructor_throws_error_if_no_creds_provider() {
-        new CerberusClient(new DefaultCerberusUrlResolver(),
+        new CerberusClient(cerberusUrl,
                 null,
                 new OkHttpClient.Builder().build());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void constructor_throws_error_if_no_http_client() {
-        new CerberusClient(new DefaultCerberusUrlResolver(),
-                new DefaultCerberusCredentialsProviderChain(),
+        new CerberusClient(cerberusUrl,
+                new DefaultCerberusCredentialsProviderChain(cerberusUrl, region),
                 null);
     }
 
     @Test
-    public void list_returns_map_of_keys_for_specified_path_if_exists() throws IOException {
+    public void list_returns_map_of_keys_for_specified_path_if_exists() {
         final MockResponse response = new MockResponse();
         response.setResponseCode(200);
         response.setBody(getResponseJson("list"));
@@ -113,7 +118,7 @@ public class CerberusClientTest {
     }
 
     @Test
-    public void list_returns_an_empty_response_if_cerberus_returns_a_404() throws IOException {
+    public void list_returns_an_empty_response_if_cerberus_returns_a_404() {
         final MockResponse response = new MockResponse();
         response.setResponseCode(404);
         mockWebServer.enqueue(response);
@@ -125,7 +130,7 @@ public class CerberusClientTest {
     }
 
     @Test
-    public void read_returns_map_of_data_for_specified_path_if_exists() throws IOException {
+    public void read_returns_map_of_data_for_specified_path_if_exists() {
         final MockResponse response = new MockResponse();
         response.setResponseCode(200);
         response.setBody(getResponseJson("secret"));
@@ -139,7 +144,7 @@ public class CerberusClientTest {
     }
 
     @Test
-    public void read_does_not_retry_on_200() throws IOException {
+    public void read_does_not_retry_on_200() {
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody(getResponseJson("secret")));
         mockWebServer.enqueue(new MockResponse().setResponseCode(500).setBody(getResponseJson("error")));
 
@@ -151,7 +156,7 @@ public class CerberusClientTest {
     }
 
     @Test
-    public void read_retries_on_500_errors() throws IOException {
+    public void read_retries_on_500_errors() {
         for (int i = 0; i < DEFAULT_NUM_RETRIES - 1; i++) {
             mockWebServer.enqueue(new MockResponse().setResponseCode(500).setBody(getResponseJson("error")));
         }
@@ -166,8 +171,8 @@ public class CerberusClientTest {
 
     @Test
     public void read_retries_on_IOException() throws IOException {
-        UrlResolver urlResolver = mock(UrlResolver.class);
-        when(urlResolver.resolve()).thenReturn("http://localhost:" + mockWebServer.getPort());
+
+        String url = "http://localhost:" + mockWebServer.getPort();
 
         OkHttpClient httpClient = mock(OkHttpClient.class);
         Call call = mock(Call.class);
@@ -176,7 +181,7 @@ public class CerberusClientTest {
         final CerberusCredentialsProvider cerberusCredentialsProvider = mock(CerberusCredentialsProvider.class);
         when(cerberusCredentialsProvider.getCredentials()).thenReturn(new TestCerberusCredentials());
 
-        CerberusClient cerberusClient = new CerberusClient(urlResolver, cerberusCredentialsProvider, httpClient);
+        CerberusClient cerberusClient = new CerberusClient(url, cerberusCredentialsProvider, httpClient);
         try {
             cerberusClient.read("app/api-key");
 
@@ -213,7 +218,7 @@ public class CerberusClientTest {
         final String cerberusUrl = "http://localhost:" + serverSocket.getLocalPort();
         final CerberusCredentialsProvider cerberusCredentialsProvider = mock(CerberusCredentialsProvider.class);
         final OkHttpClient httpClient = buildHttpClient(1, TimeUnit.SECONDS);
-        CerberusClient cerberusClient = new CerberusClient(new StaticCerberusUrlResolver(cerberusUrl), cerberusCredentialsProvider, httpClient);
+        CerberusClient cerberusClient = new CerberusClient(cerberusUrl, cerberusCredentialsProvider, httpClient);
 
         when(cerberusCredentialsProvider.getCredentials()).thenReturn(new TestCerberusCredentials());
 
@@ -254,7 +259,7 @@ public class CerberusClientTest {
         final String cerberusUrl = "http://localhost:" + serverSocket.getLocalPort();
         final CerberusCredentialsProvider cerberusCredentialsProvider = mock(CerberusCredentialsProvider.class);
         final OkHttpClient httpClient = buildHttpClient(1, TimeUnit.SECONDS);
-        cerberusClient = new CerberusClient(new StaticCerberusUrlResolver(cerberusUrl), cerberusCredentialsProvider, httpClient);
+        cerberusClient = new CerberusClient(cerberusUrl, cerberusCredentialsProvider, httpClient);
 
         when(cerberusCredentialsProvider.getCredentials()).thenReturn(new TestCerberusCredentials());
 
@@ -293,7 +298,7 @@ public class CerberusClientTest {
         final String cerberusUrl = "http://localhost:" + serverSocket.getLocalPort();
         final CerberusCredentialsProvider cerberusCredentialsProvider = mock(CerberusCredentialsProvider.class);
         final OkHttpClient httpClient = buildHttpClient(1, TimeUnit.SECONDS);
-        cerberusClient = new CerberusClient(new StaticCerberusUrlResolver(cerberusUrl), cerberusCredentialsProvider, httpClient);
+        cerberusClient = new CerberusClient(cerberusUrl, cerberusCredentialsProvider, httpClient);
 
         when(cerberusCredentialsProvider.getCredentials()).thenReturn(new TestCerberusCredentials());
 
@@ -301,7 +306,7 @@ public class CerberusClientTest {
     }
 
     @Test
-    public void build_request_includes_default_headers() throws IOException {
+    public void build_request_includes_default_headers() {
         final String headerKey = "headerKey";
         final String headerValue = "headerValue";
         final Headers headers = new Headers.Builder().add(headerKey, headerValue).build();
@@ -310,7 +315,7 @@ public class CerberusClientTest {
         final CerberusCredentialsProvider cerberusCredentialsProvider = mock(CerberusCredentialsProvider.class);
         when(cerberusCredentialsProvider.getCredentials()).thenReturn(new TestCerberusCredentials());
         final OkHttpClient httpClient = buildHttpClient(1, TimeUnit.SECONDS);
-        cerberusClient = new CerberusClient(new StaticCerberusUrlResolver(cerberusUrl), cerberusCredentialsProvider, httpClient, headers);
+        cerberusClient = new CerberusClient(cerberusUrl, cerberusCredentialsProvider, httpClient, headers);
 
         Request result = cerberusClient.buildRequest(HttpUrl.parse(cerberusUrl), "get", null);
 
