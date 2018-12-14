@@ -27,15 +27,9 @@ public class DefaultCerberusClientFactoryTest {
 
     @Test
     public void test_that_getClient_adds_client_version_as_a_default_header() {
-        CerberusClient result = DefaultCerberusClientFactory.getClient();
-        assertEquals(
-                ClientVersion.getClientHeaderValue(),
-                result.getDefaultHeaders().get(ClientVersion.CERBERUS_CLIENT_HEADER));
-    }
-
-    @Test
-    public void test_that_getClientForLambda_adds_client_version_as_a_default_header() {
-        CerberusClient result = DefaultCerberusClientFactory.getClientForLambda("arn:aws:lambda:us-west-2:000000000000:function:name:qualifier");
+        String region = "us-west-2";
+        String url = "url";
+        CerberusClient result = DefaultCerberusClientFactory.getClient(url, region);
         assertEquals(
                 ClientVersion.getClientHeaderValue(),
                 result.getDefaultHeaders().get(ClientVersion.CERBERUS_CLIENT_HEADER));

@@ -17,7 +17,6 @@
 package com.nike.cerberus.client;
 
 import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
-import com.nike.cerberus.client.auth.DefaultCerberusCredentialsProviderChain;
 import okhttp3.ConnectionSpec;
 import okhttp3.Dispatcher;
 import okhttp3.Headers;
@@ -57,55 +56,28 @@ public class CerberusClientFactory {
     private static final Map<String, String> DEFAULT_HEADERS = new HashMap<>();
 
     /**
-     * Basic factory method that will build a Cerberus client that
-     * looks up the Cerberus URL from one of the following places:
-     * <ul>
-     * <li>Environment Variable - <code>CERBERUS_ADDR</code></li>
-     * <li>Java System Property - <code>cerberus.addr</code></li>
-     * </ul>
-     * Default recommended credential provider and http client are used.
-     *
-     * @return Cerberus client
-     */
-    public static CerberusClient getClient() {
-        return getClient(new DefaultCerberusUrlResolver(),
-                new DefaultCerberusCredentialsProviderChain(),
-                new HashMap<String, String>());
-    }
-
-    /**
-     * Factory method allows setting of the Cerberus URL resolver, but will use
-     * the default recommended credentials provider chain and http client.
-     *
-     * @param cerberusUrlResolver URL resolver for Cerberus
-     * @return Cerberus client
-     */
-    public static CerberusClient getClient(final UrlResolver cerberusUrlResolver) {
-        return getClient(cerberusUrlResolver, new DefaultCerberusCredentialsProviderChain(), DEFAULT_HEADERS);
-    }
-
-    /**
      * Factory method that allows for a user defined Cerberus URL resolver and credentials provider.
      *
-     * @param cerberusUrlResolver         URL resolver for Cerberus
+     * @param cerberusUrl                 URL for Cerberus
      * @param cerberusCredentialsProvider Credential provider for acquiring a token for interacting with Cerberus
      * @return Cerberus client
      */
-    public static CerberusClient getClient(final UrlResolver cerberusUrlResolver,
+    public static CerberusClient getClient(final String cerberusUrl,
                                            final CerberusCredentialsProvider cerberusCredentialsProvider) {
-        return getClient(cerberusUrlResolver, cerberusCredentialsProvider, DEFAULT_HEADERS);
+
+        return getClient(cerberusUrl, cerberusCredentialsProvider, DEFAULT_HEADERS);
     }
 
     /**
      * Factory method that allows a user to define default HTTP defaultHeaders to be added to every HTTP request made from the
      * CerberusClient. The user can also define their Cerberus URL resolver and credentials provider.
      *
-     * @param cerberusUrlResolver         URL resolver for Cerberus
+     * @param cerberusUrl                 URL for Cerberus
      * @param cerberusCredentialsProvider Credential provider for acquiring a token for interacting with Cerberus
      * @param defaultHeaders              Map of default header names and values to add to every HTTP request
      * @return Cerberus client
      */
-    public static CerberusClient getClient(final UrlResolver cerberusUrlResolver,
+    public static CerberusClient getClient(final String cerberusUrl,
                                            final CerberusCredentialsProvider cerberusCredentialsProvider,
                                            final Map<String, String> defaultHeaders) {
 
@@ -115,7 +87,7 @@ public class CerberusClientFactory {
         connectionSpecs.add(CLEARTEXT);
 
         return getClient(
-                cerberusUrlResolver,
+                cerberusUrl,
                 cerberusCredentialsProvider,
                 defaultHeaders,
                 new OkHttpClient.Builder()
@@ -130,15 +102,16 @@ public class CerberusClientFactory {
     /**
      * Factory method that allows for a user defined Cerberus URL resolver and credentials provider.
      *
-     * @param cerberusUrlResolver         URL resolver for Cerberus
+     * @param cerberusUrl                 URL for Cerberus
      * @param cerberusCredentialsProvider Credential provider for acquiring a token for interacting with Cerberus
-     * @param maxRequestsPerHost       Max Requests per Host used by the dispatcher
+     * @param maxRequestsPerHost          Max Requests per Host used by the dispatcher
      * @return Cerberus admin client
      */
-    public static CerberusClient getClient(final UrlResolver cerberusUrlResolver,
+    public static CerberusClient getClient(final String cerberusUrl,
                                            final CerberusCredentialsProvider cerberusCredentialsProvider,
                                            final int maxRequestsPerHost) {
-        return getClient(cerberusUrlResolver,
+
+        return getClient(cerberusUrl,
                 cerberusCredentialsProvider,
                 DEFAULT_MAX_REQUESTS,
                 maxRequestsPerHost,
@@ -151,16 +124,17 @@ public class CerberusClientFactory {
     /**
      * Factory method that allows a user to define the OkHttpClient to be used.
      *
-     * @param cerberusUrlResolver         URL resolver for Cerberus
+     * @param cerberusUrl                 URL for Cerberus
      * @param cerberusCredentialsProvider Credential provider for acquiring a token for interacting with Cerberus
      * @param defaultHeaders              Map of default header names and values to add to every HTTP request
      * @param httpClient
      * @return Cerberus client
      */
-    public static CerberusClient getClient(final UrlResolver cerberusUrlResolver,
+    public static CerberusClient getClient(final String cerberusUrl,
                                            final CerberusCredentialsProvider cerberusCredentialsProvider,
                                            final Map<String, String> defaultHeaders,
                                            final OkHttpClient httpClient) {
+
         if (defaultHeaders == null) {
             throw new IllegalArgumentException("Default headers cannot be null.");
         }
@@ -170,7 +144,7 @@ public class CerberusClientFactory {
             headers.add(header.getKey(), header.getValue());
         }
 
-        return new CerberusClient(cerberusUrlResolver,
+        return new CerberusClient(cerberusUrl,
                 cerberusCredentialsProvider,
                 httpClient,
                 headers.build());
@@ -179,17 +153,18 @@ public class CerberusClientFactory {
     /**
      * Factory method that allows the user to completely configure the CerberusClient.
      *
-     * @param cerberusUrlResolver         URL resolver for Cerberus
+     * @param cerberusUrl                 URL for Cerberus
      * @param cerberusCredentialsProvider Credential provider for acquiring a token for interacting with Cerberus
-     * @param maxRequestsPerHost       Max Requests per Host used by the dispatcher
-     * @param defaultHeaders           Map of default header names and values to add to every HTTP request
+     * @param maxRequestsPerHost          Max Requests per Host used by the dispatcher
+     * @param defaultHeaders              Map of default header names and values to add to every HTTP request
      * @return Cerberus admin client
      */
-    public static CerberusClient getClient(final UrlResolver cerberusUrlResolver,
+    public static CerberusClient getClient(final String cerberusUrl,
                                            final CerberusCredentialsProvider cerberusCredentialsProvider,
                                            final int maxRequestsPerHost,
                                            final Map<String, String> defaultHeaders) {
-        return getClient(cerberusUrlResolver,
+
+        return getClient(cerberusUrl,
                 cerberusCredentialsProvider,
                 DEFAULT_MAX_REQUESTS,
                 maxRequestsPerHost,
@@ -202,7 +177,7 @@ public class CerberusClientFactory {
     /**
      * Factory method that allows the user to completely configure the CerberusClient.
      *
-     * @param cerberusUrlResolver         URL resolver for Cerberus
+     * @param cerberusUrl                 URL for Cerberus
      * @param cerberusCredentialsProvider Credential provider for acquiring a token for interacting with Cerberus
      * @param maxRequests                 Max HTTP Requests allowed in-flight
      * @param maxRequestsPerHost          Max HTTP Requests per Host
@@ -212,7 +187,7 @@ public class CerberusClientFactory {
      * @param defaultHeaders              Map of default header names and values to add to every HTTP request
      * @return Cerberus admin client
      */
-    public static CerberusClient getClient(final UrlResolver cerberusUrlResolver,
+    public static CerberusClient getClient(final String cerberusUrl,
                                            final CerberusCredentialsProvider cerberusCredentialsProvider,
                                            final int maxRequests,
                                            final int maxRequestsPerHost,
@@ -220,6 +195,7 @@ public class CerberusClientFactory {
                                            final int readTimeoutMillis,
                                            final int writeTimeoutMillis,
                                            final Map<String, String> defaultHeaders) {
+
         if (defaultHeaders == null) {
             throw new IllegalArgumentException("Default headers cannot be null.");
         }
@@ -239,7 +215,7 @@ public class CerberusClientFactory {
             headers.add(header.getKey(), header.getValue());
         }
 
-        return new CerberusClient(cerberusUrlResolver,
+        return new CerberusClient(cerberusUrl,
                 cerberusCredentialsProvider,
                 new OkHttpClient.Builder()
                         .connectTimeout(connectTimeoutMillis, DEFAULT_TIMEOUT_UNIT)
