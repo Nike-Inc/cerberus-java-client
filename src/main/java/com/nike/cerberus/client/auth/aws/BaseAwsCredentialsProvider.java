@@ -31,7 +31,6 @@ import com.google.gson.reflect.TypeToken;
 import com.nike.cerberus.client.CerberusClientException;
 import com.nike.cerberus.client.CerberusServerException;
 import com.nike.cerberus.client.ClientVersion;
-import com.nike.cerberus.client.UrlResolver;
 import com.nike.cerberus.client.auth.CerberusCredentials;
 import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
 import com.nike.cerberus.client.auth.TokenCerberusCredentials;
@@ -66,7 +65,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import static com.nike.cerberus.client.CerberusClientFactory.DEFAULT_TIMEOUT;
 import static com.nike.cerberus.client.CerberusClientFactory.DEFAULT_TIMEOUT_UNIT;
 import static com.nike.cerberus.client.CerberusClientFactory.TLS_1_2_OR_NEWER;
-import static com.nike.cerberus.client.auth.aws.StaticIamRoleCerberusCredentialsProvider.IAM_ROLE_ARN_FORMAT;
 import static okhttp3.ConnectionSpec.CLEARTEXT;
 
 /**
@@ -79,6 +77,8 @@ import static okhttp3.ConnectionSpec.CLEARTEXT;
 public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsProvider {
 
     public static final MediaType DEFAULT_MEDIA_TYPE = MediaType.parse("application/json; charset=utf-8");
+
+    public static final String IAM_ROLE_ARN_FORMAT = "arn:aws:iam::%s:role/%s";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseAwsCredentialsProvider.class);
 
@@ -101,56 +101,54 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
 
     protected volatile DateTime expireDateTime = DateTime.now().minus(paddingTimeInSeconds);
 
-    private final UrlResolver urlResolver;
+    protected final String cerberusUrl;
 
     private final String cerberusJavaClientHeaderValue;
 
     private final OkHttpClient httpClient;
 
     /**
-     * Constructor to setup credentials provider using the specified
-     * implementation of {@link UrlResolver}
+     * Constructor to setup credentials provider
      *
-     * @param urlResolver Resolver for resolving the Cerberus URL
+     * @param cerberusUrl Cerberus URL
      */
-    public BaseAwsCredentialsProvider(UrlResolver urlResolver) {
+    public BaseAwsCredentialsProvider(String cerberusUrl) {
         super();
-        this.urlResolver = urlResolver;
+        this.cerberusUrl = cerberusUrl;
         this.cerberusJavaClientHeaderValue = ClientVersion.getClientHeaderValue();
-//        LOGGER.info("Cerberus URL={}", urlResolver.resolve());
+        LOGGER.info("Cerberus URL={}", this.cerberusUrl);
 
         this.httpClient = createHttpClient();
 
     }
 
     /**
-     * Constructor to setup credentials provider using the specified
-     * implementation of {@link UrlResolver}
+     * Constructor to setup credentials provider
      *
-     * @param urlResolver             Resolver for resolving the Cerberus URL
+     * @param cerberusUrl             Cerberus URL
      * @param xCerberusClientOverride Overrides the default header value for the 'X-Cerberus-Client' header
      */
-    public BaseAwsCredentialsProvider(UrlResolver urlResolver, String xCerberusClientOverride) {
+    public BaseAwsCredentialsProvider(String cerberusUrl, String xCerberusClientOverride) {
         super();
-        this.urlResolver = urlResolver;
+        this.cerberusUrl = cerberusUrl;
         this.cerberusJavaClientHeaderValue = xCerberusClientOverride;
-        LOGGER.info("Cerberus URL={}", urlResolver.resolve());
+        LOGGER.info("Cerberus URL={}", this.cerberusUrl);
 
         this.httpClient = createHttpClient();
     }
 
     /**
      * Constructor to setup credentials provider using the specified
-     * implementation of {@link UrlResolver} and {@link OkHttpClient}
+     * implementation of {@link OkHttpClient}
      *
-     * @param urlResolver Resolver for resolving the Cerberus URL
+     * @param cerberusUrl Cerberus URL
      * @param httpClient  the client to use for auth
      */
-    public BaseAwsCredentialsProvider(UrlResolver urlResolver, OkHttpClient httpClient) {
+    public BaseAwsCredentialsProvider(String cerberusUrl, OkHttpClient httpClient) {
         super();
-        this.urlResolver = urlResolver;
+        this.cerberusUrl = cerberusUrl;
         this.cerberusJavaClientHeaderValue = ClientVersion.getClientHeaderValue();
-        LOGGER.info("Cerberus URL={}", urlResolver.resolve());
+        LOGGER.info("Cerberus URL={}", this.cerberusUrl);
 
         this.httpClient = httpClient;
     }
@@ -220,6 +218,7 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
      * @param region          AWS Region used in auth with cerberus
      */
     protected void getAndSetToken(final String iamPrincipalArn, final Region region) {
+
         final AWSKMSClient kmsClient = new AWSKMSClient();
         kmsClient.setRegion(region);
 
@@ -240,17 +239,16 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
      * @return Base64 and encrypted token
      */
     protected String getEncryptedAuthData(final String iamPrincipalArn, Region region) {
-        final String url = urlResolver.resolve();
 
-        if (StringUtils.isBlank(url)) {
+        if (StringUtils.isBlank(cerberusUrl)) {
             throw new CerberusClientException("Unable to find the Cerberus URL.");
         }
 
         LOGGER.info(String.format("Attempting to authenticate with AWS IAM principal ARN [%s] against [%s]",
-                iamPrincipalArn, url));
+                iamPrincipalArn, cerberusUrl));
 
         try {
-            Request.Builder requestBuilder = new Request.Builder().url(url + "/v2/auth/iam-principal")
+            Request.Builder requestBuilder = new Request.Builder().url(cerberusUrl + "/v2/auth/iam-principal")
                     .addHeader(HttpHeader.ACCEPT, DEFAULT_MEDIA_TYPE.toString())
                     .addHeader(HttpHeader.CONTENT_TYPE, DEFAULT_MEDIA_TYPE.toString())
                     .addHeader(ClientVersion.CERBERUS_CLIENT_HEADER, cerberusJavaClientHeaderValue)
@@ -269,7 +267,7 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
 
             if (authData.containsKey(key)) {
                 LOGGER.info(String.format("Authentication successful with AWS IAM principal ARN [%s] against [%s]",
-                        iamPrincipalArn, url));
+                        iamPrincipalArn, cerberusUrl));
                 return authData.get(key);
             } else {
                 throw new CerberusClientException("Success response from IAM role authenticate endpoint missing auth data!");
@@ -369,8 +367,8 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
         throw new CerberusServerException(responseCode, errors);
     }
 
-    public UrlResolver getUrlResolver(){
-        return urlResolver;
+    public String getCerberusUrl(){
+        return cerberusUrl;
     }
 
     public OkHttpClient createHttpClient() {

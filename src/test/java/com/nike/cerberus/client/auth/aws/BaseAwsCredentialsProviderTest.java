@@ -21,14 +21,11 @@ import com.amazonaws.regions.RegionUtils;
 import com.amazonaws.services.kms.AWSKMSClient;
 import com.nike.cerberus.client.CerberusClientException;
 import com.nike.cerberus.client.CerberusServerException;
-import com.nike.cerberus.client.DefaultCerberusUrlResolver;
-import com.nike.cerberus.client.UrlResolver;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,7 +33,6 @@ import java.io.IOException;
 
 import static com.nike.cerberus.client.auth.aws.BaseAwsCredentialsProvider.DEFAULT_AUTH_RETRIES;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mock;
@@ -52,30 +48,23 @@ public class BaseAwsCredentialsProviderTest extends BaseCredentialsProviderTest{
 
 
     private BaseAwsCredentialsProvider provider;
-    private UrlResolver urlResolver;
     private String cerberusUrl;
     private MockWebServer mockWebServer;
 
     @Before
     public void setUp() throws Exception {
-        urlResolver = mock(UrlResolver.class);
-
-        provider = new TestAwsCredentialsProvider(urlResolver);
 
         mockWebServer = new MockWebServer();
         mockWebServer.start();
 
         cerberusUrl = "http://localhost:" + mockWebServer.getPort();
-    }
 
-    @After
-    public void tearDown() throws Exception {
-        reset(urlResolver);
+        provider = new TestAwsCredentialsProvider(cerberusUrl);
     }
 
     @Test(expected = CerberusClientException.class)
-    public void getEncryptedAuthData_blank_url_throws_exception() throws Exception {
-        when(urlResolver.resolve()).thenReturn("");
+    public void getEncryptedAuthData_blank_url_throws_exception() {
+        cerberusUrl = "";
 
         provider.getEncryptedAuthData(CERBERUS_TEST_ARN, REGION);
     }
@@ -86,20 +75,17 @@ public class BaseAwsCredentialsProviderTest extends BaseCredentialsProviderTest{
     }
 
     @Test(expected = CerberusServerException.class)
-    public void getEncryptedAuthData_throws_exception_on_bad_response_code() throws IOException {
-        when(urlResolver.resolve()).thenReturn(cerberusUrl);
+    public void getEncryptedAuthData_throws_exception_on_bad_response_code() {
 
-        System.setProperty(DefaultCerberusUrlResolver.CERBERUS_ADDR_SYS_PROPERTY, cerberusUrl);
+
         mockWebServer.enqueue(new MockResponse().setResponseCode(400).setBody(ERROR_RESPONSE));
 
         provider.getEncryptedAuthData(CERBERUS_TEST_ARN, REGION);
     }
 
     @Test(expected = CerberusClientException.class)
-    public void getEncryptedAuthData_throws_exception_on_missing_auth_data() throws IOException {
-        when(urlResolver.resolve()).thenReturn(cerberusUrl);
+    public void getEncryptedAuthData_throws_exception_on_missing_auth_data() {
 
-        System.setProperty(DefaultCerberusUrlResolver.CERBERUS_ADDR_SYS_PROPERTY, cerberusUrl);
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody(MISSING_AUTH_DATA));
 
         provider.getEncryptedAuthData(CERBERUS_TEST_ARN, REGION);
@@ -107,7 +93,6 @@ public class BaseAwsCredentialsProviderTest extends BaseCredentialsProviderTest{
 
     @Test
     public void test_that_getEncryptedAuthData_retries_on_500_errors() {
-        when(urlResolver.resolve()).thenReturn(cerberusUrl);
 
         for (int i = 0; i < DEFAULT_AUTH_RETRIES - 1; i++) {
             mockWebServer.enqueue(new MockResponse().setResponseCode(500).setBody(ERROR_RESPONSE));
@@ -119,13 +104,12 @@ public class BaseAwsCredentialsProviderTest extends BaseCredentialsProviderTest{
 
     @Test
     public void test_that_getEncryptedAuthData_retries_on_IOException_errors() throws IOException {
-        when(urlResolver.resolve()).thenReturn(cerberusUrl);
 
         OkHttpClient httpClient = mock(OkHttpClient.class);
         Call call = mock(Call.class);
         when(call.execute()).thenThrow(new IOException());
         when(httpClient.newCall(any(Request.class))).thenReturn(call);
-        TestAwsCredentialsProvider provider = new TestAwsCredentialsProvider(urlResolver, httpClient);
+        TestAwsCredentialsProvider provider = new TestAwsCredentialsProvider(cerberusUrl, httpClient);
 
         try {
             provider.getEncryptedAuthData(CERBERUS_TEST_ARN, REGION);
@@ -144,7 +128,6 @@ public class BaseAwsCredentialsProviderTest extends BaseCredentialsProviderTest{
 
     @Test
     public void test_that_getEncryptedAuthData_does_not_retry_on_200() {
-        when(urlResolver.resolve()).thenReturn(cerberusUrl);
 
         mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody(SUCCESS_RESPONSE));
         mockWebServer.enqueue(new MockResponse().setResponseCode(500).setBody(ERROR_RESPONSE));
@@ -154,17 +137,16 @@ public class BaseAwsCredentialsProviderTest extends BaseCredentialsProviderTest{
 
     class TestAwsCredentialsProvider extends BaseAwsCredentialsProvider {
         /**
-         * Constructor to setup credentials provider using the specified
-         * implementation of {@link UrlResolver}
+         * Constructor to setup credentials provider
          *
-         * @param urlResolver Resolver for resolving the Cerberus URL
+         * @param cerberusUrl Cerberus URL
          */
-        public TestAwsCredentialsProvider(UrlResolver urlResolver) {
-            super(urlResolver);
+        public TestAwsCredentialsProvider(String cerberusUrl) {
+            super(cerberusUrl);
         }
 
-        public TestAwsCredentialsProvider(UrlResolver urlResolver, OkHttpClient client) {
-            super(urlResolver, client);
+        public TestAwsCredentialsProvider(String cerberusUrl, OkHttpClient client) {
+            super(cerberusUrl, client);
         }
 
         @Override
