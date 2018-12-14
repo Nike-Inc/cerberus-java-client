@@ -16,76 +16,126 @@
 
 package com.nike.cerberus.client.auth.aws;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.RegionUtils;
-import com.amazonaws.services.securitytoken.model.GetCallerIdentityResult;
-import com.nike.cerberus.client.UrlResolver;
+import com.nike.cerberus.client.CerberusClientException;
+import com.nike.cerberus.client.model.CerberusAuthResponse;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.when;
 
-public class StsCerberusCredentialsProviderTest {
+/**
+ * Tests the StsCerberusCredentialsProvider class
+ */
+public class StsCerberusCredentialsProviderTest extends BaseCredentialsProviderTest {
 
-    private static final String ACCOUNT_ID = "1234";
-    private static final String ROLE_NAME = "foo/base/bar";
-    private static final String ROLE_ARN = String.format("arn:aws:iam::%s:role/%s", ACCOUNT_ID, ROLE_NAME);
-    private static final String REGION_STRING = "us-east-1";
-//    private static final Region REGION = Region.getRegion(Regions.US_EAST_1);
+    private static final String REGION_STRING_EAST = "us-east-1";
+    private static final String REGION_STRING_WEST = "us-west-2";
 
-    private static final String cerberusUrl = "https://dev.cerberus.nikecloud.com";
-
-    private static final String amazonUrl = "https://sts.us-east-1.amazonaws.com";
-
-    public static final Region REGION = RegionUtils.getRegion("us-east-1");
-    public static final String CERBERUS_TEST_ARN = "arn:aws:iam::123456789012:role/cerberus-test-role";
-
-
-    private StsCerberusCredentialsProvider credentialsProvider;
-    private UrlResolver urlResolver;
+    private String cerberusUrl;
 
     @Before
-    public void setUp() throws Exception {
-        urlResolver = mock(UrlResolver.class);
-
-//        urlResolver = () -> "https://dev.cerberus.nikecloud.com";
-
-        credentialsProvider = new StsCerberusCredentialsProvider(urlResolver);
-    }
-
-
-    @Test
-    public void test_get_caller_identity(){
-        GetCallerIdentityResult callerIdentityResult = credentialsProvider.getCallerIdentity();
-        assertThat(callerIdentityResult).isNotNull();
+    public void setUp() {
+        cerberusUrl = mock(String.class);
     }
 
     @Test
-    public void get_aws_credentials(){
-        AWSCredentials credentials = credentialsProvider.getAWSCredentials();
-        assertThat(credentials).isNotNull();
+    public void test_sts_creds_provider_constructor() {
+        StsCerberusCredentialsProvider credentialsProvider = new StsCerberusCredentialsProvider(cerberusUrl, REGION_STRING_EAST);
+        assertThat(credentialsProvider.getCerberusUrl()).isEqualTo(cerberusUrl);
+        assertThat(credentialsProvider.regionName).isEqualTo(REGION_STRING_EAST);
     }
 
-
     @Test
-    public void get_signed_headers(){
-        when(urlResolver.resolve()).thenReturn(cerberusUrl);
+    public void test_get_signed_headers_for_east_region() throws IOException {
+        MockWebServer mockWebServer = new MockWebServer();
+        mockWebServer.start();
+        final String cerberusUrl = "http://localhost:" + mockWebServer.getPort();
+        StsCerberusCredentialsProvider credentialsProvider = new StsCerberusCredentialsProvider(cerberusUrl, REGION_STRING_EAST);
+
         Map<String, String> headers = credentialsProvider.getSignedHeaders();
         assertThat(headers).isNotNull();
+        assertThat(headers.get("Authorization")).isNotEmpty();
+        assertThat(headers.get("X-Amz-Date")).isNotEmpty();
+        assertThat(headers.get("X-Amz-Security-Token")).isNotEmpty();
+        assertThat(headers.get("Host")).isNotEmpty();
     }
-
 
     @Test
-    public void get_token(){
-        when(urlResolver.resolve()).thenReturn(cerberusUrl);
-        String token = credentialsProvider.buildRequest(CERBERUS_TEST_ARN, REGION);
-        assertThat(token).isNotNull();
+    public void test_get_signed_headers_for_west_region() throws IOException {
+        MockWebServer mockWebServer = new MockWebServer();
+        mockWebServer.start();
+        final String cerberusUrl = "http://localhost:" + mockWebServer.getPort();
+        StsCerberusCredentialsProvider credentialsProvider = new StsCerberusCredentialsProvider(cerberusUrl, REGION_STRING_WEST);
+
+        Map<String, String> headers = credentialsProvider.getSignedHeaders();
+        assertThat(headers).isNotNull();
+        assertThat(headers.get("Authorization")).isNotEmpty();
+        assertThat(headers.get("X-Amz-Date")).isNotEmpty();
+        assertThat(headers.get("X-Amz-Security-Token")).isNotEmpty();
+        assertThat(headers.get("Host")).isNotEmpty();
     }
 
+    @Test
+    public void get_token_returns_token() throws IOException {
+        MockWebServer mockWebServer = new MockWebServer();
+        mockWebServer.start();
+        final String cerberusUrl = "http://localhost:" + mockWebServer.getPort();
+        StsCerberusCredentialsProvider credentialsProvider = new StsCerberusCredentialsProvider(cerberusUrl, REGION_STRING_EAST);
+
+        mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody(DECODED_AUTH_DATA));
+        CerberusAuthResponse token = credentialsProvider.getToken();
+        assertThat(token).isNotNull();
+        assertThat(StringUtils.isNotEmpty(token.getClientToken()));
+    }
+
+    @Test(expected = CerberusClientException.class)
+    public void get_token_throws_exception_timeout() throws IOException {
+        MockWebServer mockWebServer = new MockWebServer();
+        mockWebServer.start();
+        final String cerberusUrl = "http://localhost:" + mockWebServer.getPort();
+        StsCerberusCredentialsProvider credentialsProvider = new StsCerberusCredentialsProvider(cerberusUrl, REGION_STRING_EAST);
+
+        CerberusAuthResponse token = credentialsProvider.getToken();
+        assertThat(token).isNotNull();
+        assertThat(StringUtils.isNotEmpty(token.getClientToken()));
+    }
+
+    @Test(expected = CerberusClientException.class)
+
+    public void get_token_throws_exception_when_url_is_blank(){
+        StsCerberusCredentialsProvider credentialsProvider = new StsCerberusCredentialsProvider(cerberusUrl, REGION_STRING_EAST);
+        CerberusAuthResponse token = credentialsProvider.getToken();
+        assertThat(token).isNotNull();
+        assertThat(StringUtils.isNotEmpty(token.getClientToken()));
+    }
+
+    @Test(expected = CerberusClientException.class)
+    public void get_token_throws_exception_when_response_is_bad() throws IOException {
+        MockWebServer mockWebServer = new MockWebServer();
+        mockWebServer.start();
+        final String cerberusUrl = "http://localhost:" + mockWebServer.getPort();
+        StsCerberusCredentialsProvider credentialsProvider = new StsCerberusCredentialsProvider(cerberusUrl, REGION_STRING_EAST);
+        mockWebServer.enqueue(new MockResponse().setResponseCode(400).setBody(AUTH_RESPONSE));
+
+        CerberusAuthResponse token = credentialsProvider.getToken();
+        assertThat(token).isNotNull();
+        assertThat(StringUtils.isNotEmpty(token.getClientToken()));
+    }
+
+    @Test(expected = CerberusClientException.class)
+    public void authenticate_throws_exception_when_token_is_null() {
+        StsCerberusCredentialsProvider credentialsProvider = new StsCerberusCredentialsProvider(cerberusUrl, REGION_STRING_EAST);
+        CerberusAuthResponse token = mock(CerberusAuthResponse.class);
+        when(token.getClientToken()).thenReturn(null);
+        credentialsProvider.authenticate();
+    }
 }
 

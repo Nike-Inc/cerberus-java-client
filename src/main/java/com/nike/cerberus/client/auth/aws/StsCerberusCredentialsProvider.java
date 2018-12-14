@@ -21,25 +21,23 @@ import com.amazonaws.auth.AWS4Signer;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.http.HttpMethodName;
-import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
-import com.amazonaws.services.securitytoken.model.GetCallerIdentityRequest;
-import com.amazonaws.services.securitytoken.model.GetCallerIdentityResult;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import com.nike.cerberus.client.CerberusClientException;
-import com.nike.cerberus.client.ClientVersion;
-import com.nike.cerberus.client.UrlResolver;
+import com.nike.cerberus.client.auth.TokenCerberusCredentials;
 import com.nike.cerberus.client.http.HttpMethod;
 import com.nike.cerberus.client.http.HttpStatus;
+import com.nike.cerberus.client.model.CerberusAuthResponse;
 import okhttp3.*;
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -48,56 +46,97 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Provider for allowing users to authenticate with Cerberus with the STS auth endpoint
+ * Provider for allowing users to authenticate with Cerberus with the STS auth endpoint.
  */
 
 public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
 
-    private static final String REGION_STRING = "us-east-1";
+    protected static String regionName;
+
     protected static final int DEFAULT_AUTH_RETRIES = 3;
 
     protected static final int DEFAULT_RETRY_INTERVAL_IN_MILLIS = 200;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BaseAwsCredentialsProvider.class);
+
     private final Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
             .create();
 
     /**
-     * Constructor to setup credentials provider using the specified
-     * implementation of {@link UrlResolver}
+     * Constructor to setup credentials provider
      *
-     * @param urlResolver Resolver for resolving the Cerberus URL
+     * @param cerberusUrl Cerberus URL
+     * @param region AWS Region used in auth with Cerberus
      */
-    public StsCerberusCredentialsProvider(UrlResolver urlResolver) {
-        super(urlResolver);
+    public StsCerberusCredentialsProvider(String cerberusUrl, String region) {
+        super(cerberusUrl);
 
+        if (region != null ) {
+            regionName = Regions.fromName(region).getName();
+        } else {
+            throw new CerberusClientException("Region is null. Please provide valid AWS region.");
+        }
     }
 
-
-    public GetCallerIdentityResult getCallerIdentity() {
-        final AWSSecurityTokenService sts = AWSSecurityTokenServiceClientBuilder.defaultClient();
-
-        GetCallerIdentityRequest getCallerIdentityRequest = new GetCallerIdentityRequest();
-
-        GetCallerIdentityResult callerIdentity = sts.getCallerIdentity(getCallerIdentityRequest);
-        return callerIdentity;
+    /**
+     * Constructor to setup credentials provider
+     *
+     * @param cerberusUrl Cerberus URL
+     * @param region AWS Region used in auth with Cerberus
+     * @param xCerberusClientOverride Overrides the default header value for the 'X-Cerberus-Client' header
+     */
+    public StsCerberusCredentialsProvider(String cerberusUrl, String region, String xCerberusClientOverride) {
+        super(cerberusUrl, xCerberusClientOverride);
+        if (region != null ) {
+            regionName = Regions.fromName(region).getName();
+        } else {
+            throw new CerberusClientException("Region is null. Please provide valid AWS region.");
+        }
     }
 
-    public AWSCredentials getAWSCredentials(){
+    /**
+     * Constructor to setup credentials provider using the specified
+     * implementation of {@link OkHttpClient}
+     *
+     * @param cerberusUrl Cerberus URL
+     * @param region AWS Region used in auth with Cerberus
+     * @param httpClient the client for interacting with Cerberus
+     */
+    public StsCerberusCredentialsProvider(String cerberusUrl, String region, OkHttpClient httpClient) {
+        super(cerberusUrl, httpClient);
+        if (region != null ) {
+            regionName = Regions.fromName(region).getName();
+        } else {
+            throw new CerberusClientException("Region is null. Please provide valid AWS region.");
+        }
+    }
+
+    /**
+     * Obtains AWS Credentials.
+     */
+    private AWSCredentials getAWSCredentials(){
         return DefaultAWSCredentialsProviderChain.getInstance().getCredentials();
     }
 
+    /**
+     * Signs request using AWS V4 signing.
+     * @param request AWS STS request to sign
+     * @param credentials AWS credentials
+     */
     private void signRequest(com.amazonaws.Request request, AWSCredentials credentials){
+
         AWS4Signer signer = new AWS4Signer();
-        signer.setRegionName(REGION_STRING);
+        signer.setRegionName(regionName);
         signer.setServiceName("sts");
         signer.sign(request, credentials);
-
     }
 
-    public Map<String, String> getSignedHeaders(){
+    /**
+     * Generates and returns signed headers.
+     */
+    protected Map<String, String> getSignedHeaders(){
 
-//        final String url = this.getUrlResolver().resolve();
-//        final String url = "https://sts.amazonaws.com";
-        final String url = "https://sts.us-east-1.amazonaws.com";
+        final String url = "https://sts." + regionName + ".amazonaws.com";
 
         URI endpoint = null;
 
@@ -116,75 +155,63 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
         requestToSign.setHttpMethod(HttpMethodName.POST);
         requestToSign.setEndpoint(endpoint);
 
+        LOGGER.info(String.format("Signing request with [%s] as host", url));
+
         signRequest(requestToSign, getAWSCredentials());
 
         return requestToSign.getHeaders();
     }
 
-    public String buildRequest(final String iamPrincipalArn, Region region){
+    /**
+     * Sends request with signed headers to Cerberus to obtain token using STS Auth.
+     */
+    protected CerberusAuthResponse getToken(){
 
+        if (StringUtils.isBlank(cerberusUrl)) {
+            throw new CerberusClientException("Unable to find the Cerberus URL.");
+        }
+
+        LOGGER.info(String.format("Attempting to authenticate against [%s]", cerberusUrl));
 
         Map<String, String> signedHeaders = getSignedHeaders();
 
-        final String url = this.getUrlResolver().resolve();
-
-//        Map<String, List<String>> parameters = new HashMap<>();
-//        parameters.put("Action", Arrays.asList("GetCallerIdentity"));
-//        parameters.put("Version", Arrays.asList("2011-06-15"));
-
-//        if (StringUtils.isBlank(url)) {
-//            throw new CerberusClientException("Unable to find the Cerberus URL.");
-//        }
-
-//        LOGGER.info(String.format("Attempting to authenticate with AWS IAM principal ARN [%s] against [%s]",
-//                iamPrincipalArn, url));
-
         try {
-
             Request request = new Request.Builder()
-                    .url(url + "/v2/auth/sts-identity")
+                    .url(cerberusUrl + "/v2/auth/sts-identity")
                     .headers(Headers.of(signedHeaders))
-                    .method(HttpMethod.POST, buildCredentialsRequestBody(iamPrincipalArn, region))
-//                    .post(body)
+                    .method(HttpMethod.POST, RequestBody.create(DEFAULT_MEDIA_TYPE, ""))
                     .build();
-//
-////            okhttp3.Request.Builder requestBuilder = new Request.Builder().url(url + "/v2/auth/sts-identity");
-////                    .addHeader(HttpHeader.ACCEPT, DEFAULT_MEDIA_TYPE.toString())
-////                    .addHeader(HttpHeader.CONTENT_TYPE, DEFAULT_MEDIA_TYPE.toString())
-////                    .addHeader(ClientVersion.CERBERUS_CLIENT_HEADER, cerberusJavaClientHeaderValue)
-////                    .method(HttpMethod.POST, buildCredentialsRequestBody(iamPrincipalArn, region));
-////                    .method(HttpMethod.POST);
-//            Request builtRequest = new Request(requestBuilder);
 
-//            Response response = executeRequestWithRetry(requestBuilder.build(), DEFAULT_AUTH_RETRIES, DEFAULT_RETRY_INTERVAL_IN_MILLIS);
             Response response = executeRequestWithRetry(request, DEFAULT_AUTH_RETRIES, DEFAULT_RETRY_INTERVAL_IN_MILLIS);
 
             if (response.code() != HttpStatus.OK) {
                 parseAndThrowErrorResponse(response.code(), response.body().string());
             }
 
-            final Type mapType = new TypeToken<Map<String, String>>() {
-            }.getType();
-            final Map<String, String> authData = gson.fromJson(response.body().string(), mapType);
-            final String key = "auth_data";
-
-            if (authData.containsKey(key)) {
-//                LOGGER.info(String.format("Authentication successful with AWS IAM principal ARN [%s] against [%s]",
-//                        iamPrincipalArn, url));
-                return authData.get(key);
-            } else {
-                throw new CerberusClientException("Success response from IAM role authenticate endpoint missing auth data!");
-            }
+            return gson.fromJson(response.body().string(), CerberusAuthResponse.class);
 
         } catch (IOException e) {
             throw new CerberusClientException("I/O error while communicating with Cerberus", e);
         }
-
     }
 
+    /**
+     * Requests a token from Cerberus using STS Auth and sets the token and expiration details.
+     */
     @Override
     protected void authenticate() {
 
-    }
+        CerberusAuthResponse token = getToken();
 
+        if (token.getClientToken() != null) {
+            LOGGER.info(String.format("Authentication successful"));
+        } else {
+            throw new CerberusClientException("Success response from Cerberus missing token");
+        }
+
+        final DateTime expires = DateTime.now(DateTimeZone.UTC)
+                .plusSeconds(token.getLeaseDuration() - paddingTimeInSeconds);
+        credentials = new TokenCerberusCredentials(token.getClientToken());
+        expireDateTime = expires;
+    }
 }
