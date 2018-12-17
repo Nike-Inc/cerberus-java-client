@@ -127,7 +127,7 @@ public class CerberusClientFactory {
      * @param cerberusUrl                 URL for Cerberus
      * @param cerberusCredentialsProvider Credential provider for acquiring a token for interacting with Cerberus
      * @param defaultHeaders              Map of default header names and values to add to every HTTP request
-     * @param httpClient
+     * @param httpClient                  the client to use for auth
      * @return Cerberus client
      */
     public static CerberusClient getClient(final String cerberusUrl,

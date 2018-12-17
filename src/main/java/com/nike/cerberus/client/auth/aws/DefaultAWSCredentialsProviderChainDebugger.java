@@ -1,12 +1,12 @@
 package com.nike.cerberus.client.auth.aws;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.EC2ContainerCredentialsProviderWrapper;
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.amazonaws.services.kms.model.AWSKMSException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,9 +31,10 @@ public class DefaultAWSCredentialsProviderChainDebugger {
 
     /**
      * Log extra debugging information if appropriate
+     * @param serviceException exception from Amazon
      */
-    public void logExtraDebuggingIfAppropriate(AWSKMSException kmsException) {
-        if (StringUtils.contains(kmsException.getMessage(), "The security token included in the request is invalid.")) {
+    public void logExtraDebuggingIfAppropriate(AmazonServiceException serviceException) {
+        if (StringUtils.contains(serviceException.getMessage(), "The security token included in the request is invalid.")) {
             LOGGER.warn("Bad credentials may have been picked up from the DefaultAWSCredentialsProviderChain");
             boolean firstCredentialsFound = false;
             for (AWSCredentialsProvider provider : credentialProviderChain) {

@@ -20,7 +20,6 @@ import okhttp3.OkHttpClient;
 
 /**
  * Default credentials provider chain that will attempt to retrieve a token in the following order:
- * <p>
  * <ul>
  * <li>Environment Variable - <code>CERBERUS_TOKEN</code></li>
  * <li>Java System Property - <code>cerberus.token</code></li>
@@ -67,6 +66,7 @@ public class DefaultCerberusCredentialsProviderChain extends CerberusCredentials
      * and OkHttpClient
      *
      * @param url         Cerberus URL
+     * @param region      AWS region
      * @param httpClient  the client to use
      */
     public DefaultCerberusCredentialsProviderChain(String url, String region, OkHttpClient httpClient) {
