@@ -19,6 +19,7 @@ package com.nike.cerberus.client.auth.aws;
 import com.amazonaws.DefaultRequest;
 import com.amazonaws.auth.AWS4Signer;
 import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSCredentialsProviderChain;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.http.HttpMethodName;
 import com.amazonaws.regions.Regions;
@@ -51,6 +52,8 @@ import java.util.Map;
 public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
 
     protected String regionName;
+
+    protected AWSCredentialsProviderChain providerChain;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseAwsCredentialsProvider.class);
 
@@ -107,10 +110,35 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
     }
 
     /**
+     * Constructor to setup credentials provider with specified AWS credentials to sign request
+     *
+     * @param cerberusUrl Cerberus URL
+     * @param region AWS Region used in auth with Cerberus
+     * @param providerChain AWS Credentials Provider Chain
+     */
+    public StsCerberusCredentialsProvider(String cerberusUrl, String region, AWSCredentialsProviderChain providerChain) {
+        super(cerberusUrl);
+
+        if (region != null ) {
+            regionName = Regions.fromName(region).getName();
+        } else {
+            throw new CerberusClientException("Region is null. Please provide valid AWS region.");
+        }
+
+        this.providerChain = providerChain;
+    }
+
+    /**
      * Obtains AWS Credentials.
      */
     private AWSCredentials getAWSCredentials(){
-        return DefaultAWSCredentialsProviderChain.getInstance().getCredentials();
+
+        if (providerChain == null) {
+            return DefaultAWSCredentialsProviderChain.getInstance().getCredentials();
+        }
+        else {
+            return providerChain.getCredentials();
+        }
     }
 
     /**
@@ -181,12 +209,14 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
                     .build();
 
             Response response = executeRequestWithRetry(request, DEFAULT_AUTH_RETRIES, DEFAULT_RETRY_INTERVAL_IN_MILLIS);
+            String responseBody = response.body().string();
 
             if (response.code() != HttpStatus.OK) {
-                parseAndThrowErrorResponse(response.code(), response.body().string());
+                new DefaultAWSCredentialsProviderChainDebugger().logExtraDebuggingIfAppropriate(responseBody);
+                parseAndThrowErrorResponse(response.code(), responseBody);
             }
 
-            return gson.fromJson(response.body().string(), CerberusAuthResponse.class);
+            return gson.fromJson(responseBody, CerberusAuthResponse.class);
 
         } catch (IOException e) {
             throw new CerberusClientException("I/O error while communicating with Cerberus", e);
