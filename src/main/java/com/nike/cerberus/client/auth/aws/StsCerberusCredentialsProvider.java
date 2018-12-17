@@ -48,14 +48,9 @@ import java.util.Map;
 /**
  * Provider for allowing users to authenticate with Cerberus with the STS auth endpoint.
  */
-
 public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
 
-    protected static String regionName;
-
-    protected static final int DEFAULT_AUTH_RETRIES = 3;
-
-    protected static final int DEFAULT_RETRY_INTERVAL_IN_MILLIS = 200;
+    protected String regionName;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseAwsCredentialsProvider.class);
 
@@ -133,6 +128,7 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
 
     /**
      * Generates and returns signed headers.
+     * @return Signed headers
      */
     protected Map<String, String> getSignedHeaders(){
 
@@ -143,7 +139,8 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
         try {
             endpoint = new URI(url);
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            LOGGER.info(String.format("URL is not formatted correctly"), e);
+
         }
 
         Map<String, List<String>> parameters = new HashMap<>();
@@ -164,6 +161,7 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
 
     /**
      * Sends request with signed headers to Cerberus to obtain token using STS Auth.
+     * @return Cerberus Auth Response with token
      */
     protected CerberusAuthResponse getToken(){
 

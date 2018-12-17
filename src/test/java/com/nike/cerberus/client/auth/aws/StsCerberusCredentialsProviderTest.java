@@ -34,10 +34,13 @@ import static org.powermock.api.mockito.PowerMockito.when;
 /**
  * Tests the StsCerberusCredentialsProvider class
  */
-public class StsCerberusCredentialsProviderTest extends BaseCredentialsProviderTest {
+public class StsCerberusCredentialsProviderTest {
 
     private static final String REGION_STRING_EAST = "us-east-1";
     private static final String REGION_STRING_WEST = "us-west-2";
+
+    protected static final String AUTH_RESPONSE = "{\"auth_data\":\"eyJjbGllbnRfdG9rZW4iOiI2NjMyY2I1Zi1mMTBjLTQ1NzItOTU0NS1lNTJmNDdmNmEzZmQiLCAibGVhc2VfZHVyYXRpb24iOiIzNjAwIn0=\"}";
+    protected static final String DECODED_AUTH_DATA = "{\"client_token\":\"6632cb5f-f10c-4572-9545-e52f47f6a3fd\", \"lease_duration\":\"3600\"}";
 
     private String cerberusUrl;
 
@@ -109,7 +112,6 @@ public class StsCerberusCredentialsProviderTest extends BaseCredentialsProviderT
     }
 
     @Test(expected = CerberusClientException.class)
-
     public void get_token_throws_exception_when_url_is_blank(){
         StsCerberusCredentialsProvider credentialsProvider = new StsCerberusCredentialsProvider(cerberusUrl, REGION_STRING_EAST);
         CerberusAuthResponse token = credentialsProvider.getToken();

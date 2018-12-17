@@ -28,8 +28,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class StsAuthCerberusClientTest {
 
-    private static String region;
-    private static String cerberusUrl;
+    private String region;
+    private String cerberusUrl;
 
     @Before
     public void setUp() {
