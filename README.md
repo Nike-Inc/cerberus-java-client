@@ -13,9 +13,8 @@ To learn more about Cerberus, please see the [Cerberus website](http://engineeri
 
 ## Quickstart for Cerberus Java Client
 
-1. Start with the [quick start guide](http://engineering.nike.com/cerberus/docs/user-guide/quick-start).
-2. Add the [Cerberus client dependency](https://bintray.com/nike/maven/cerberus-client) to your build (e.g. Maven, Gradle).
-3. Access secrets from Cerberus using Java.
+1. Add the [Cerberus client dependency](https://bintray.com/nike/maven/cerberus-client) to your build (e.g. Maven, Gradle).
+1. Access secrets from Cerberus using Java.
 ``` java
     String cerberusUrl = "https://cerberus.example.com";
     String region = "us-west-2";
@@ -23,20 +22,6 @@ To learn more about Cerberus, please see the [Cerberus website](http://engineeri
     Map<String,String> secrets = cerberusClient.read("/app/my-sdb-name").getData();
 ```
 Check out ["Working with AWS Credentials"](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html) for more information on how the AWS SDK for Java loads credentials.
-
-## Lambdas
-
-Generally it does NOT make sense to store Lambda secrets in Cerberus for two reasons:
-
-1. Cerberus cannot support the scale that lambdas may need, e.g. thousands of requests per second
-1. Lambdas will not want the extra latency needed to authenticate and read from Cerberus
-
-A better solution for Lambda secrets is using the [encrypted environmental variables](http://docs.aws.amazon.com/lambda/latest/dg/env_variables.html)
-feature provided by AWS.
-
-Another option is to store Lambda secrets in Cerberus but only read them at Lambda deploy time, then storing them as encrypted
-environmental variables, to avoid the extra Cerberus runtime latency.
-
 
 ## Development
 
@@ -60,14 +45,10 @@ Next, in the project directory run:
     ./gradlew integration
 ```
 
-## Further Details
-
-Cerberus client is a small project. It only has a few classes and they are all fully documented. For further details please see the source code, including javadocs and unit tests.
-
 <a name="license"></a>
 ## License
 
-Cerberus client is released under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+Cerberus client is released under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
 [travis]:https://travis-ci.org/Nike-Inc/cerberus-java-client
 [travis img]:https://api.travis-ci.org/Nike-Inc/cerberus-java-client.svg?branch=master
