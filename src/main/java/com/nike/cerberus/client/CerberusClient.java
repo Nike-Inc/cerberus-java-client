@@ -19,10 +19,7 @@ package com.nike.cerberus.client;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
@@ -72,30 +69,26 @@ public class CerberusClient {
 
     private final OkHttpClient httpClient;
 
-    private final UrlResolver urlResolver;
+    private final String url;
 
     private final Headers defaultHeaders;
 
     private final Gson gson = new GsonBuilder()
             .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
             .disableHtmlEscaping()
-            .registerTypeAdapter(DateTime.class, new JsonDeserializer<DateTime>() {
-                @Override
-                public DateTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-                        throws JsonParseException {
-                    return new DateTime(json.getAsString());
-                }
-            })
+            .registerTypeAdapter(DateTime.class,
+                    (JsonDeserializer<DateTime>) (json, typeOfT, context) -> new DateTime(json.getAsString()))
             .create();
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public CerberusClient(final UrlResolver cerberusUrlResolver,
+    public CerberusClient(final String cerberusUrl,
                           final CerberusCredentialsProvider credentialsProvider,
                           final OkHttpClient httpClient,
                           final Headers defaultHeaders) {
-        if (cerberusUrlResolver == null) {
-            throw new IllegalArgumentException("Cerberus URL resolver cannot be null.");
+
+        if (cerberusUrl == null) {
+            throw new IllegalArgumentException("Cerberus URL cannot be null.");
         }
 
         if (credentialsProvider == null) {
@@ -110,7 +103,7 @@ public class CerberusClient {
             throw new IllegalArgumentException("Default headers cannot be null.");
         }
 
-        this.urlResolver = cerberusUrlResolver;
+        this.url = cerberusUrl;
         this.credentialsProvider = credentialsProvider;
         this.httpClient = httpClient;
         this.defaultHeaders = defaultHeaders;
@@ -119,14 +112,15 @@ public class CerberusClient {
     /**
      * Explicit constructor that allows for full control over construction of the Cerberus client.
      *
-     * @param cerberusUrlResolver  URL resolver for Cerberus
+     * @param cerberusUrl          URL for Cerberus
      * @param credentialsProvider  Credential provider for acquiring a token for interacting with Cerberus
      * @param httpClient           HTTP client for calling Cerberus
      */
-    public CerberusClient(final UrlResolver cerberusUrlResolver,
+    public CerberusClient(final String cerberusUrl,
                           final CerberusCredentialsProvider credentialsProvider,
                           final OkHttpClient httpClient) {
-        if (cerberusUrlResolver == null) {
+
+        if (cerberusUrl == null) {
             throw new IllegalArgumentException("Cerberus URL resolver can not be null.");
         }
 
@@ -138,7 +132,7 @@ public class CerberusClient {
             throw new IllegalArgumentException("Http client can not be null.");
         }
 
-        this.urlResolver = cerberusUrlResolver;
+        this.url = cerberusUrl;
         this.credentialsProvider = credentialsProvider;
         this.httpClient = httpClient;
         this.defaultHeaders = new Headers.Builder().build();
@@ -157,10 +151,10 @@ public class CerberusClient {
      * @return Map containing the keys at that path
      */
     public CerberusListResponse list(final String path) {
-        final HttpUrl url = buildUrl(SECRET_PATH_PREFIX, path + "?list=true");
-        logger.debug("list: requestUrl={}", url);
+        final HttpUrl httpUrl = buildUrl(SECRET_PATH_PREFIX, path + "?list=true");
+        logger.debug("list: requestUrl={}", httpUrl);
 
-        final Response response = execute(url, HttpMethod.GET, null);
+        final Response response = execute(httpUrl, HttpMethod.GET, null);
 
         if (response.code() == HttpStatus.NOT_FOUND) {
             response.close();
@@ -208,10 +202,10 @@ public class CerberusClient {
      * @return List of metadata for secure files at the specified path
      */
     public CerberusListFilesResponse listFiles(final String path, Integer limit, Integer offset) {
-        final HttpUrl url = buildUrl("v1/secure-files/", path, limit, offset);
+        final HttpUrl httpUrl = buildUrl("v1/secure-files/", path, limit, offset);
 
-        logger.debug("list: requestUrl={}, limit={}, offset={}", url, limit, offset);
-        final Response response = execute(url, HttpMethod.GET, null);
+        logger.debug("list: requestUrl={}, limit={}, offset={}", httpUrl, limit, offset);
+        final Response response = execute(httpUrl, HttpMethod.GET, null);
 
         if (response.code() != HttpStatus.OK) {
             parseAndThrowApiErrorResponse(response);
@@ -230,10 +224,10 @@ public class CerberusClient {
      * @return Map of the data
      */
     public CerberusResponse read(final String path) {
-        final HttpUrl url = buildUrl(SECRET_PATH_PREFIX, path);
-        logger.debug("read: requestUrl={}", url);
+        final HttpUrl httpUrl = buildUrl(SECRET_PATH_PREFIX, path);
+        logger.debug("read: requestUrl={}", httpUrl);
 
-        final Response response = executeWithRetry(url, HttpMethod.GET, null, DEFAULT_NUM_RETRIES, DEFAULT_RETRY_INTERVAL_IN_MILLIS);
+        final Response response = executeWithRetry(httpUrl, HttpMethod.GET, null, DEFAULT_NUM_RETRIES, DEFAULT_RETRY_INTERVAL_IN_MILLIS);
 
         if (response.code() != HttpStatus.OK) {
             parseAndThrowErrorResponse(response);
@@ -252,10 +246,10 @@ public class CerberusClient {
      * @return File contents
      */
     public byte[] readFileAsBytes(final String path) {
-        final HttpUrl url = buildUrl(SECURE_FILE_PATH_PREFIX, path);
-        logger.debug("read: requestUrl={}", url);
+        final HttpUrl httpUrl = buildUrl(SECURE_FILE_PATH_PREFIX, path);
+        logger.debug("read: requestUrl={}", httpUrl);
 
-        final Response response = execute(url, HttpMethod.GET, null);
+        final Response response = execute(httpUrl, HttpMethod.GET, null);
 
         if (response.code() != HttpStatus.OK) {
             parseAndThrowApiErrorResponse(response);
@@ -273,10 +267,10 @@ public class CerberusClient {
      * @param data Data to be stored
      */
     public void write(final String path, final Map<String, String> data) {
-        final HttpUrl url = buildUrl(SECRET_PATH_PREFIX, path);
-        logger.debug("write: requestUrl={}", url);
+        final HttpUrl httpUrl = buildUrl(SECRET_PATH_PREFIX, path);
+        logger.debug("write: requestUrl={}", httpUrl);
 
-        final Response response = execute(url, HttpMethod.POST, data);
+        final Response response = execute(httpUrl, HttpMethod.POST, data);
 
         if (response.code() != HttpStatus.NO_CONTENT) {
             parseAndThrowErrorResponse(response);
@@ -293,8 +287,8 @@ public class CerberusClient {
      */
     public void writeFile(final String path, final byte[] contents) {
         final String fileName = StringUtils.substringAfterLast(path, "/");
-        final HttpUrl url = buildUrl(SECURE_FILE_PATH_PREFIX, path);
-        logger.debug("write: requestUrl={}", url);
+        final HttpUrl httpUrl = buildUrl(SECURE_FILE_PATH_PREFIX, path);
+        logger.debug("write: requestUrl={}", httpUrl);
 
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
@@ -303,7 +297,7 @@ public class CerberusClient {
                 .build();
 
         Request request = new Request.Builder()
-                .url(url)
+                .url(httpUrl)
                 .headers(defaultHeaders)
                 .addHeader(HttpHeader.CERBERUS_TOKEN, credentialsProvider.getCredentials().getToken())
                 .addHeader(HttpHeader.ACCEPT, DEFAULT_MEDIA_TYPE.toString())
@@ -325,10 +319,10 @@ public class CerberusClient {
      * @param path Path to file to be deleted
      */
     public void deleteFile(final String path) {
-        final HttpUrl url = buildUrl(SECURE_FILE_PATH_PREFIX, path);
-        logger.debug("delete: requestUrl={}", url);
+        final HttpUrl httpUrl = buildUrl(SECURE_FILE_PATH_PREFIX, path);
+        logger.debug("delete: requestUrl={}", httpUrl);
 
-        final Response response = execute(url, HttpMethod.DELETE, null);
+        final Response response = execute(httpUrl, HttpMethod.DELETE, null);
 
         if (response.code() != HttpStatus.NO_CONTENT) {
             parseAndThrowApiErrorResponse(response);
@@ -343,10 +337,10 @@ public class CerberusClient {
      * @param path Path to data to be deleted
      */
     public void delete(final String path) {
-        final HttpUrl url = buildUrl(SECRET_PATH_PREFIX, path);
-        logger.debug("delete: requestUrl={}", url);
+        final HttpUrl httpUrl = buildUrl(SECRET_PATH_PREFIX, path);
+        logger.debug("delete: requestUrl={}", httpUrl);
 
-        final Response response = execute(url, HttpMethod.DELETE, null);
+        final Response response = execute(httpUrl, HttpMethod.DELETE, null);
 
         if (response.code() != HttpStatus.NO_CONTENT) {
             parseAndThrowErrorResponse(response);
@@ -355,16 +349,14 @@ public class CerberusClient {
 
     /**
      * Returns a copy of the URL being used for communicating with Cerberus
-     *
      * @return Copy of the HttpUrl object
      */
     public HttpUrl getCerberusUrl() {
-        return HttpUrl.parse(urlResolver.resolve());
+        return HttpUrl.parse(url);
     }
 
     /**
      * Returns the configured credentials provider.
-     *
      * @return The configured credentials provider
      */
     public CerberusCredentialsProvider getCredentialsProvider() {
@@ -373,7 +365,6 @@ public class CerberusClient {
 
     /**
      * Gets the Gson object used for serializing and de-serializing requests.
-     *
      * @return Gson object
      */
     public Gson getGson() {
@@ -382,7 +373,6 @@ public class CerberusClient {
 
     /**
      * Returns the configured default HTTP headers.
-     *
      * @return The configured default HTTP headers
      */
     public Headers getDefaultHeaders() {
@@ -402,7 +392,7 @@ public class CerberusClient {
                                final String path,
                                final Integer limit,
                                final Integer offset) {
-        String baseUrl = urlResolver.resolve();
+        String baseUrl = url;
         baseUrl = StringUtils.appendIfMissing(baseUrl, "/");
 
         final StringBuilder fullUrl = new StringBuilder()
@@ -429,7 +419,7 @@ public class CerberusClient {
      * @return Full URL to execute a request against
      */
     protected HttpUrl buildUrl(final String prefix, final String path) {
-        String baseUrl = urlResolver.resolve();
+        String baseUrl = url;
 
         if (!StringUtils.endsWith(baseUrl, "/")) {
             baseUrl += "/";
@@ -440,14 +430,14 @@ public class CerberusClient {
 
     /**
      * Executes an HTTP request and retries if a 500 level error is returned
-     * @param url                    Full URL to which to make the HTTP request
+     * @param httpUrl                Full URL to which to make the HTTP request
      * @param method                 HTTP Method (e.g. GET, PUT, POST)
      * @param requestBody            Body to add to the request. Nullable
      * @param numRetries             Maximum number of times to retry on 500 failures
      * @param sleepIntervalInMillis  Time in milliseconds to sleep between retries. Zero for no sleep
      * @return Any HTTP response with status code below 500, or the last error response if only 500's are returned
      */
-    protected Response executeWithRetry(final HttpUrl url,
+    protected Response executeWithRetry(final HttpUrl httpUrl,
                                         final String method,
                                         final Object requestBody,
                                         final int numRetries,
@@ -456,12 +446,12 @@ public class CerberusClient {
         Response response = null;
         for(int retryNumber = 0; retryNumber < numRetries; retryNumber++) {
             try {
-                response = execute(url, method, requestBody);
+                response = execute(httpUrl, method, requestBody);
                 if (response.code() < 500) {
                     return response;
                 }
             } catch (CerberusClientException cce) {
-                logger.debug(String.format("Failed to call %s %s. Retrying...", method, url), cce);
+                logger.debug(String.format("Failed to call %s %s. Retrying...", method, httpUrl), cce);
                 exception = cce;
             }
             sleep(sleepIntervalInMillis * (long) Math.pow(2, retryNumber));
@@ -477,14 +467,14 @@ public class CerberusClient {
     /**
      * Executes the HTTP request based on the input parameters.
      *
-     * @param url         The URL to execute the request against
+     * @param httpUrl     The URL to execute the request against
      * @param method      The HTTP method for the request
      * @param requestBody The request body of the HTTP request
      * @return Response from the server
      */
-    protected Response execute(final HttpUrl url, final String method, final Object requestBody) {
+    protected Response execute(final HttpUrl httpUrl, final String method, final Object requestBody) {
         try {
-            Request request = buildRequest(url, method, requestBody);
+            Request request = buildRequest(httpUrl, method, requestBody);
 
             return httpClient.newCall(request).execute();
         } catch (IOException e) {
@@ -520,14 +510,14 @@ public class CerberusClient {
 
     /**
      * Build the HTTP request to execute for the Cerberus Client
-     * @param url         The URL to execute the request against
+     * @param httpUrl     The URL to execute the request against
      * @param method      The HTTP method for the request
      * @param requestBody The request body of the HTTP request
      * @return - The HTTP request
      */
-    protected Request buildRequest(final HttpUrl url, final String method, final Object requestBody) {
+    protected Request buildRequest(final HttpUrl httpUrl, final String method, final Object requestBody) {
         Request.Builder requestBuilder = new Request.Builder()
-                .url(url)
+                .url(httpUrl)
                 .headers(defaultHeaders)  // call headers method first because it overwrites all existing headers
                 .addHeader(HttpHeader.CERBERUS_TOKEN, credentialsProvider.getCredentials().getToken())
                 .addHeader(HttpHeader.ACCEPT, DEFAULT_MEDIA_TYPE.toString());

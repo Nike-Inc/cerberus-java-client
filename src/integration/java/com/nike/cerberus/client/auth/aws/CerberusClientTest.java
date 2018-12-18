@@ -20,7 +20,6 @@ import com.fieldju.commons.EnvUtils;
 import com.nike.cerberus.client.CerberusClient;
 import com.nike.cerberus.client.CerberusServerApiException;
 import com.nike.cerberus.client.CerberusServerException;
-import com.nike.cerberus.client.DefaultCerberusUrlResolver;
 import com.nike.cerberus.client.model.CerberusListFilesResponse;
 import com.nike.cerberus.client.model.CerberusListResponse;
 import com.nike.cerberus.client.model.CerberusResponse;
@@ -34,21 +33,19 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests StaticIamRoleCerberusCredentialsProvider class
+ * Tests StsCerberusCredentialsProvider class
  */
 public class CerberusClientTest {
 
     private static final String ROOT_SDB_PATH = "app/cerberus-integration-tests-sdb/";
 
-    private static String iam_principal_arn;
     private static String region;
+    private static String cerberusUrl;
 
     private static String secretPath;
     private static String sdbFullSecretPath;
@@ -56,14 +53,14 @@ public class CerberusClientTest {
 
     private static CerberusClient cerberusClient;
 
-    private static StaticIamRoleCerberusCredentialsProvider staticIamRoleCerberusCredentialsProvider;
+    private static StsCerberusCredentialsProvider stsCerberusCredentialsProvider;
 
     @BeforeClass
     public static void setUp() {
-        iam_principal_arn = EnvUtils.getRequiredEnv("TEST_IAM_PRINCIPAL_ARN", "The role to be assume by the integration test");
+
         region = EnvUtils.getRequiredEnv("TEST_REGION");
 
-        EnvUtils.getRequiredEnv("CERBERUS_ADDR");
+        cerberusUrl = EnvUtils.getRequiredEnv("CERBERUS_ADDR");
 
         secretPath = UUID.randomUUID().toString();
         sdbFullSecretPath = ROOT_SDB_PATH + secretPath;
@@ -84,65 +81,14 @@ public class CerberusClientTest {
     }
 
     @Test
-    public void test_cerberus_client_crud_after_auth_with_account_id_and_role_name() {
-        Pattern arn_pattern = Pattern.compile("arn:aws:iam::(?<accountId>[0-9].*):role\\/(?<roleName>.*)");
-        Matcher matcher = arn_pattern.matcher(iam_principal_arn);
-        if (! matcher.matches()) {
-            throw new AssertionError("IAM Principal ARN does not match expected format");
-        }
-        String account_id = matcher.group("accountId");
-        String role_name = matcher.group("roleName");
+    public void test_secret_is_deleted_after_auth() {
 
-        staticIamRoleCerberusCredentialsProvider = new StaticIamRoleCerberusCredentialsProvider(
-                new DefaultCerberusUrlResolver(),
-                account_id,
-                role_name,
+        stsCerberusCredentialsProvider = new StsCerberusCredentialsProvider(
+                cerberusUrl,
                 region);
 
-        cerberusClient = new CerberusClient(new DefaultCerberusUrlResolver(),
-                staticIamRoleCerberusCredentialsProvider, new OkHttpClient());
-
-        // create secret
-        cerberusClient.write(sdbFullSecretPath, secretData);
-
-        // read secret
-        CerberusResponse cerberusReadResponse = cerberusClient.read(sdbFullSecretPath);
-        assertEquals(secretData, cerberusReadResponse.getData());
-
-        // list secrets
-        CerberusListResponse cerberusListResponse = cerberusClient.list(ROOT_SDB_PATH);
-        assertTrue(cerberusListResponse.getKeys().contains(secretPath));
-
-        // update secret
-        Map<String, String> newSecretData = generateNewSecretData();
-        cerberusClient.write(sdbFullSecretPath, newSecretData);
-        secretData = newSecretData;
-
-        // confirm updated secret data
-        CerberusResponse cerberusReadResponseUpdated = cerberusClient.read(sdbFullSecretPath);
-        assertEquals(newSecretData, cerberusReadResponseUpdated.getData());
-
-        // delete secret
-        cerberusClient.delete(sdbFullSecretPath);
-
-        // confirm secret is deleted
-        try {
-            cerberusClient.read(sdbFullSecretPath);
-        } catch (CerberusServerException cse) {
-            assertEquals(404, cse.getCode());
-        }
-    }
-
-    @Test
-    public void test_secret_is_deleted_after_auth_with_iam_principal_name() {
-
-        staticIamRoleCerberusCredentialsProvider = new StaticIamRoleCerberusCredentialsProvider(
-                new DefaultCerberusUrlResolver(),
-                iam_principal_arn,
-                region);
-
-        cerberusClient = new CerberusClient(new DefaultCerberusUrlResolver(),
-                staticIamRoleCerberusCredentialsProvider, new OkHttpClient());
+        cerberusClient = new CerberusClient(cerberusUrl,
+                stsCerberusCredentialsProvider, new OkHttpClient());
 
         // create secret
         cerberusClient.write(sdbFullSecretPath, secretData);
@@ -178,13 +124,12 @@ public class CerberusClientTest {
     @Test
     public void test_crud_for_files() {
 
-        staticIamRoleCerberusCredentialsProvider = new StaticIamRoleCerberusCredentialsProvider(
-                new DefaultCerberusUrlResolver(),
-                iam_principal_arn,
+        stsCerberusCredentialsProvider = new StsCerberusCredentialsProvider(
+                cerberusUrl,
                 region);
 
-        cerberusClient = new CerberusClient(new DefaultCerberusUrlResolver(),
-                staticIamRoleCerberusCredentialsProvider, new OkHttpClient());
+        cerberusClient = new CerberusClient(cerberusUrl,
+                stsCerberusCredentialsProvider, new OkHttpClient());
 
         String fileContentStr = "file content string!";
         byte[] fileContentArr = fileContentStr.getBytes(StandardCharsets.UTF_8);

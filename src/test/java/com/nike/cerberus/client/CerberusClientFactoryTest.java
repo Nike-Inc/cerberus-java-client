@@ -33,8 +33,6 @@ public class CerberusClientFactoryTest {
 
     private final String url = "https://localhost/";
 
-    private final StaticCerberusUrlResolver urlResolver = new StaticCerberusUrlResolver(url);
-
     private final String TOKEN = "TOKEN";
 
     private final CerberusCredentialsProvider credentialsProvider = new CerberusCredentialsProvider() {
@@ -46,21 +44,8 @@ public class CerberusClientFactoryTest {
     };
 
     @Test
-    public void test_get_client_returns_configured_client() {
-        final CerberusClient client = CerberusClientFactory.getClient();
-        assertThat(client).isNotNull();
-    }
-
-    @Test
-    public void test_get_client_uses_custom_url_resolver() {
-        final CerberusClient client = CerberusClientFactory.getClient(urlResolver);
-        assertThat(client).isNotNull();
-        assertThat(client.getCerberusUrl().url().toString()).isEqualTo(url);
-    }
-
-    @Test
-    public void test_get_client_uses_custom_url_resolver_and_creds_provider() {
-        final CerberusClient client = CerberusClientFactory.getClient(urlResolver, credentialsProvider);
+    public void test_get_client_uses_url_and_creds_provider() {
+        final CerberusClient client = CerberusClientFactory.getClient(url, credentialsProvider);
         assertThat(client).isNotNull();
         assertThat(client.getCerberusUrl().url().toString()).isEqualTo(url);
         assertThat(client.getCredentialsProvider()).isNotNull();
@@ -73,35 +58,13 @@ public class CerberusClientFactoryTest {
         final String headerValue = "header value";
         final Map<String, String> defaultHeaders = new HashMap<>();
         defaultHeaders.put(headerKey, headerValue);
-        final CerberusClient client = CerberusClientFactory.getClient(urlResolver, credentialsProvider, defaultHeaders);
+        final CerberusClient client = CerberusClientFactory.getClient(url, credentialsProvider, defaultHeaders);
         assertThat(client).isNotNull();
         assertThat(client.getCerberusUrl().url().toString()).isEqualTo(url);
         assertThat(client.getCredentialsProvider()).isNotNull();
         assertThat(client.getCredentialsProvider().getCredentials().getToken()).isEqualTo(TOKEN);
         assertThat(client.getDefaultHeaders().size()).isEqualTo(1);
         assertThat(client.getDefaultHeaders().get(headerKey)).isEqualTo(headerValue);
-    }
-
-    @Test
-    public void test_get_admin_client_returns_configured_client() {
-        final CerberusClient client = CerberusClientFactory.getClient();
-        assertThat(client).isNotNull();
-    }
-
-    @Test
-    public void test_get_admin_client_uses_custom_url_resolver() {
-        final CerberusClient client = CerberusClientFactory.getClient(urlResolver);
-        assertThat(client).isNotNull();
-        assertThat(client.getCerberusUrl().url().toString()).isEqualTo(url);
-    }
-
-    @Test
-    public void test_get_admin_client_uses_custom_url_resolver_and_creds_provider() {
-        final CerberusClient client = CerberusClientFactory.getClient(urlResolver, credentialsProvider);
-        assertThat(client).isNotNull();
-        assertThat(client.getCerberusUrl().url().toString()).isEqualTo(url);
-        assertThat(client.getCredentialsProvider()).isNotNull();
-        assertThat(client.getCredentialsProvider().getCredentials().getToken()).isEqualTo(TOKEN);
     }
 
     @Test
@@ -110,7 +73,7 @@ public class CerberusClientFactoryTest {
         final String headerValue = "header value";
         final Map<String, String> defaultHeaders = new HashMap<>();
         defaultHeaders.put(headerKey, headerValue);
-        final CerberusClient client = CerberusClientFactory.getClient(urlResolver, credentialsProvider, 100, defaultHeaders);
+        final CerberusClient client = CerberusClientFactory.getClient(url, credentialsProvider, 100, defaultHeaders);
         assertThat(client).isNotNull();
         assertThat(client.getCerberusUrl().url().toString()).isEqualTo(url);
         assertThat(client.getCredentialsProvider()).isNotNull();
@@ -119,18 +82,4 @@ public class CerberusClientFactoryTest {
         assertThat(client.getDefaultHeaders().get(headerKey)).isEqualTo(headerValue);
     }
 
-    @Test
-    public void test_get_admin_client_uses_default_headers() {
-        final String headerKey = "HeaderKey";
-        final String headerValue = "header value";
-        final Map<String, String> defaultHeaders = new HashMap<>();
-        defaultHeaders.put(headerKey, headerValue);
-        final CerberusClient client = CerberusClientFactory.getClient(urlResolver, credentialsProvider, defaultHeaders);
-        assertThat(client).isNotNull();
-        assertThat(client.getCerberusUrl().url().toString()).isEqualTo(url);
-        assertThat(client.getCredentialsProvider()).isNotNull();
-        assertThat(client.getCredentialsProvider().getCredentials().getToken()).isEqualTo(TOKEN);
-        assertThat(client.getDefaultHeaders().size()).isEqualTo(1);
-        assertThat(client.getDefaultHeaders().get(headerKey)).isEqualTo(headerValue);
-    }
 }

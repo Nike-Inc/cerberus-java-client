@@ -39,11 +39,15 @@ public class DefaultCerberusCredentialsProviderChainTest {
 
     private static final String SYS_VALUE = "SYS";
 
+    private static final String region = "us-west-2";
+
+    private static final String url = "url";
+
     private DefaultCerberusCredentialsProviderChain credentialsProviderChain;
 
     @Before
     public void setup() {
-        credentialsProviderChain = new DefaultCerberusCredentialsProviderChain();
+        credentialsProviderChain = new DefaultCerberusCredentialsProviderChain(url, region);
     }
 
     @Test
