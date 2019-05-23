@@ -86,6 +86,7 @@ shadowJar {
     relocate 'models.', 'cerberus.models.'
     relocate 'mozilla.', 'cerberus.mozilla.'
     relocate 'software.', 'cerberus.software.'
+    relocate 'okio.', 'cerberus.okio.'
 }
 
 shadowJar.dependsOn copyProjectVersion
