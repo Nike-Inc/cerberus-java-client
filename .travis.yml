@@ -5,8 +5,9 @@ cache:
   directories:
   - "$HOME/.m2"
 after_success:
-- ./gradlew cobertura coveralls --stacktrace
+- "./gradlew cobertura coveralls --stacktrace"
 - test "${TRAVIS_PULL_REQUEST}" == "false" && test "${TRAVIS_TAG}" != "" && ./gradlew
   bintrayUpload --stacktrace
 env:
   global:
+    secure: SLaTje7lz2/rdFhhtvAjwdzg8bizjqYz96m8bX0zd57v8neuOv/0PXqh1v1WnOmf99RDXmQXo1kWvLYx48fpzyIExTgwtMWHtaYYNG5K6LutHACD5Gg65wjgVGIoNpRsyhB0TSdPi5MdPMeCz0zraTYfq+xuCu2pmY7qSqt/cPkz1UGvnDnJYuZfTOBBdM4NApmBfeGD5xQtV3VMmHJp9GBT6otg9XoD/KJWvbGsEJlHC3t+KVzBU0eqVcyBX3iwDVjs17Vy5OF8v0K9ZJa44CjBeNMiXUu1EQScvqiB9EFY8md47+DPBRb7dzqi+mFmQanU1L0BGZiIFULYzoSOHPE8Pgr9SvARUmZCicyYKedd/zi2MQpjRIeAvgVff+WH8hsQLH6pW9RbRQC4UFZ/lnpX8x57KN7m7y6xYLZ6soeQC0mPopUYSLCBaXuOcnH7ZkZ1JuVzfMmE5J0zT9bqzWmVzopSxtZWVxhoPKsQFlUuhTNtdY4reTse1nyCj8GjpstOL7Xg+x0AC0RMIMwhMIAgGCaUwYqlwTztv8hYZ48j51AXjIWo7l4xq7hbYwKOSWdjifWl7ixLh+IIIkGGDyi6qLsNa6v5l3t0N+3sES1ryZWpFDzX120HBS64xNuPk+mvfWA0MomqOGnM6HQoc4RAzNiGy4mWTbYkq330MjI=
