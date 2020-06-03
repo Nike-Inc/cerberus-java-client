@@ -82,6 +82,8 @@ shadowJar {
         exclude 'org.slf4j.**'
         exclude 'org.joda.**'
         exclude 'org.apache.commons.lang3.**'
+        exclude 'org.w3c.dom.**'
+        exclude 'org.xml.**'
     }
     relocate 'models.', 'cerberus.models.'
     relocate 'mozilla.', 'cerberus.mozilla.'
