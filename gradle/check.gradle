@@ -61,7 +61,5 @@ task findbugsHtml {
 }
 findbugsMain.finalizedBy findbugsHtml
 
-tasks.coveralls.dependsOn {
-    check
-    dependencyCheckAnalyze
-}
+tasks.check.dependsOn dependencyCheckAnalyze
+tasks.coveralls.dependsOn check
