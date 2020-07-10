@@ -18,6 +18,13 @@ apply plugin: 'findbugs'
 apply plugin: 'pmd'
 apply plugin: 'cobertura'
 apply plugin: 'com.github.kt3k.coveralls'
+apply plugin: 'org.owasp.dependencycheck'
+
+dependencyCheck {
+    failOnError = false
+    format = 'ALL'
+    failBuildOnCVSS = 7
+}
 
 findbugs {
     ignoreFailures = false
@@ -54,4 +61,5 @@ task findbugsHtml {
 }
 findbugsMain.finalizedBy findbugsHtml
 
+tasks.check.dependsOn dependencyCheckAnalyze
 tasks.coveralls.dependsOn check
