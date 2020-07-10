@@ -63,8 +63,8 @@ artifacts {
 
 publishing {
     publications {
-        jar(MavenPublication) {
-            from components.shadow
+        jar(MavenPublication) { publication ->
+            from project.shadow.component(publication)
 
             artifact sourcesJar
             artifact javadocJar
