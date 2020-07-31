@@ -160,8 +160,10 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
      */
     protected Map<String, String> getSignedHeaders(){
 
-        final String url = "https://sts." + regionName + ".amazonaws.com";
-
+        String url = "https://sts." + regionName + ".amazonaws.com";
+        if(isChina(regionName)) {
+            url += ".cn";
+        }
         URI endpoint = null;
 
         try {
@@ -241,5 +243,9 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
                 .plusSeconds(token.getLeaseDuration() - paddingTimeInSeconds);
         credentials = new TokenCerberusCredentials(token.getClientToken());
         expireDateTime = expires;
+    }
+
+    private boolean isChina(String regionName) {
+        return regionName.equals("cn-north-1") || regionName.equals("cn-northwest-1");
     }
 }
