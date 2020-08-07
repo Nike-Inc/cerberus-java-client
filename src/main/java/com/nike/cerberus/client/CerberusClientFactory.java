@@ -37,7 +37,7 @@ import static okhttp3.ConnectionSpec.MODERN_TLS;
  */
 public class CerberusClientFactory {
 
-    public static final int DEFAULT_TIMEOUT = 15_000;
+    public static final int DEFAULT_TIMEOUT = 30_000;
     public static final TimeUnit DEFAULT_TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
 
     /**
