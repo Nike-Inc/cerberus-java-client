@@ -41,10 +41,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Provider for allowing users to authenticate with Cerberus with the STS auth endpoint.
@@ -56,6 +53,12 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
     protected AWSCredentialsProviderChain providerChain;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseAwsCredentialsProvider.class);
+
+    private final List<String> CHINA_REGIONS = new ArrayList<String>(
+            Arrays.asList(
+                    "cn-north-1",
+                    "cn-northwest-1")
+    );
 
     private final Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
             .create();
@@ -160,8 +163,10 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
      */
     protected Map<String, String> getSignedHeaders(){
 
-        final String url = "https://sts." + regionName + ".amazonaws.com";
-
+        String url = "https://sts." + regionName + ".amazonaws.com";
+        if(CHINA_REGIONS.contains(regionName)) {
+            url += ".cn";
+        }
         URI endpoint = null;
 
         try {
