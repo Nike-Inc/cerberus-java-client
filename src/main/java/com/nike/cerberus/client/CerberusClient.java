@@ -548,7 +548,8 @@ public class CerberusClient {
         } catch (JsonSyntaxException e) {
             logger.error("parseResponseBody: responseCode={}, requestUrl={}, response={}",
                     response.code(), response.request().url(), responseBodyStr);
-            throw new CerberusClientException("Error parsing the response body from Cerberus, response code: " + response.code(), e);
+            throw new CerberusClientException("Error parsing the response body from Cerberus, response code: "
+                + response.code() + ", response body: " + responseBodyStr, e);
         }
     }
 
@@ -567,7 +568,8 @@ public class CerberusClient {
         } catch (JsonSyntaxException e) {
             logger.error("parseResponseBody: responseCode={}, requestUrl={}, response={}",
                     response.code(), response.request().url(), responseBodyStr);
-            throw new CerberusClientException("Error parsing the response body from Cerberus, response code: " + response.code(), e);
+            throw new CerberusClientException("Error parsing the response body from Cerberus, response code: "
+                + response.code() + ", response body: " + responseBodyStr, e);
         }
     }
 
@@ -591,7 +593,8 @@ public class CerberusClient {
             }
         } catch (JsonSyntaxException e) {
             logger.error("ERROR Failed to parse error message, response body received: {}", responseBodyStr);
-            throw new CerberusClientException("Error parsing the error response body from Cerberus, response code: " + response.code(), e);
+            throw new CerberusClientException("Error parsing the error response body from Cerberus, response code: "
+                + response.code() + ", response body: " + responseBodyStr, e);
         }
     }
 
@@ -615,7 +618,8 @@ public class CerberusClient {
             }
         } catch (JsonSyntaxException e) {
             logger.error("ERROR Failed to parse error message, response body received: {}", responseBodyStr);
-            throw new CerberusClientException("Error parsing the error response body from Cerberus, response code: " + response.code(), e);
+            throw new CerberusClientException("Error parsing the error response body from Cerberus, response code: "
+                + response.code() + ", response body: " + responseBodyStr, e);
         }
     }
 
@@ -660,7 +664,7 @@ public class CerberusClient {
             return response.body().bytes();
         } catch (IOException ioe) {
             logger.debug("responseBodyAsString: response={}", gson.toJson(response));
-            throw new CerberusClientException("ERROR failed to print ");
+            throw new CerberusClientException("ERROR failed to print: " + response.toString());
         }
     }
 

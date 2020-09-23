@@ -235,9 +235,16 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
     protected void authenticate() {
 
         CerberusAuthResponse token = getToken();
+        String identity = "unknown";
+
+        if (token.getMetadata().containsKey("aws_iam_principal_arn")) {
+            identity = token.getMetadata().get("aws_iam_principal_arn");
+        } else if (token.getMetadata().containsKey("username")) {
+            identity = token.getMetadata().get("username");
+        }
 
         if (token.getClientToken() != null) {
-            LOGGER.info(String.format("Authentication successful"));
+            LOGGER.info(String.format("Successfully authenticated with Cerberus as %s", identity));
         } else {
             throw new CerberusClientException("Success response from Cerberus missing token");
         }
