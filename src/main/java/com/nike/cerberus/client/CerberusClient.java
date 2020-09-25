@@ -482,42 +482,6 @@ public class CerberusClient {
     }
 
     /**
-     * Executes an HTTP request and retries if a 500 level error is returned
-     * @param httpUrl                Full URL to which to make the HTTP request
-     * @param method                 HTTP Method (e.g. GET, PUT, POST)
-     * @param requestBody            Body to add to the request. Nullable
-     * @param numRetries             Maximum number of times to retry on 500 failures
-     * @param sleepIntervalInMillis  Time in milliseconds to sleep between retries. Zero for no sleep
-     * @return Any HTTP response with status code below 500, or the last error response if only 500's are returned
-     */
-    protected Response executeWithRetry(final HttpUrl httpUrl,
-                                        final String method,
-                                        final Object requestBody,
-                                        final int numRetries,
-                                        final int sleepIntervalInMillis) {
-        CerberusClientException exception = null;
-        Response response = null;
-        for(int retryNumber = 0; retryNumber < numRetries; retryNumber++) {
-            try {
-                response = execute(httpUrl, method, requestBody);
-                if (response.code() < 500) {
-                    return response;
-                }
-            } catch (CerberusClientException cce) {
-                logger.debug(String.format("Failed to call %s %s. Retrying...", method, httpUrl), cce);
-                exception = cce;
-            }
-            sleep(sleepIntervalInMillis * (long) Math.pow(2, retryNumber));
-        }
-
-        if (exception != null) {
-            throw exception;
-        } else {
-            return response;
-        }
-    }
-
-    /**
      * Executes the HTTP request based on the input parameters.
      *
      * @param httpUrl     The URL to execute the request against
