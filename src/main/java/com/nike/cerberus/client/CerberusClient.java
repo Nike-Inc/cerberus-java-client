@@ -29,6 +29,10 @@ import com.nike.cerberus.client.http.HttpStatus;
 import com.nike.cerberus.client.model.CerberusListFilesResponse;
 import com.nike.cerberus.client.model.CerberusListResponse;
 import com.nike.cerberus.client.model.CerberusResponse;
+import static io.github.resilience4j.decorators.Decorators.ofSupplier;
+import io.github.resilience4j.core.IntervalFunction;
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryConfig;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -45,10 +49,13 @@ import org.slf4j.LoggerFactory;
 import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 /**
  * Client for interacting with a Cerberus.
@@ -64,6 +71,16 @@ public class CerberusClient {
     protected static final int DEFAULT_NUM_RETRIES = 3;
 
     protected static final int DEFAULT_RETRY_INTERVAL_IN_MILLIS = 200;
+
+    private static final RetryConfig RETRY_CONFIG =
+            RetryConfig.<Response>custom()
+                    .maxAttempts(DEFAULT_NUM_RETRIES)
+                    .retryOnResult( response -> response.code() >= 500 && response.code() <= 599)
+                    .intervalFunction(
+                            IntervalFunction.ofExponentialBackoff(Duration.of(250, ChronoUnit.MILLIS)))
+                    .build();
+
+    private final Retry RETRY = Retry.of(this.getClass().getName(), RETRY_CONFIG);
 
     private final CerberusCredentialsProvider credentialsProvider;
 
@@ -151,10 +168,16 @@ public class CerberusClient {
      * @return Map containing the keys at that path
      */
     public CerberusListResponse list(final String path) {
+
         final HttpUrl httpUrl = buildUrl(SECRET_PATH_PREFIX, path + "?list=true");
         logger.debug("list: requestUrl={}", httpUrl);
 
-        final Response response = execute(httpUrl, HttpMethod.GET, null);
+        final Response response = ofSupplier(
+                    () -> execute(httpUrl, HttpMethod.GET, null)
+            )
+            .withRetry(RETRY)
+            .decorate()
+            .get();
 
         if (response.code() == HttpStatus.NOT_FOUND) {
             response.close();
@@ -205,7 +228,12 @@ public class CerberusClient {
         final HttpUrl httpUrl = buildUrl("v1/secure-files/", path, limit, offset);
 
         logger.debug("list: requestUrl={}, limit={}, offset={}", httpUrl, limit, offset);
-        final Response response = execute(httpUrl, HttpMethod.GET, null);
+        final Response response = ofSupplier(
+                () -> execute(httpUrl, HttpMethod.GET, null)
+        )
+                .withRetry(RETRY)
+                .decorate()
+                .get();
 
         if (response.code() != HttpStatus.OK) {
             parseAndThrowApiErrorResponse(response);
@@ -227,7 +255,12 @@ public class CerberusClient {
         final HttpUrl httpUrl = buildUrl(SECRET_PATH_PREFIX, path);
         logger.debug("read: requestUrl={}", httpUrl);
 
-        final Response response = executeWithRetry(httpUrl, HttpMethod.GET, null, DEFAULT_NUM_RETRIES, DEFAULT_RETRY_INTERVAL_IN_MILLIS);
+        final Response response = ofSupplier(
+                () -> execute(httpUrl, HttpMethod.GET, null)
+        )
+        .withRetry(RETRY)
+        .decorate()
+        .get();
 
         if (response.code() != HttpStatus.OK) {
             parseAndThrowErrorResponse(response);
@@ -249,7 +282,12 @@ public class CerberusClient {
         final HttpUrl httpUrl = buildUrl(SECURE_FILE_PATH_PREFIX, path);
         logger.debug("read: requestUrl={}", httpUrl);
 
-        final Response response = execute(httpUrl, HttpMethod.GET, null);
+        final Response response = ofSupplier(
+                () -> execute(httpUrl, HttpMethod.GET, null)
+        )
+                .withRetry(RETRY)
+                .decorate()
+                .get();
 
         if (response.code() != HttpStatus.OK) {
             parseAndThrowApiErrorResponse(response);
@@ -270,7 +308,12 @@ public class CerberusClient {
         final HttpUrl httpUrl = buildUrl(SECRET_PATH_PREFIX, path);
         logger.debug("write: requestUrl={}", httpUrl);
 
-        final Response response = execute(httpUrl, HttpMethod.POST, data);
+        final Response response = ofSupplier(
+                () -> execute(httpUrl, HttpMethod.POST, data)
+        )
+                .withRetry(RETRY)
+                .decorate()
+                .get();
 
         if (response.code() != HttpStatus.NO_CONTENT) {
             parseAndThrowErrorResponse(response);
@@ -322,7 +365,12 @@ public class CerberusClient {
         final HttpUrl httpUrl = buildUrl(SECURE_FILE_PATH_PREFIX, path);
         logger.debug("delete: requestUrl={}", httpUrl);
 
-        final Response response = execute(httpUrl, HttpMethod.DELETE, null);
+        final Response response = ofSupplier(
+                () -> execute(httpUrl, HttpMethod.DELETE, null)
+        )
+                .withRetry(RETRY)
+                .decorate()
+                .get();
 
         if (response.code() != HttpStatus.NO_CONTENT) {
             parseAndThrowApiErrorResponse(response);
@@ -340,7 +388,12 @@ public class CerberusClient {
         final HttpUrl httpUrl = buildUrl(SECRET_PATH_PREFIX, path);
         logger.debug("delete: requestUrl={}", httpUrl);
 
-        final Response response = execute(httpUrl, HttpMethod.DELETE, null);
+        final Response response = ofSupplier(
+                () -> execute(httpUrl, HttpMethod.DELETE, null)
+        )
+                .withRetry(RETRY)
+                .decorate()
+                .get();
 
         if (response.code() != HttpStatus.NO_CONTENT) {
             parseAndThrowErrorResponse(response);
