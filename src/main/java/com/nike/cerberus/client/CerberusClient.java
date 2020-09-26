@@ -160,7 +160,7 @@ public class CerberusClient {
             response.close();
             return new CerberusListResponse();
         } else if (response.code() != HttpStatus.OK) {
-            parseAndThrowErrorResponse(response);
+            parseAndThrowApiErrorResponse(response);
         }
 
         final Type mapType = new TypeToken<Map<String, Object>>() {
@@ -230,7 +230,7 @@ public class CerberusClient {
         final Response response = executeWithRetry(httpUrl, HttpMethod.GET, null, DEFAULT_NUM_RETRIES, DEFAULT_RETRY_INTERVAL_IN_MILLIS);
 
         if (response.code() != HttpStatus.OK) {
-            parseAndThrowErrorResponse(response);
+            parseAndThrowApiErrorResponse(response);
         }
 
         return parseResponseBody(response, CerberusResponse.class);
@@ -273,7 +273,7 @@ public class CerberusClient {
         final Response response = execute(httpUrl, HttpMethod.POST, data);
 
         if (response.code() != HttpStatus.NO_CONTENT) {
-            parseAndThrowErrorResponse(response);
+            parseAndThrowApiErrorResponse(response);
         }
     }
 
@@ -343,7 +343,7 @@ public class CerberusClient {
         final Response response = execute(httpUrl, HttpMethod.DELETE, null);
 
         if (response.code() != HttpStatus.NO_CONTENT) {
-            parseAndThrowErrorResponse(response);
+            parseAndThrowApiErrorResponse(response);
         }
     }
 
