@@ -206,9 +206,9 @@ public class CerberusClientTest {
 
         try {
             cerberusClient.read("app/not-found-path");
-        } catch (CerberusServerException se) {
+        } catch (CerberusServerApiException se) {
             assertThat(se.getCode()).isEqualTo(404);
-            assertThat(se.getErrors()).hasSize(2);
+            assertThat(se.getErrors()).hasSize(1);
         }
     }
 
@@ -247,9 +247,9 @@ public class CerberusClientTest {
             Map<String, String> data = new HashMap<>();
             data.put("key", "value");
             cerberusClient.write("app/not-allowed", data);
-        } catch (CerberusServerException se) {
+        } catch (CerberusServerApiException se) {
             assertThat(se.getCode()).isEqualTo(403);
-            assertThat(se.getErrors()).hasSize(2);
+            assertThat(se.getErrors()).hasSize(1);
         }
     }
 
@@ -286,9 +286,9 @@ public class CerberusClientTest {
 
         try {
             cerberusClient.delete("app/not-allowed");
-        } catch (CerberusServerException se) {
+        } catch (CerberusServerApiException se) {
             assertThat(se.getCode()).isEqualTo(403);
-            assertThat(se.getErrors()).hasSize(2);
+            assertThat(se.getErrors()).hasSize(1);
         }
     }
 
