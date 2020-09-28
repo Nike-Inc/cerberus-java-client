@@ -1,6 +1,9 @@
 {
+  "error_id": "error id",
   "errors": [
-    "message",
-    "oh noes"
+    {
+      "code": 99996,
+      "message": "Not found"
+    }
   ]
 }
