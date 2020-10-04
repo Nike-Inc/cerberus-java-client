@@ -18,6 +18,8 @@ package com.nike.cerberus.client;
 
 import org.junit.Test;
 
+import com.nike.cerberus.client.factory.DefaultCerberusClientFactory;
+
 import static org.junit.Assert.assertEquals;
 
 /**

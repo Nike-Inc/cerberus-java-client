@@ -16,9 +16,10 @@
 
 package com.nike.cerberus.client.auth;
 
-import com.nike.cerberus.client.CerberusClientException;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.nike.cerberus.client.exception.CerberusClientException;
 
 import java.util.Collections;
 import java.util.LinkedList;

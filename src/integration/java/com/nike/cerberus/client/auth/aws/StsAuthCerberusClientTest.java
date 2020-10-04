@@ -16,12 +16,13 @@
 
 package com.nike.cerberus.client.auth.aws;
 
-import com.fieldju.commons.EnvUtils;
-import com.nike.cerberus.client.auth.CerberusCredentials;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
-import static org.assertj.core.api.Assertions.assertThat;
+
+import com.nike.cerberus.client.auth.CerberusCredentials;
 
 /**
  * Tests StsCerberusCredentialsProvider class
@@ -33,8 +34,8 @@ public class StsAuthCerberusClientTest {
 
     @Before
     public void setUp() {
-        region = EnvUtils.getRequiredEnv("TEST_REGION");
-        cerberusUrl = EnvUtils.getRequiredEnv("CERBERUS_ADDR");
+        region = "us-west-1";
+        cerberusUrl = "http://localhost:8080";
     }
     
     @Test

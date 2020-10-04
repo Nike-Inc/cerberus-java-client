@@ -16,8 +16,9 @@
 
 package com.nike.cerberus.client.auth;
 
-import com.nike.cerberus.client.CerberusClientException;
 import org.apache.commons.lang3.StringUtils;
+
+import com.nike.cerberus.client.exception.CerberusClientException;
 
 /**
  * {@link CerberusCredentialsProvider} implementation that attempts to acquire the token

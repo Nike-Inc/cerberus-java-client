@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nike.cerberus.client.model;
+package com.nike.cerberus.client.model.response;
 
 import java.util.Map;
 import java.util.Set;

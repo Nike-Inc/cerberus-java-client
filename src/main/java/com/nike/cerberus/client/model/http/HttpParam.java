@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
-package com.nike.cerberus.client.http;
+package com.nike.cerberus.client.model.http;
 
-/**
- * Constants for HTTP methods used by the Cerberus client.
- */
-public final class HttpMethod {
-
-    public static final String GET = "GET";
-
-    public static final String POST = "POST";
-
-    public static final String PUT = "PUT";
-
-    public static final String DELETE = "DELETE";
-
-    public static final String HEAD = "HEAD";
-
-    public static final String PATCH = "PATCH";
+public class HttpParam {
+	
+	/*
+	 * Generic
+	 */
+    public static final String LIST 			= "list";
+    public static final String LIMIT 			= "limit";
+    public static final String OFFSET 			= "offset";
+    
+    /*
+     * SDB
+     */
+    public static final String VERSION_ID 		= "versionId";
 }

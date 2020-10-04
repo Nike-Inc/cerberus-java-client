@@ -16,26 +16,27 @@
 
 package com.nike.cerberus.client.auth.aws;
 
-import com.fieldju.commons.EnvUtils;
-import com.nike.cerberus.client.CerberusClient;
-import com.nike.cerberus.client.CerberusServerApiException;
-import com.nike.cerberus.client.CerberusServerException;
-import com.nike.cerberus.client.model.CerberusListFilesResponse;
-import com.nike.cerberus.client.model.CerberusListResponse;
-import com.nike.cerberus.client.model.CerberusResponse;
-import okhttp3.OkHttpClient;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import com.nike.cerberus.client.CerberusClient;
+import com.nike.cerberus.client.exception.CerberusServerApiException;
+import com.nike.cerberus.client.exception.CerberusServerException;
+import com.nike.cerberus.client.model.CerberusListFilesResponse;
+import com.nike.cerberus.client.model.CerberusListResponse;
+import com.nike.cerberus.client.model.CerberusResponse;
+
+import okhttp3.OkHttpClient;
 
 /**
  * Tests StsCerberusCredentialsProvider class
@@ -58,9 +59,8 @@ public class CerberusClientTest {
     @BeforeClass
     public static void setUp() {
 
-        region = EnvUtils.getRequiredEnv("TEST_REGION");
-
-        cerberusUrl = EnvUtils.getRequiredEnv("CERBERUS_ADDR");
+        region = "us-west-1";
+        cerberusUrl = "http://localhost:8080";
 
         secretPath = UUID.randomUUID().toString();
         sdbFullSecretPath = ROOT_SDB_PATH + secretPath;

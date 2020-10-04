@@ -17,6 +17,7 @@
 package com.nike.cerberus.client;
 
 import com.nike.cerberus.client.auth.TokenCerberusCredentials;
+import com.nike.cerberus.client.factory.CerberusClientFactory;
 import com.nike.cerberus.client.auth.CerberusCredentials;
 import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
 import org.junit.Test;

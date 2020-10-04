@@ -16,15 +16,10 @@
 
 package com.nike.cerberus.client.auth.aws;
 
-import com.nike.cerberus.client.CerberusServerException;
-import com.nike.cerberus.client.ClientVersion;
-import com.nike.cerberus.client.auth.CerberusCredentials;
-import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
-import com.nike.cerberus.client.auth.TokenCerberusCredentials;
-import okhttp3.*;
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.nike.cerberus.client.factory.CerberusClientFactory.DEFAULT_TIMEOUT;
+import static com.nike.cerberus.client.factory.CerberusClientFactory.DEFAULT_TIMEOUT_UNIT;
+import static com.nike.cerberus.client.factory.CerberusClientFactory.TLS_1_2_OR_NEWER;
+import static okhttp3.ConnectionSpec.CLEARTEXT;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,8 +28,20 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static com.nike.cerberus.client.CerberusClientFactory.*;
-import static okhttp3.ConnectionSpec.CLEARTEXT;
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.nike.cerberus.client.auth.CerberusCredentials;
+import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
+import com.nike.cerberus.client.auth.TokenCerberusCredentials;
+import com.nike.cerberus.client.exception.CerberusServerException;
+
+import okhttp3.ConnectionSpec;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * {@link CerberusCredentialsProvider} implementation that uses some AWS
@@ -67,8 +74,6 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
 
     protected final String cerberusUrl;
 
-    private final String cerberusJavaClientHeaderValue;
-
     private final OkHttpClient httpClient;
 
     /**
@@ -79,7 +84,6 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
     public BaseAwsCredentialsProvider(String cerberusUrl) {
         super();
         this.cerberusUrl = cerberusUrl;
-        this.cerberusJavaClientHeaderValue = ClientVersion.getClientHeaderValue();
         LOGGER.info("Cerberus URL={}", this.cerberusUrl);
 
         this.httpClient = createHttpClient();
@@ -94,7 +98,6 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
     public BaseAwsCredentialsProvider(String cerberusUrl, String xCerberusClientOverride) {
         super();
         this.cerberusUrl = cerberusUrl;
-        this.cerberusJavaClientHeaderValue = xCerberusClientOverride;
         LOGGER.info("Cerberus URL={}", this.cerberusUrl);
 
         this.httpClient = createHttpClient();
@@ -110,7 +113,6 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
     public BaseAwsCredentialsProvider(String cerberusUrl, OkHttpClient httpClient) {
         super();
         this.cerberusUrl = cerberusUrl;
-        this.cerberusJavaClientHeaderValue = ClientVersion.getClientHeaderValue();
         LOGGER.info("Cerberus URL={}", this.cerberusUrl);
 
         this.httpClient = httpClient;

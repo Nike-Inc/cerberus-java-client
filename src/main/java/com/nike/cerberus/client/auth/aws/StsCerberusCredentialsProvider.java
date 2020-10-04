@@ -26,11 +26,12 @@ import com.amazonaws.regions.Regions;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.nike.cerberus.client.CerberusClientException;
 import com.nike.cerberus.client.auth.TokenCerberusCredentials;
-import com.nike.cerberus.client.http.HttpMethod;
-import com.nike.cerberus.client.http.HttpStatus;
-import com.nike.cerberus.client.model.CerberusAuthResponse;
+import com.nike.cerberus.client.exception.CerberusClientException;
+import com.nike.cerberus.client.model.http.HttpMethod;
+import com.nike.cerberus.client.model.http.HttpStatus;
+import com.nike.cerberus.client.model.response.CerberusAuthResponse;
+
 import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -149,7 +150,7 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
      * @param request AWS STS request to sign
      * @param credentials AWS credentials
      */
-    private void signRequest(com.amazonaws.Request request, AWSCredentials credentials){
+    private void signRequest(com.amazonaws.Request<String> request, AWSCredentials credentials){
 
         AWS4Signer signer = new AWS4Signer();
         signer.setRegionName(regionName);
@@ -210,7 +211,7 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
             Request request = new Request.Builder()
                     .url(cerberusUrl + "/v2/auth/sts-identity")
                     .headers(Headers.of(signedHeaders))
-                    .method(HttpMethod.POST, RequestBody.create(DEFAULT_MEDIA_TYPE, ""))
+                    .method(HttpMethod.POST.getHttpMethod(), RequestBody.create(DEFAULT_MEDIA_TYPE, ""))
                     .build();
 
             Response response = executeRequestWithRetry(request, DEFAULT_AUTH_RETRIES, DEFAULT_RETRY_INTERVAL_IN_MILLIS);

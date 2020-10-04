@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-package com.nike.cerberus.client;
+package com.nike.cerberus.client.model.http;
 
-public class CerberusClientException extends RuntimeException {
-    /**
-     * Constructs the exception with a message and underlying exception.
-     *
-     * @param message Message
-     * @param t       Underlying exception
-     */
-    public CerberusClientException(String message, Throwable t) {
-        super(message, t);
-    }
+/**
+ * Constants for HTTP methods used by the Cerberus client.
+ */
+public enum HttpMethod {
 
-    /**
-     * Constructs the exception with a message.
-     *
-     * @param message Message
-     */
-    public CerberusClientException(String message) {
-        super(message);
+    GET("GET"),
+    POST("POST"),
+    PUT("PUT"),
+    HEAD("HEAD"),
+    DELETE("DELETE");
+
+    private String httpMethod;
+    
+    HttpMethod(String httpMethod) {
+        this.httpMethod = httpMethod;
     }
+ 
+    public String getHttpMethod() {
+		return httpMethod;
+	}
 }

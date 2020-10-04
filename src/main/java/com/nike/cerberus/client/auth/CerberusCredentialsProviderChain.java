@@ -16,10 +16,11 @@
 
 package com.nike.cerberus.client.auth;
 
-import com.nike.cerberus.client.CerberusClientException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.nike.cerberus.client.exception.CerberusClientException;
 
 import java.util.ArrayList;
 import java.util.Collections;

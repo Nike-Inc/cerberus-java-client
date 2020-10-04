@@ -16,6 +16,9 @@
 
 repositories {
     jcenter()
+    maven {
+       url 'https://dl.bintray.com/nike/maven/'
+    }
 }
 
 dependencies {

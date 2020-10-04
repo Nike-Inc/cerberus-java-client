@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nike.cerberus.client;
+package com.nike.cerberus.client.exception;
 
 import org.apache.commons.lang3.StringUtils;
 

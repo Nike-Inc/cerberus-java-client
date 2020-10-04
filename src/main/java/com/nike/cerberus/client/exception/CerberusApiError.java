@@ -14,12 +14,25 @@
  * limitations under the License.
  */
 
-package com.nike.cerberus.client.http;
+package com.nike.cerberus.client.exception;
 
-public class HttpHeader {
-    public static final String CERBERUS_TOKEN = "X-Cerberus-Token";
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-    public static final String ACCEPT = "Accept";
+public class CerberusApiError {
+    private int code;
+    private String message;
 
-    public static final String CONTENT_TYPE = "Content-Type";
+    public int getCode() {
+        return code;
+    }
+
+    @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
+    public String getMessage() {
+        return message;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("ErrorCode: %s, Message: %s", code, message);
+    }
 }

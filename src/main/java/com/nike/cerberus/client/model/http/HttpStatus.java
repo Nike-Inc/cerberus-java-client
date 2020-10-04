@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nike.cerberus.client.http;
+package com.nike.cerberus.client.model.http;
 
 /**
  * Constants for HTTP status codes interpreted by the Cerberus client.

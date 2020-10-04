@@ -16,12 +16,13 @@
 
 package com.nike.cerberus.client.auth;
 
-import com.nike.cerberus.client.CerberusClientException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+
+import com.nike.cerberus.client.exception.CerberusClientException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;

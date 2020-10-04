@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package com.nike.cerberus.client;
+package com.nike.cerberus.client.factory;
 
+import com.nike.cerberus.client.CerberusClient;
+import com.nike.cerberus.client.ClientVersion;
 import com.nike.cerberus.client.auth.DefaultCerberusCredentialsProviderChain;
 import okhttp3.ConnectionSpec;
 import okhttp3.OkHttpClient;
