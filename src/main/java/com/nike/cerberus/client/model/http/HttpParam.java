@@ -29,4 +29,10 @@ public class HttpParam {
      * SDB
      */
     public static final String VERSION_ID 		= "versionId";
+    
+    /*
+     * Metadata
+     */
+    public static final String SDB_NAME 		= "sdbName";
+    
 }

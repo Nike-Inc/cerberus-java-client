@@ -33,6 +33,7 @@ import com.nike.cerberus.client.model.http.HttpMethod;
 import com.nike.cerberus.client.model.http.HttpParam;
 import com.nike.cerberus.client.model.http.HttpStatus;
 import com.nike.cerberus.domain.AuthKmsKeyMetadataResult;
+import com.nike.cerberus.domain.SDBMetadataResult;
 import com.nike.cerberus.domain.SafeDepositBoxSummary;
 import com.nike.cerberus.domain.SafeDepositBoxV1;
 import com.nike.cerberus.domain.SecureDataResponse;
@@ -51,9 +52,10 @@ public class CerberusClient extends BaseCerberusClient{
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
 	private static final String SAFE_DEPOSIT_BOX 		= "v1/safe-deposit-box";
-	private static final String SECRETS 				= "v1/secret";
+	private static final String SECRET 					= "v1/secret";
 	private static final String SECURE_FILE				= "v1/secure-file";
 	private static final String SECURE_FILES			= "v1/secure-files";
+	private static final String METADATA				= "v1/metadata";
 	
 	private static final String ADMIN_AUTH_KMS_METADATA = "v1/admin/authentication-kms-metadata";
 	private static final String ADMIN_OVERRIDE_OWNER 	= "v1/admin/override-owner";
@@ -65,6 +67,11 @@ public class CerberusClient extends BaseCerberusClient{
     public CerberusClient(String cerberusUrl, CerberusCredentialsProvider credentialsProvider,OkHttpClient httpClient) {
 		super(cerberusUrl, credentialsProvider, httpClient);
 	}
+    
+    //TODO implement v1/role
+    //TODO implement v1/category
+    //TODO implement v1/secret-versions/{PATH}?limit={LIMIT}&offset={OFFSET}
+    //TODO implement v1/sdb-secret-version-paths/{SDB_ID}
     
     /*
      * Safe deposit box
@@ -133,12 +140,53 @@ public class CerberusClient extends BaseCerberusClient{
      * Secrets
      */
     
-    public SecureDataResponse listSecretPaths(String category, String sdbName, String path) {
-		Map<String,String> mapping = new HashMap<>();
-		mapping.put(HttpParam.LIST, "true");
-		
-        final HttpUrl httpUrl = buildUrl(SECRETS,mapping,category,sdbName,path);
-        logger.debug("listSecretPaths: requestUrl={}", httpUrl);
+    public SecureDataResponse listSecretPath(String category, String sdbName, String path) {
+    	Map<String,String> mapping = new HashMap<>();
+    	if(path != null && path.endsWith("/")) {
+    		mapping.put(HttpParam.LIST, "true");
+    	}
+    	return getSecrets(mapping, category, sdbName, path);
+    }
+
+    public SecureDataResponse listSecretPath(String category, String sdbName, String path, String versionId) {
+    	Map<String,String> mapping = new HashMap<>();
+    	mapping.put(HttpParam.VERSION_ID, versionId);
+    	return getSecrets(mapping, category, sdbName, path);
+    }
+    
+    public void createSecretPath(String category, String sdbName, String path, Map<String,String> values) {
+        final HttpUrl httpUrl = buildUrl(SECRET,category,sdbName,path);
+        logger.debug("getSecrets: requestUrl={}", httpUrl);
+
+        final Response response = executeWithRetry(httpUrl, HttpMethod.POST,values);
+        if (response.code() != HttpStatus.NO_CONTENT) {
+            parseAndThrowApiErrorResponse(response);
+        }
+    }
+    
+    public void updateSecretPath(String category, String sdbName, String path, Map<String,String> values) {
+        final HttpUrl httpUrl = buildUrl(SECRET,category,sdbName,path);
+        logger.debug("getSecrets: requestUrl={}", httpUrl);
+
+        final Response response = executeWithRetry(httpUrl, HttpMethod.PUT,values);
+        if (response.code() != HttpStatus.NO_CONTENT) {
+            parseAndThrowApiErrorResponse(response);
+        }
+    }
+    
+    public void deleteSecretPath(String category, String sdbName, String path, Map<String,String> values) {
+        final HttpUrl httpUrl = buildUrl(SECRET,category,sdbName,path);
+        logger.debug("getSecrets: requestUrl={}", httpUrl);
+
+        final Response response = executeWithRetry(httpUrl, HttpMethod.DELETE);
+        if (response.code() != HttpStatus.NO_CONTENT) {
+            parseAndThrowApiErrorResponse(response);
+        }
+    }
+    
+    private SecureDataResponse getSecrets(Map<String,String> mapping,String category, String sdbName, String path) {
+        final HttpUrl httpUrl = buildUrl(SECRET,mapping,category,sdbName,path);
+        logger.debug("getSecrets: requestUrl={}", httpUrl);
 
         final Response response = executeWithRetry(httpUrl, HttpMethod.GET);
         if (response.code() != HttpStatus.OK) {
@@ -206,9 +254,7 @@ public class CerberusClient extends BaseCerberusClient{
     }
     
     public SecureFileSummaryResult listSecureFiles(String category, String sdbName, int limit, int offset) {
-    	Map<String,String> mapping = new HashMap<>();
-		mapping.put(HttpParam.LIMIT, ""+limit);
-		mapping.put(HttpParam.OFFSET, ""+offset);
+    	Map<String,String> mapping = getLimitMappings(limit, offset);
     	
         final HttpUrl httpUrl = buildUrl(SECURE_FILES,mapping,category,sdbName);
         logger.debug("listSecureFiles: requestUrl={}", httpUrl);
@@ -230,6 +276,35 @@ public class CerberusClient extends BaseCerberusClient{
         }
 
         return responseBodyAsBytes(response);
+    }
+    
+    /*
+     * Metadata
+     */
+    
+    public SDBMetadataResult getMetadata() {
+    	return getMetadata(null, DEFAULT_LIMIT, DEFAULT_OFFSET);
+    }
+    
+    public SDBMetadataResult getMetadata(String sdbName) {
+    	return getMetadata(sdbName, DEFAULT_LIMIT, DEFAULT_OFFSET);
+    }
+    
+    public SDBMetadataResult getMetadata(String sdbName, int limit, int offset) {
+    	Map<String,String> mapping = getLimitMappings(limit, offset);
+    	if(sdbName != null) {
+    		mapping.put(HttpParam.SDB_NAME, sdbName);
+    	}
+    	
+        final HttpUrl httpUrl = buildUrl(METADATA);
+        logger.debug("getMetadata: requestUrl={}", httpUrl);
+
+        final Response response = executeWithRetry(httpUrl, HttpMethod.GET);
+        if (response.code() != HttpStatus.OK) {
+            parseAndThrowApiErrorResponse(response);
+        }
+
+        return parseResponseBody(response, SDBMetadataResult.class);
     }
     
     /*

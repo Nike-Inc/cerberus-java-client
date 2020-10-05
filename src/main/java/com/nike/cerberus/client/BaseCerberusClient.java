@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ import com.nike.cerberus.client.model.error.ApiErrorResponse;
 import com.nike.cerberus.client.model.error.ErrorResponse;
 import com.nike.cerberus.client.model.http.HttpHeader;
 import com.nike.cerberus.client.model.http.HttpMethod;
+import com.nike.cerberus.client.model.http.HttpParam;
 
 import io.github.resilience4j.core.IntervalFunction;
 import io.github.resilience4j.retry.Retry;
@@ -123,14 +125,13 @@ public abstract class BaseCerberusClient {
 	/*
 	 * Execute request
 	 */
-
 		
 	protected Response executeWithRetry(HttpUrl httpUrl,HttpMethod method) {
 		return executeWithRetry(httpUrl,method,null);
 	}
 	
 	protected Response executeWithRetry(HttpUrl httpUrl,HttpMethod method,Object requestBody) {
-		return ofSupplier(() -> execute(httpUrl, HttpMethod.GET, null)).withRetry(RETRY).decorate().get();
+		return ofSupplier(() -> execute(httpUrl, method, null)).withRetry(RETRY).decorate().get();
 	}
 
 	
@@ -195,6 +196,20 @@ public abstract class BaseCerberusClient {
 		}
 
 		return requestBuilder.build();
+	}
+	
+	/*
+	 * Params
+	 */
+	protected Map<String,String> getLimitMappings(int limit, int offset){
+		Map<String,String> mapping = new HashMap<>();
+		if(limit > 0) {
+			mapping.put(HttpParam.LIMIT, ""+limit);
+		}
+		if(offset > -1) {
+			mapping.put(HttpParam.OFFSET, ""+offset);
+		}
+		return mapping;
 	}
 
 	/*
