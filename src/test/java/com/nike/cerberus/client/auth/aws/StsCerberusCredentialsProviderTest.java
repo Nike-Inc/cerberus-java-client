@@ -55,11 +55,8 @@ public class StsCerberusCredentialsProviderTest {
 
     @Before
     public void setUp() {
-
         cerberusUrl = mock(String.class);
-
         chain = mock(AWSCredentialsProviderChain.class);
-
         credentials = new BasicSessionCredentials("foo", "bar", "cat");
     }
 
@@ -81,15 +78,19 @@ public class StsCerberusCredentialsProviderTest {
 
         MockWebServer mockWebServer = new MockWebServer();
         mockWebServer.start();
-        final String cerberusUrl = "http://localhost:" + mockWebServer.getPort();
-        StsCerberusCredentialsProvider credentialsProvider = new StsCerberusCredentialsProvider(cerberusUrl, testRegion, chain);
-
-        Map<String, String> headers = credentialsProvider.getSignedHeaders();
-        assertThat(headers).isNotNull();
-        assertThat(headers.get("Authorization")).isNotEmpty();
-        assertThat(headers.get("X-Amz-Date")).isNotEmpty();
-        assertThat(headers.get("X-Amz-Security-Token")).isNotEmpty();
-        assertThat(headers.get("Host")).isNotEmpty();
+        try{
+	        final String cerberusUrl = "http://localhost:" + mockWebServer.getPort();
+	        StsCerberusCredentialsProvider credentialsProvider = new StsCerberusCredentialsProvider(cerberusUrl, testRegion, chain);
+	
+	        Map<String, String> headers = credentialsProvider.getSignedHeaders();
+	        assertThat(headers).isNotNull();
+	        assertThat(headers.get("Authorization")).isNotEmpty();
+	        assertThat(headers.get("X-Amz-Date")).isNotEmpty();
+	        assertThat(headers.get("X-Amz-Security-Token")).isNotEmpty();
+	        assertThat(headers.get("Host")).isNotEmpty();
+        }finally {
+        	mockWebServer.close();
+		}
     }
 
 
@@ -100,13 +101,18 @@ public class StsCerberusCredentialsProviderTest {
 
         MockWebServer mockWebServer = new MockWebServer();
         mockWebServer.start();
-        final String cerberusUrl = "http://localhost:" + mockWebServer.getPort();
-        StsCerberusCredentialsProvider credentialsProvider = new StsCerberusCredentialsProvider(cerberusUrl, REGION_STRING_EAST, chain);
-
-        mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody(DECODED_AUTH_DATA));
-        CerberusAuthResponse token = credentialsProvider.getToken();
-        assertThat(token).isNotNull();
-        assertThat(StringUtils.isNotEmpty(token.getClientToken()));
+        try {
+	        final String cerberusUrl = "http://localhost:" + mockWebServer.getPort();
+	        StsCerberusCredentialsProvider credentialsProvider = new StsCerberusCredentialsProvider(cerberusUrl, REGION_STRING_EAST, chain);
+	
+	        mockWebServer.enqueue(new MockResponse().setResponseCode(200).setBody(DECODED_AUTH_DATA));
+	        CerberusAuthResponse token = credentialsProvider.getToken();
+	        assertThat(token).isNotNull();
+	        assertThat(StringUtils.isNotEmpty(token.getClientToken()));
+	        
+	    }finally {
+	    	mockWebServer.close();
+		}
     }
 
     @Test(expected = CerberusClientException.class)
@@ -116,12 +122,16 @@ public class StsCerberusCredentialsProviderTest {
 
         MockWebServer mockWebServer = new MockWebServer();
         mockWebServer.start();
-        final String cerberusUrl = "http://localhost:" + mockWebServer.getPort();
-        StsCerberusCredentialsProvider credentialsProvider = new StsCerberusCredentialsProvider(cerberusUrl, REGION_STRING_EAST, chain);
-
-        CerberusAuthResponse token = credentialsProvider.getToken();
-        assertThat(token).isNotNull();
-        assertThat(StringUtils.isNotEmpty(token.getClientToken()));
+        try {
+	        final String cerberusUrl = "http://localhost:" + mockWebServer.getPort();
+	        StsCerberusCredentialsProvider credentialsProvider = new StsCerberusCredentialsProvider(cerberusUrl, REGION_STRING_EAST, chain);
+	
+	        CerberusAuthResponse token = credentialsProvider.getToken();
+	        assertThat(token).isNotNull();
+	        assertThat(StringUtils.isNotEmpty(token.getClientToken()));
+	    }finally {
+	    	mockWebServer.close();
+		}
     }
 
     @Test(expected = CerberusClientException.class)
@@ -140,13 +150,17 @@ public class StsCerberusCredentialsProviderTest {
 
         MockWebServer mockWebServer = new MockWebServer();
         mockWebServer.start();
-        final String cerberusUrl = "http://localhost:" + mockWebServer.getPort();
-        StsCerberusCredentialsProvider credentialsProvider = new StsCerberusCredentialsProvider(cerberusUrl, REGION_STRING_EAST, chain);
-        mockWebServer.enqueue(new MockResponse().setResponseCode(400).setBody(ERROR_RESPONSE));
-
-        CerberusAuthResponse token = credentialsProvider.getToken();
-        assertThat(token).isNotNull();
-        assertThat(StringUtils.isNotEmpty(token.getClientToken()));
+        try {
+	        final String cerberusUrl = "http://localhost:" + mockWebServer.getPort();
+	        StsCerberusCredentialsProvider credentialsProvider = new StsCerberusCredentialsProvider(cerberusUrl, REGION_STRING_EAST, chain);
+	        mockWebServer.enqueue(new MockResponse().setResponseCode(400).setBody(ERROR_RESPONSE));
+	
+	        CerberusAuthResponse token = credentialsProvider.getToken();
+	        assertThat(token).isNotNull();
+	        assertThat(StringUtils.isNotEmpty(token.getClientToken()));
+	    }finally {
+	    	mockWebServer.close();
+		}
     }
 
     @Test(expected = CerberusClientException.class)

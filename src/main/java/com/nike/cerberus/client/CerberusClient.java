@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,10 +34,13 @@ import com.nike.cerberus.client.model.http.HttpMethod;
 import com.nike.cerberus.client.model.http.HttpParam;
 import com.nike.cerberus.client.model.http.HttpStatus;
 import com.nike.cerberus.domain.AuthKmsKeyMetadataResult;
+import com.nike.cerberus.domain.Category;
+import com.nike.cerberus.domain.Role;
 import com.nike.cerberus.domain.SDBMetadataResult;
 import com.nike.cerberus.domain.SafeDepositBoxSummary;
 import com.nike.cerberus.domain.SafeDepositBoxV1;
 import com.nike.cerberus.domain.SecureDataResponse;
+import com.nike.cerberus.domain.SecureDataVersionsResult;
 import com.nike.cerberus.domain.SecureFileSummaryResult;
 
 import okhttp3.Headers;
@@ -51,14 +55,19 @@ public class CerberusClient extends BaseCerberusClient{
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
-	private static final String SAFE_DEPOSIT_BOX 		= "v1/safe-deposit-box";
-	private static final String SECRET 					= "v1/secret";
-	private static final String SECURE_FILE				= "v1/secure-file";
-	private static final String SECURE_FILES			= "v1/secure-files";
-	private static final String METADATA				= "v1/metadata";
+	private static final String SAFE_DEPOSIT_BOX 			= "v1/safe-deposit-box";
+	private static final String SECRET 						= "v1/secret";
+	private static final String SECURE_FILE					= "v1/secure-file";
+	private static final String SECURE_FILES				= "v1/secure-files";
+	private static final String METADATA					= "v1/metadata";
+	private static final String ROLE						= "v1/role";
+	private static final String CATEGORY					= "v1/category";
+	private static final String SECRET_VERSIONS				= "v1/secret-versions";
+	private static final String SDB_SECRET_VERSION_PATHS	= "v1/sdb-secret-version-paths";
 	
-	private static final String ADMIN_AUTH_KMS_METADATA = "v1/admin/authentication-kms-metadata";
-	private static final String ADMIN_OVERRIDE_OWNER 	= "v1/admin/override-owner";
+	
+	private static final String ADMIN_AUTH_KMS_METADATA 	= "v1/admin/authentication-kms-metadata";
+	private static final String ADMIN_OVERRIDE_OWNER 		= "v1/admin/override-owner";
 	
 	public CerberusClient(String cerberusUrl, CerberusCredentialsProvider credentialsProvider,OkHttpClient httpClient, Headers defaultHeaders) {
 		super(cerberusUrl,credentialsProvider,httpClient,defaultHeaders);
@@ -67,11 +76,6 @@ public class CerberusClient extends BaseCerberusClient{
     public CerberusClient(String cerberusUrl, CerberusCredentialsProvider credentialsProvider,OkHttpClient httpClient) {
 		super(cerberusUrl, credentialsProvider, httpClient);
 	}
-    
-    //TODO implement v1/role
-    //TODO implement v1/category
-    //TODO implement v1/secret-versions/{PATH}?limit={LIMIT}&offset={OFFSET}
-    //TODO implement v1/sdb-secret-version-paths/{SDB_ID}
     
     /*
      * Safe deposit box
@@ -134,6 +138,123 @@ public class CerberusClient extends BaseCerberusClient{
         if (response.code() != HttpStatus.OK) {
             parseAndThrowApiErrorResponse(response);
         }
+    }
+    
+    /*
+     * Secret-versions
+     */
+    
+    public SecureDataVersionsResult getVersionPathsForSdb(String category, String sdbName, String path) {
+    	return getVersionPathsForSdb(category, sdbName, path,100,0);
+    }
+    
+    public SecureDataVersionsResult getVersionPathsForSdb(String category, String sdbName, String path, int limit, int offset) {
+    	Map<String,String> mapping = getLimitMappings(limit, offset);
+    	
+        final HttpUrl httpUrl = buildUrl(SECRET_VERSIONS,mapping,category,sdbName);
+        logger.debug("getVersionPathsForSdb: requestUrl={}", httpUrl);
+
+        final Response response = executeWithRetry(httpUrl, HttpMethod.GET);
+        if (response.code() != HttpStatus.OK) {
+            parseAndThrowApiErrorResponse(response);
+        }
+
+        return parseResponseBody(response, SecureDataVersionsResult.class);
+    }
+    
+    /*
+     * SDB secret version paths
+     */
+    
+    @SuppressWarnings("unchecked")
+	public Set<String> getSdbSecretVersionPaths(String sdbId){
+        final HttpUrl httpUrl = buildUrl(SDB_SECRET_VERSION_PATHS,sdbId);
+        logger.debug("getSdbSecretVersionPaths: requestUrl={}", httpUrl);
+
+        final Response response = executeWithRetry(httpUrl, HttpMethod.GET);
+        if (response.code() != HttpStatus.OK) {
+            parseAndThrowApiErrorResponse(response);
+        }
+
+        return parseResponseBody(response, Set.class);
+    }
+    
+    /*
+     * Role
+     */
+    
+    public List<Role> getRoles(){
+        final HttpUrl httpUrl = buildUrl(ROLE);
+        logger.debug("getRoles: requestUrl={}", httpUrl);
+
+        final Response response = executeWithRetry(httpUrl, HttpMethod.GET);
+        if (response.code() != HttpStatus.OK) {
+            parseAndThrowApiErrorResponse(response);
+        }
+
+        return Arrays.asList(parseResponseBody(response, Role[].class));
+    }
+    
+    public Role getRole(String roleId){
+        final HttpUrl httpUrl = buildUrl(ROLE,roleId);
+        logger.debug("getRoles: requestUrl={}", httpUrl);
+
+        final Response response = executeWithRetry(httpUrl, HttpMethod.GET);
+        if (response.code() != HttpStatus.OK) {
+            parseAndThrowApiErrorResponse(response);
+        }
+
+        return parseResponseBody(response, Role.class);
+    }
+    
+    /*
+     * Category
+     */
+    
+    public List<Category> getCategories(){
+        final HttpUrl httpUrl = buildUrl(CATEGORY);
+        logger.debug("getRoles: requestUrl={}", httpUrl);
+
+        final Response response = executeWithRetry(httpUrl, HttpMethod.GET);
+        if (response.code() != HttpStatus.OK) {
+            parseAndThrowApiErrorResponse(response);
+        }
+
+        return Arrays.asList(parseResponseBody(response, Category[].class));
+    }
+    
+    public Category getCategory(String categoryId){
+        final HttpUrl httpUrl = buildUrl(CATEGORY,categoryId);
+        logger.debug("getRoles: requestUrl={}", httpUrl);
+
+        final Response response = executeWithRetry(httpUrl, HttpMethod.GET);
+        if (response.code() != HttpStatus.OK) {
+            parseAndThrowApiErrorResponse(response);
+        }
+
+        return parseResponseBody(response, Category.class);
+    }
+    
+    public void deleteCategory(String categoryId){
+        final HttpUrl httpUrl = buildUrl(CATEGORY,categoryId);
+        logger.debug("getRoles: requestUrl={}", httpUrl);
+
+        final Response response = executeWithRetry(httpUrl, HttpMethod.DELETE);
+        if (response.code() != HttpStatus.OK || response.code() != HttpStatus.NOT_FOUND) {
+            parseAndThrowApiErrorResponse(response);
+        }
+    }
+    
+    public Category createCategory(Category category){
+        final HttpUrl httpUrl = buildUrl(CATEGORY);
+        logger.debug("getRoles: requestUrl={}", httpUrl);
+
+        final Response response = executeWithRetry(httpUrl, HttpMethod.POST,category);
+        if (response.code() != HttpStatus.OK) {
+            parseAndThrowApiErrorResponse(response);
+        }
+
+        return parseResponseBody(response, Category.class);
     }
     
     /*

@@ -18,7 +18,7 @@ package com.nike.cerberus.client.factory;
 
 import java.util.Map;
 
-import com.nike.cerberus.client.CerberusClient;
+import com.nike.cerberus.client.CerberusV2Client;
 import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
 
 import okhttp3.OkHttpClient;
@@ -26,7 +26,7 @@ import okhttp3.OkHttpClient;
 /**
  * Convenience factory for creating instances of Cerberus clients.
  */
-public class CerberusClientFactory extends BaseClientFactory {
+public class CerberusV2ClientFactory extends BaseClientFactory{
 
     /**
      * Factory method that allows for a user defined Cerberus URL resolver and credentials provider.
@@ -35,7 +35,7 @@ public class CerberusClientFactory extends BaseClientFactory {
      * @param cerberusCredentialsProvider Credential provider for acquiring a token for interacting with Cerberus
      * @return Cerberus client
      */
-    public static CerberusClient getClient(final String cerberusUrl,
+    public static CerberusV2Client getClient(final String cerberusUrl,
                                            final CerberusCredentialsProvider cerberusCredentialsProvider) {
 
         return getClient(cerberusUrl, cerberusCredentialsProvider, DEFAULT_HEADERS);
@@ -43,14 +43,14 @@ public class CerberusClientFactory extends BaseClientFactory {
 
     /**
      * Factory method that allows a user to define default HTTP defaultHeaders to be added to every HTTP request made from the
-     * CerberusClient. The user can also define their Cerberus URL resolver and credentials provider.
+     * CerberusV2Client. The user can also define their Cerberus URL resolver and credentials provider.
      *
      * @param cerberusUrl                 URL for Cerberus
      * @param cerberusCredentialsProvider Credential provider for acquiring a token for interacting with Cerberus
      * @param defaultHeaders              Map of default header names and values to add to every HTTP request
      * @return Cerberus client
      */
-    public static CerberusClient getClient(final String cerberusUrl,
+    public static CerberusV2Client getClient(final String cerberusUrl,
                                            final CerberusCredentialsProvider cerberusCredentialsProvider,
                                            final Map<String, String> defaultHeaders) {
 
@@ -75,7 +75,7 @@ public class CerberusClientFactory extends BaseClientFactory {
      * @param maxRequestsPerHost          Max Requests per Host used by the dispatcher
      * @return Cerberus admin client
      */
-    public static CerberusClient getClient(final String cerberusUrl,
+    public static CerberusV2Client getClient(final String cerberusUrl,
                                            final CerberusCredentialsProvider cerberusCredentialsProvider,
                                            final int maxRequestsPerHost) {
 
@@ -98,19 +98,19 @@ public class CerberusClientFactory extends BaseClientFactory {
      * @param httpClient                  the client to use for auth
      * @return Cerberus client
      */
-    public static CerberusClient getClient(final String cerberusUrl,
+    public static CerberusV2Client getClient(final String cerberusUrl,
                                            final CerberusCredentialsProvider cerberusCredentialsProvider,
                                            final Map<String, String> defaultHeaders,
                                            final OkHttpClient httpClient) {
 
-        return new CerberusClient(cerberusUrl,
+        return new CerberusV2Client(cerberusUrl,
                 cerberusCredentialsProvider,
                 httpClient,
                 getHeaders(defaultHeaders).build());
     }
 
     /**
-     * Factory method that allows the user to completely configure the CerberusClient.
+     * Factory method that allows the user to completely configure the CerberusV2Client.
      *
      * @param cerberusUrl                 URL for Cerberus
      * @param cerberusCredentialsProvider Credential provider for acquiring a token for interacting with Cerberus
@@ -118,7 +118,7 @@ public class CerberusClientFactory extends BaseClientFactory {
      * @param defaultHeaders              Map of default header names and values to add to every HTTP request
      * @return Cerberus admin client
      */
-    public static CerberusClient getClient(final String cerberusUrl,
+    public static CerberusV2Client getClient(final String cerberusUrl,
                                            final CerberusCredentialsProvider cerberusCredentialsProvider,
                                            final int maxRequestsPerHost,
                                            final Map<String, String> defaultHeaders) {
@@ -134,7 +134,7 @@ public class CerberusClientFactory extends BaseClientFactory {
     }
 
     /**
-     * Factory method that allows the user to completely configure the CerberusClient.
+     * Factory method that allows the user to completely configure the CerberusV2Client.
      *
      * @param cerberusUrl                 URL for Cerberus
      * @param cerberusCredentialsProvider Credential provider for acquiring a token for interacting with Cerberus
@@ -146,7 +146,7 @@ public class CerberusClientFactory extends BaseClientFactory {
      * @param defaultHeaders              Map of default header names and values to add to every HTTP request
      * @return Cerberus admin client
      */
-    public static CerberusClient getClient(final String cerberusUrl,
+    public static CerberusV2Client getClient(final String cerberusUrl,
                                            final CerberusCredentialsProvider cerberusCredentialsProvider,
                                            final int maxRequests,
                                            final int maxRequestsPerHost,
@@ -155,7 +155,7 @@ public class CerberusClientFactory extends BaseClientFactory {
                                            final int writeTimeoutMillis,
                                            final Map<String, String> defaultHeaders) {
 
-        return new CerberusClient(cerberusUrl,
+        return new CerberusV2Client(cerberusUrl,
                 cerberusCredentialsProvider,
                 new OkHttpClient.Builder()
                         .connectTimeout(connectTimeoutMillis, DEFAULT_TIMEOUT_UNIT)

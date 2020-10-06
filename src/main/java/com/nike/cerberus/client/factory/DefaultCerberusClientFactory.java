@@ -16,18 +16,21 @@
 
 package com.nike.cerberus.client.factory;
 
-import com.nike.cerberus.client.CerberusClient;
-import com.nike.cerberus.client.ClientVersion;
-import com.nike.cerberus.client.auth.DefaultCerberusCredentialsProviderChain;
-import okhttp3.ConnectionSpec;
-import okhttp3.OkHttpClient;
-
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.X509TrustManager;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.X509TrustManager;
+
+import com.nike.cerberus.client.CerberusClient;
+import com.nike.cerberus.client.CerberusV2Client;
+import com.nike.cerberus.client.ClientVersion;
+import com.nike.cerberus.client.auth.DefaultCerberusCredentialsProviderChain;
+
+import okhttp3.ConnectionSpec;
+import okhttp3.OkHttpClient;
 
 /**
  * Client factory for creating a Cerberus client with a URL resolver and credentials provider specific to Cerberus.
@@ -35,57 +38,64 @@ import java.util.Map;
 public final class DefaultCerberusClientFactory {
 
 
-    /**
-     * Creates a new {@link CerberusClient} for the supplied Cerberus URL
-     * and {@link DefaultCerberusCredentialsProviderChain} for obtaining credentials.
-     *
-     * @param cerberusUrl URL for Cerberus
-     * @param region      AWS region
-     * @return Cerberus client
-     */
     public static CerberusClient getClient(String cerberusUrl, String region) {
-
-        final Map<String, String> defaultHeaders = new HashMap<>();
-        defaultHeaders.put(ClientVersion.CERBERUS_CLIENT_HEADER, ClientVersion.getClientHeaderValue());
-
         return CerberusClientFactory.getClient(
                 cerberusUrl,
                 new DefaultCerberusCredentialsProviderChain(cerberusUrl, region),
-                defaultHeaders);
+                getDefaultHeaders());
+    }
+    
+    public static CerberusV2Client getV2Client(String cerberusUrl, String region) {
+        return CerberusV2ClientFactory.getClient(
+                cerberusUrl,
+                new DefaultCerberusCredentialsProviderChain(cerberusUrl, region),
+                getDefaultHeaders());
+    }
+    
+    // ----------------------------------------------------------------------------------------
+    
+    public static CerberusClient getClient(String cerberusUrl, String region, SSLSocketFactory sslSocketFactory, X509TrustManager trustManager) {
+    	OkHttpClient httpClient = getHttpClient(sslSocketFactory, trustManager);
+        return CerberusClientFactory.getClient(
+                cerberusUrl,
+                new DefaultCerberusCredentialsProviderChain(cerberusUrl, region, httpClient),
+                getDefaultHeaders(),
+                httpClient);
+    }
+    
+    public static CerberusV2Client getV2Client(String cerberusUrl, String region, SSLSocketFactory sslSocketFactory, X509TrustManager trustManager) {
+    	OkHttpClient httpClient = getHttpClient(sslSocketFactory, trustManager);
+        return CerberusV2ClientFactory.getClient(
+                cerberusUrl,
+                new DefaultCerberusCredentialsProviderChain(cerberusUrl, region, httpClient),
+                getDefaultHeaders(),
+                httpClient);
     }
 
-    /**
-     * Creates a new {@link CerberusClient} with the specified SSLSocketFactory and TrustManager.
-     * <p>
-     * This factory method is generally not recommended unless you have a specific need
-     * to configure your TLS for your httpClient differently than the default, e.g. Java 7.
-     *
-     * @param cerberusUrl      URL for Cerberus
-     * @param region           AWS region
-     * @param sslSocketFactory the factory to use for TLS
-     * @param trustManager     the trust manager to use for TLS
-     * @return Cerberus client
+    /*
+     * Helpers
      */
-    public static CerberusClient getClient(String cerberusUrl, String region, SSLSocketFactory sslSocketFactory, X509TrustManager trustManager) {
-
-        final Map<String, String> defaultHeaders = new HashMap<>();
-        defaultHeaders.put(ClientVersion.CERBERUS_CLIENT_HEADER, ClientVersion.getClientHeaderValue());
-
-        List<ConnectionSpec> connectionSpecs = new ArrayList<>();
-        connectionSpecs.add(CerberusClientFactory.TLS_1_2_OR_NEWER);
-
-        OkHttpClient httpClient = new OkHttpClient.Builder()
+    
+    private static Map<String, String> getDefaultHeaders(){
+    	final Map<String, String> defaultHeaders = new HashMap<>();
+    	defaultHeaders.put(ClientVersion.CERBERUS_CLIENT_HEADER, ClientVersion.getClientHeaderValue());
+    	return defaultHeaders;
+    }
+    
+    private static  List<ConnectionSpec> getConnectionSpecs(){
+    	List<ConnectionSpec> connectionSpecs = new ArrayList<>();
+    	connectionSpecs.add(CerberusClientFactory.TLS_1_2_OR_NEWER);
+    	return connectionSpecs;
+    }
+    
+	private static OkHttpClient getHttpClient(SSLSocketFactory sslSocketFactory, X509TrustManager trustManager) {
+		return new OkHttpClient.Builder()
                 .connectTimeout(CerberusClientFactory.DEFAULT_TIMEOUT, CerberusClientFactory.DEFAULT_TIMEOUT_UNIT)
                 .writeTimeout(CerberusClientFactory.DEFAULT_TIMEOUT, CerberusClientFactory.DEFAULT_TIMEOUT_UNIT)
                 .readTimeout(CerberusClientFactory.DEFAULT_TIMEOUT, CerberusClientFactory.DEFAULT_TIMEOUT_UNIT)
                 .sslSocketFactory(sslSocketFactory, trustManager)
-                .connectionSpecs(connectionSpecs)
+                .connectionSpecs(getConnectionSpecs())
                 .build();
-
-        return CerberusClientFactory.getClient(
-                cerberusUrl,
-                new DefaultCerberusCredentialsProviderChain(cerberusUrl, region, httpClient),
-                defaultHeaders,
-                httpClient);
-    }
+	}
+    
 }
