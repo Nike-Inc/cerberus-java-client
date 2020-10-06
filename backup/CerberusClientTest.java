@@ -83,6 +83,7 @@ public class CerberusClientTest {
     @After
     public void teardown() throws IOException {
         mockWebServer.shutdown();
+        mockWebServer.close();
     }
 
     @Test(expected = IllegalArgumentException.class)
