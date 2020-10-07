@@ -93,7 +93,10 @@ public class CerberusClient extends BaseCerberusClient{
         logger.debug("list: requestUrl={}", httpUrl);
 
         final Response response = executeWithRetry(httpUrl, HttpMethod.GET);
-        if (response.code() != HttpStatus.OK) {
+        if (response.code() == HttpStatus.NOT_FOUND) {
+            response.close();
+            return new CerberusListResponse();
+        } else if (response.code() != HttpStatus.OK) {
             parseAndThrowApiErrorResponse(response);
         }
 
@@ -461,7 +464,10 @@ public class CerberusClient extends BaseCerberusClient{
         logger.debug("getSecrets: requestUrl={}", httpUrl);
 
         final Response response = executeWithRetry(httpUrl, HttpMethod.GET);
-        if (response.code() != HttpStatus.OK) {
+        if (response.code() == HttpStatus.NOT_FOUND) {
+            response.close();
+            return new SecureDataResponse();
+        } else if (response.code() != HttpStatus.OK) {
             parseAndThrowApiErrorResponse(response);
         }
 
