@@ -16,7 +16,9 @@
 
 package com.nike.cerberus.client;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +29,9 @@ import org.slf4j.LoggerFactory;
 
 import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
 import com.nike.cerberus.client.model.AdminOverrideOwner;
+import com.nike.cerberus.client.model.CerberusListFilesResponse;
+import com.nike.cerberus.client.model.CerberusListResponse;
+import com.nike.cerberus.client.model.CerberusResponse;
 import com.nike.cerberus.client.model.SDBCreated;
 import com.nike.cerberus.client.model.SecureFileMetadata;
 import com.nike.cerberus.client.model.http.HttpHeader;
@@ -64,8 +69,6 @@ public class CerberusClient extends BaseCerberusClient{
 	private static final String CATEGORY					= "v1/category";
 	private static final String SECRET_VERSIONS				= "v1/secret-versions";
 	private static final String SDB_SECRET_VERSION_PATHS	= "v1/sdb-secret-version-paths";
-	
-	
 	private static final String ADMIN_AUTH_KMS_METADATA 	= "v1/admin/authentication-kms-metadata";
 	private static final String ADMIN_OVERRIDE_OWNER 		= "v1/admin/override-owner";
 	
@@ -76,6 +79,154 @@ public class CerberusClient extends BaseCerberusClient{
     public CerberusClient(String cerberusUrl, CerberusCredentialsProvider credentialsProvider,OkHttpClient httpClient) {
 		super(cerberusUrl, credentialsProvider, httpClient);
 	}
+    
+    /*
+     * Deprecated old interface
+     */
+    
+    /**
+     * @deprecated  replaced by {@link #getSecret(String category, String sdbName, String path)}
+     */
+    @Deprecated 
+    public CerberusListResponse list(final String path) {
+        final HttpUrl httpUrl = buildUrl(SECRET,path);
+        logger.debug("list: requestUrl={}", httpUrl);
+
+        final Response response = executeWithRetry(httpUrl, HttpMethod.GET);
+        if (response.code() != HttpStatus.OK) {
+            parseAndThrowApiErrorResponse(response);
+        }
+
+        SecureDataResponse responce = parseResponseBody(response, SecureDataResponse.class);
+        System.out.println(responce.getData());
+        
+        CerberusListResponse output = new CerberusListResponse();
+        @SuppressWarnings("unchecked")
+		Map<String, Object> mapping = (Map<String, Object>) responce.getData();
+        
+        ArrayList<String> inputList = new ArrayList<String>();
+        for (Object value : mapping.values()) {
+        	if(value instanceof Collection) {
+        		@SuppressWarnings("rawtypes")
+				Collection innerCollection = (Collection) value;
+        		for (Object innerValue : innerCollection) {
+        			inputList.add(""+innerValue);
+        		}
+        	}else {
+        		inputList.add(""+value);
+        	}
+		}
+        output.setKeys(inputList);
+        return output;
+    }
+    
+    /**
+     * @deprecated  replaced by {@link #listSecureFiles(String category, String sdbName)}
+     */
+    @Deprecated 
+    public CerberusListFilesResponse listFiles(final String path) {
+    	return listFiles(path, null, null);
+    }
+    
+    /**
+     * @deprecated  replaced by {@link #listSecureFiles(String category, String sdbName, int limit, int offset)}
+     */
+    @Deprecated 
+    public CerberusListFilesResponse listFiles(final String path, Integer limit, Integer offset) {
+    	Map<String,String> mapping = getLimitMappings(limit, offset);
+    	
+        final HttpUrl httpUrl = buildUrl(SECURE_FILES,mapping,path);
+        logger.debug("listFiles: requestUrl={}", httpUrl);
+
+        final Response response = executeWithRetry(httpUrl, HttpMethod.GET);
+        if (response.code() != HttpStatus.OK) {
+            parseAndThrowApiErrorResponse(response);
+        }
+
+        return parseResponseBody(response, CerberusListFilesResponse.class);
+    }
+    
+    /**
+     * @deprecated  replaced by {@link #getSecret(String category, String sdbName, String path)}
+     */
+    @Deprecated 
+    public CerberusResponse read(final String path) {
+		final HttpUrl httpUrl = buildUrl(SECRET,path);
+	    logger.debug("read: requestUrl={}", httpUrl);
+	
+	    final Response response = executeWithRetry(httpUrl, HttpMethod.GET);
+	    if (response.code() != HttpStatus.OK) {
+	          parseAndThrowApiErrorResponse(response);
+	    }
+	
+	    return parseResponseBody(response, CerberusResponse.class);
+    }
+    
+    /**
+     * @deprecated  replaced by {@link #getSecureFile(String category, String sdbName, String path)}
+     */
+    @Deprecated 
+    public byte[] readFileAsBytes(final String path) {
+    	return getSecureFile(buildUrl(SECURE_FILE,path));
+    }
+    
+    /**
+     * @deprecated  replaced by {@link #writeSecureFile(String category, String sdbName, String path, final byte[] contents)}
+     */
+    @Deprecated 
+    public void writeFile(final String path, final byte[] contents) {
+        final HttpUrl httpUrl = buildUrl(SECURE_FILE, path);
+        logger.debug("writeFile: requestUrl={}", httpUrl);
+
+        final Response response = execute(httpUrl, contents);
+        if (response.code() != HttpStatus.NO_CONTENT) {
+            parseAndThrowApiErrorResponse(response);
+        }
+    }
+    
+    /**
+     * @deprecated  replaced by {@link #createSecret(String category, String sdbName, String path, Map<String,String> values)}
+     */
+    @Deprecated 
+    public void write(final String path, final Map<String, String> values) {
+        final HttpUrl httpUrl = buildUrl(SECRET,path);
+        logger.debug("write: requestUrl={}", httpUrl);
+
+        final Response response = executeWithRetry(httpUrl, HttpMethod.POST,values);
+        if (response.code() != HttpStatus.NO_CONTENT) {
+            parseAndThrowApiErrorResponse(response);
+        }
+    }
+    
+    /**
+     * @deprecated  replaced by {@link #deleteSecurefile(String category, String sdbName, String path)}
+     */
+    @Deprecated 
+    public void deleteFile(final String path) {
+        final HttpUrl httpUrl = buildUrl(SECURE_FILE,path);
+        logger.debug("deleteFile: requestUrl={}", httpUrl);
+
+        final Response response = executeWithRetry(httpUrl, HttpMethod.DELETE);
+        if (response.code() != HttpStatus.OK) {
+            parseAndThrowApiErrorResponse(response);
+        }
+    }
+    
+    /**
+     * @deprecated  replaced by {@link #deleteSecret(String category, String sdbName, String path)}
+     */
+    @Deprecated 
+    public void delete(final String path) {
+        final HttpUrl httpUrl = buildUrl(SECRET,path);
+        logger.debug("delete: requestUrl={}", httpUrl);
+
+        final Response response = executeWithRetry(httpUrl, HttpMethod.DELETE);
+        if (response.code() != HttpStatus.NO_CONTENT) {
+            parseAndThrowApiErrorResponse(response);
+        }
+    }
+    
+    // ------------------------------------------------------------------------------------------------------------
     
     /*
      * Safe deposit box
@@ -261,7 +412,7 @@ public class CerberusClient extends BaseCerberusClient{
      * Secrets
      */
     
-    public SecureDataResponse listSecretPath(String category, String sdbName, String path) {
+    public SecureDataResponse getSecret(String category, String sdbName, String path) {
     	Map<String,String> mapping = new HashMap<>();
     	if(path != null && path.endsWith("/")) {
     		mapping.put(HttpParam.LIST, "true");
@@ -269,13 +420,13 @@ public class CerberusClient extends BaseCerberusClient{
     	return getSecrets(mapping, category, sdbName, path);
     }
 
-    public SecureDataResponse listSecretPath(String category, String sdbName, String path, String versionId) {
+    public SecureDataResponse getSecretVersion(String category, String sdbName, String path, String versionId) {
     	Map<String,String> mapping = new HashMap<>();
     	mapping.put(HttpParam.VERSION_ID, versionId);
     	return getSecrets(mapping, category, sdbName, path);
     }
     
-    public void createSecretPath(String category, String sdbName, String path, Map<String,String> values) {
+    public void createSecret(String category, String sdbName, String path, Map<String,String> values) {
         final HttpUrl httpUrl = buildUrl(SECRET,category,sdbName,path);
         logger.debug("getSecrets: requestUrl={}", httpUrl);
 
@@ -285,7 +436,7 @@ public class CerberusClient extends BaseCerberusClient{
         }
     }
     
-    public void updateSecretPath(String category, String sdbName, String path, Map<String,String> values) {
+    public void updateSecret(String category, String sdbName, String path, Map<String,String> values) {
         final HttpUrl httpUrl = buildUrl(SECRET,category,sdbName,path);
         logger.debug("getSecrets: requestUrl={}", httpUrl);
 
@@ -295,7 +446,7 @@ public class CerberusClient extends BaseCerberusClient{
         }
     }
     
-    public void deleteSecretPath(String category, String sdbName, String path, Map<String,String> values) {
+    public void deleteSecret(String category, String sdbName, String path) {
         final HttpUrl httpUrl = buildUrl(SECRET,category,sdbName,path);
         logger.debug("getSecrets: requestUrl={}", httpUrl);
 
@@ -321,12 +472,12 @@ public class CerberusClient extends BaseCerberusClient{
      * Secure-file
      */
     
-    public byte[] getSecureFile(String path) {
-        return getSecureFile(buildUrl(SECURE_FILE,path));
+    public byte[] getSecureFile(String category, String sdbName, String path) {
+        return getSecureFile(buildUrl(SECURE_FILE,category, sdbName, path));
     }
     
-    public SecureFileMetadata getSecureFileMetadata(String path) {
-        final HttpUrl httpUrl = buildUrl(SECURE_FILE,path);
+    public SecureFileMetadata getSecureFileMetadata(String category, String sdbName, String path) {
+        final HttpUrl httpUrl = buildUrl(SECURE_FILE,category,sdbName,path);
         logger.debug("getSecureFileMetadata: requestUrl={}", httpUrl);
 
         final Response response = executeWithRetry(httpUrl, HttpMethod.HEAD);
@@ -344,14 +495,14 @@ public class CerberusClient extends BaseCerberusClient{
         return null;
     }
     
-    public byte[] getSecureFile(String path, String versionId) {
+    public byte[] getSecureFile(String category, String sdbName, String path, String versionId) {
     	Map<String,String> mapping = new HashMap<>();
 		mapping.put(HttpParam.VERSION_ID, versionId);
-        return getSecureFile(buildUrl(SECURE_FILE,mapping,path));
+        return getSecureFile(buildUrl(SECURE_FILE,mapping,category,sdbName,path));
     }
     
-    public void writeSecureFile(String path, final byte[] contents) {
-        final HttpUrl httpUrl = buildUrl(SECURE_FILE, path);
+    public void writeSecureFile(String category, String sdbName, String path, final byte[] contents) {
+        final HttpUrl httpUrl = buildUrl(SECURE_FILE, category,sdbName,path);
         logger.debug("writeSecureFile: requestUrl={}", httpUrl);
 
         final Response response = execute(httpUrl, contents);
@@ -360,8 +511,8 @@ public class CerberusClient extends BaseCerberusClient{
         }
     }
     
-    public void deleteSecurefile(String path) {
-        final HttpUrl httpUrl = buildUrl(SECURE_FILE,path);
+    public void deleteSecurefile(String category, String sdbName, String path) {
+        final HttpUrl httpUrl = buildUrl(SECURE_FILE,category,sdbName,path);
         logger.debug("deleteSecurefile: requestUrl={}", httpUrl);
 
         final Response response = executeWithRetry(httpUrl, HttpMethod.DELETE);

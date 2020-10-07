@@ -131,7 +131,7 @@ public abstract class BaseCerberusClient {
 	}
 	
 	protected Response executeWithRetry(HttpUrl httpUrl,HttpMethod method,Object requestBody) {
-		return ofSupplier(() -> execute(httpUrl, method, null)).withRetry(RETRY).decorate().get();
+		return ofSupplier(() -> execute(httpUrl, method, requestBody)).withRetry(RETRY).decorate().get();
 	}
 
 	
@@ -216,16 +216,16 @@ public abstract class BaseCerberusClient {
 	 * Build urls
 	 */
 	
-	protected HttpUrl buildUrl(String path, String... pathVariables) {
-		return HttpUrl.parse(buildUrlwithPathVariables(path,null,pathVariables));
+	protected HttpUrl buildUrl(String base, String... pathVariables) {
+		return HttpUrl.parse(buildUrlwithPathVariables(base,null,pathVariables));
 	}
 	
-	protected HttpUrl buildUrl(String path,Map<String,String> params, String... pathVariables) {
-		return HttpUrl.parse(buildUrlwithPathVariables(path,params,pathVariables));
+	protected HttpUrl buildUrl(String base,Map<String,String> params, String... pathVariables) {
+		return HttpUrl.parse(buildUrlwithPathVariables(base,params,pathVariables));
 	}
 	
-	private String buildUrlwithPathVariables(String path,Map<String,String> params, String... pathVariables) {
-		String baseUrl = StringUtils.appendIfMissing(url, "/") + path;
+	private String buildUrlwithPathVariables(String base,Map<String,String> params, String... pathVariables) {
+		String baseUrl = StringUtils.appendIfMissing(url, "/") + base;
 		for (String variable : pathVariables) {
 			baseUrl = StringUtils.appendIfMissing(baseUrl, "/");
 			baseUrl = baseUrl + variable;

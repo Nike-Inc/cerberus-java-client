@@ -27,5 +27,9 @@ public class SecureFileMetadata {
 	public void setContentLength(int contentLength) {
 		this.contentLength = contentLength;
 	}
-
+	@Override
+	public String toString() {
+		return "SecureFileMetadata [filename=" + filename + ", contentLength=" + contentLength + "]";
+	}
+	
 }

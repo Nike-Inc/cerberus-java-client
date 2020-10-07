@@ -21,4 +21,9 @@ public class AdminOverrideOwner {
 		this.owner = owner;
 	}
 
+	@Override
+	public String toString() {
+		return "AdminOverrideOwner [name=" + name + ", owner=" + owner + "]";
+	}
+	
 }
