@@ -16,9 +16,6 @@
 
 repositories {
     jcenter()
-    maven {
-       url 'https://dl.bintray.com/nike/maven/'
-    }
 }
 
 def AWS_SDK_VERSION = '1.11.+'
@@ -64,7 +61,6 @@ dependencies {
     compile "org.apache.commons:commons-lang3:3.4"
     compile "com.google.code.gson:gson:2.5"
     compile "org.slf4j:slf4j-api:1.7.25"
-    compile "com.nike.cerberus:cerberus-domain:4.3.1"
     
     compile "io.github.resilience4j:resilience4j-all:1.5.0"
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"

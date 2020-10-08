@@ -1,3 +1,0 @@
-pull classes from external lib to client 
-compile against java 8
-fix last unit test from client

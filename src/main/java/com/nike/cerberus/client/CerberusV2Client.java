@@ -9,8 +9,8 @@ import org.slf4j.LoggerFactory;
 import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
 import com.nike.cerberus.client.model.http.HttpMethod;
 import com.nike.cerberus.client.model.http.HttpStatus;
-import com.nike.cerberus.domain.SafeDepositBoxSummary;
-import com.nike.cerberus.domain.SafeDepositBoxV2;
+import com.nike.cerberus.client.domain.SafeDepositBoxSummary;
+import com.nike.cerberus.client.domain.SafeDepositBoxV2;
 
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
