@@ -124,6 +124,8 @@ public class CerberusClientRoleTest extends AbstractClientTest{
         Role role = cerberusClient.getRole("some-id");
 
         assertThat(role).isNotNull();
+        assertThat(role.toString()).isNotNull();
+        
         assertThat(role.getId()).isNotNull();
         assertThat(role.getName()).isNotNull();
         

@@ -124,6 +124,8 @@ public class CerberusClientCategoryTest extends AbstractClientTest {
 		Category category = cerberusClient.getCategory("some-id");
 
 		assertThat(category).isNotNull();
+        assertThat(category.toString()).isNotNull();
+		
 		assertThat(category.getId()).isNotNull();
 		assertThat(category.getDisplayName()).isNotNull();
 		assertThat(category.getPath()).isNotNull();

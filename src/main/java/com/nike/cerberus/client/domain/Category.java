@@ -105,4 +105,12 @@ public class Category {
 		this.lastUpdatedBy = lastUpdatedBy;
 		return this;
 	}
+
+	@Override
+	public String toString() {
+		return "Category [id=" + id + ", displayName=" + displayName + ", path=" + path + ", createdTs=" + createdTs
+				+ ", lastUpdatedTs=" + lastUpdatedTs + ", createdBy=" + createdBy + ", lastUpdatedBy=" + lastUpdatedBy
+				+ "]";
+	}
+	
 }

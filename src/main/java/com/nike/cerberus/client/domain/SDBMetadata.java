@@ -19,123 +19,107 @@ package com.nike.cerberus.client.domain;
 import java.time.OffsetDateTime;
 import java.util.Map;
 
+import com.google.gson.annotations.SerializedName;
+
 public class SDBMetadata {
 
-  private String id;
-  private String name;
-  private String path;
-  private String category;
-  private String owner;
-  private String description;
-  private OffsetDateTime createdTs;
-  private String createdBy;
-  private OffsetDateTime lastUpdatedTs;
-  private String lastUpdatedBy;
-  private Map<String, String> userGroupPermissions;
-  private Map<String, String> iamRolePermissions;
-  private Map<String, Map<String, Object>> data;
+	@SerializedName("id")
+	private String id;
+	
+	@SerializedName("name")
+	private String name;
+	
+	@SerializedName("path")
+	private String path;
+	
+	@SerializedName("category")
+	private String category;
+	
+	@SerializedName("owner")
+	private String owner;
+	
+	@SerializedName("description")
+	private String description;
+	
+	@SerializedName("created_ts")
+	private OffsetDateTime createdTs;
+	
+	@SerializedName("created_by")
+	private String createdBy;
+	
+	@SerializedName("last_updated_ts")
+	private OffsetDateTime lastUpdatedTs;
+	
+	@SerializedName("last_updated_by")
+	private String lastUpdatedBy;
+	
+	@SerializedName("user_group_permissions")
+	private Map<String, String> userGroupPermissions;
+	
+	@SerializedName("iam_role_permissions")
+	private Map<String, String> iamRolePermissions;
+	
+	@SerializedName("data")
+	private Map<String, Map<String, Object>> data;
 
-  public String getName() {
-    return name;
-  }
+	public String getId() {
+		return id;
+	}
 
-  public void setName(String name) {
-    this.name = name;
-  }
+	public String getName() {
+		return name;
+	}
 
-  public String getPath() {
-    return path;
-  }
+	public String getPath() {
+		return path;
+	}
 
-  public void setPath(String path) {
-    this.path = path;
-  }
+	public String getCategory() {
+		return category;
+	}
 
-  public String getCategory() {
-    return category;
-  }
+	public String getOwner() {
+		return owner;
+	}
 
-  public void setCategory(String category) {
-    this.category = category;
-  }
+	public String getDescription() {
+		return description;
+	}
 
-  public String getOwner() {
-    return owner;
-  }
+	public OffsetDateTime getCreatedTs() {
+		return createdTs;
+	}
 
-  public void setOwner(String owner) {
-    this.owner = owner;
-  }
+	public String getCreatedBy() {
+		return createdBy;
+	}
 
-  public String getDescription() {
-    return description;
-  }
+	public OffsetDateTime getLastUpdatedTs() {
+		return lastUpdatedTs;
+	}
 
-  public void setDescription(String description) {
-    this.description = description;
-  }
+	public String getLastUpdatedBy() {
+		return lastUpdatedBy;
+	}
 
-  public OffsetDateTime getCreatedTs() {
-    return createdTs;
-  }
+	public Map<String, String> getUserGroupPermissions() {
+		return userGroupPermissions;
+	}
 
-  public void setCreatedTs(OffsetDateTime createdTs) {
-    this.createdTs = createdTs;
-  }
+	public Map<String, String> getIamRolePermissions() {
+		return iamRolePermissions;
+	}
 
-  public String getCreatedBy() {
-    return createdBy;
-  }
+	public Map<String, Map<String, Object>> getData() {
+		return data;
+	}
 
-  public void setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-  }
+	@Override
+	public String toString() {
+		return "SDBMetadata [id=" + id + ", name=" + name + ", path=" + path + ", category=" + category + ", owner="
+				+ owner + ", description=" + description + ", createdTs=" + createdTs + ", createdBy=" + createdBy
+				+ ", lastUpdatedTs=" + lastUpdatedTs + ", lastUpdatedBy=" + lastUpdatedBy + ", userGroupPermissions="
+				+ userGroupPermissions + ", iamRolePermissions=" + iamRolePermissions + ", data=" + data + "]";
+	}
 
-  public OffsetDateTime getLastUpdatedTs() {
-    return lastUpdatedTs;
-  }
-
-  public void setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
-    this.lastUpdatedTs = lastUpdatedTs;
-  }
-
-  public String getLastUpdatedBy() {
-    return lastUpdatedBy;
-  }
-
-  public void setLastUpdatedBy(String lastUpdatedBy) {
-    this.lastUpdatedBy = lastUpdatedBy;
-  }
-
-  public Map<String, String> getUserGroupPermissions() {
-    return userGroupPermissions;
-  }
-
-  public void setUserGroupPermissions(Map<String, String> userGroupPermissions) {
-    this.userGroupPermissions = userGroupPermissions;
-  }
-
-  public Map<String, String> getIamRolePermissions() {
-    return iamRolePermissions;
-  }
-
-  public void setIamRolePermissions(Map<String, String> iamRolePermissions) {
-    this.iamRolePermissions = iamRolePermissions;
-  }
-
-  public Map<String, Map<String, Object>> getData() {
-    return data;
-  }
-
-  public void setData(Map<String, Map<String, Object>> data) {
-    this.data = data;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public String getId() {
-    return id;
-  }
 }

@@ -44,53 +44,30 @@ public class Role {
 		return id;
 	}
 
-	public Role setId(String id) {
-		this.id = id;
-		return this;
-	}
-
 	public String getName() {
 		return name;
-	}
-
-	public Role setName(String name) {
-		this.name = name;
-		return this;
 	}
 
 	public OffsetDateTime getCreatedTs() {
 		return createdTs;
 	}
 
-	public Role setCreatedTs(OffsetDateTime createdTs) {
-		this.createdTs = createdTs;
-		return this;
-	}
-
 	public OffsetDateTime getLastUpdatedTs() {
 		return lastUpdatedTs;
-	}
-
-	public Role setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
-		this.lastUpdatedTs = lastUpdatedTs;
-		return this;
 	}
 
 	public String getCreatedBy() {
 		return createdBy;
 	}
 
-	public Role setCreatedBy(String createdBy) {
-		this.createdBy = createdBy;
-		return this;
-	}
-
 	public String getLastUpdatedBy() {
 		return lastUpdatedBy;
 	}
 
-	public Role setLastUpdatedBy(String lastUpdatedBy) {
-		this.lastUpdatedBy = lastUpdatedBy;
-		return this;
+	@Override
+	public String toString() {
+		return "Role [id=" + id + ", name=" + name + ", createdTs=" + createdTs + ", lastUpdatedTs=" + lastUpdatedTs
+				+ ", createdBy=" + createdBy + ", lastUpdatedBy=" + lastUpdatedBy + "]";
 	}
+	
 }

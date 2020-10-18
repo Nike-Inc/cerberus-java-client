@@ -1,0 +1,63 @@
+{
+      "has_next": false,
+      "next_offset": 0,
+      "limit": 10,
+      "offset": 0,
+      "sdb_count_in_result": 3,
+      "total_sdbcount": 3,
+      "safe_deposit_box_metadata": [
+          {
+              "id": "sdb id",
+              "name": "dev demo",
+              "path": "app/dev-demo/",
+              "category": "Applications",
+              "owner": "Lst-Squad.Carebears",
+              "description": "test",
+              "created_ts": "2017-01-04T23:18:40-08:00",
+              "created_by": "justin.field@nike.com",
+              "last_updated_ts": "2017-01-04T23:18:40-08:00",
+              "last_updated_by": "justin.field@nike.com",
+              "user_group_permissions": {
+                  "Application.FOO.User": "read"
+              },
+              "iam_role_permissions": {
+                  "arn:aws:iam::265866363820:role/asdf": "write"
+              }
+          },
+          {
+              "id": "sdb id 2",
+              "name": "nike dev foo bar",
+              "path": "app/nike-dev-foo-bar/",
+              "category": "Applications",
+              "owner": "Lst-Squad.Carebears",
+              "description": "adsfasdfadsfasdf",
+              "created_ts": "2017-01-04T23:19:03-08:00",
+              "created_by": "justin.field@nike.com",
+              "last_updated_ts": "2017-01-04T23:19:03-08:00",
+              "last_updated_by": "justin.field@nike.com",
+              "user_group_permissions": {
+                  "Lst-FOO-bar": "read"
+              },
+              "iam_role_permissions": {},
+              "data": { 
+              	"some-group": { 
+              		"some-field": "some-data"
+              	}
+              }
+          },
+          {
+              "id": "sdb id 3",
+              "name": "IaM W d WASD",
+              "path": "shared/iam-w-d-wasd/",
+              "category": "Shared",
+              "owner": "Lst-Squad.Carebears",
+              "description": "CAREBERS",
+              "created_ts": "2017-01-04T23:19:19-08:00",
+              "created_by": "justin.field@nike.com",
+              "last_updated_ts": "2017-01-04T23:19:19-08:00",
+              "last_updated_by": "justin.field@nike.com",
+              "user_group_permissions": {},
+              "iam_role_permissions": {}
+          }
+      ]
+  }
