@@ -19,6 +19,8 @@ package com.nike.cerberus.client;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
+import com.nike.cerberus.client.ClientVersion;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 

@@ -1,0 +1,20 @@
+[
+      {
+          "id": "f7ff85a0-faaa-11e5-a8a9-7fa3b294cd46",
+          "display_name": "Applications",
+          "path": "app",
+          "created_ts": "2016-04-05T04:19:51Z",
+          "last_updated_ts": "2016-04-05T04:19:51Z",
+          "created_by": "system",
+          "last_updated_by": "system"
+      },
+      {
+          "id": "f7ffb890-faaa-11e5-a8a9-7fa3b294cd46",
+          "display_name": "Shared",
+          "path": "shared",
+          "created_ts": "2016-04-05T04:19:51Z",
+          "last_updated_ts": "2016-04-05T04:19:51Z",
+          "created_by": "system",
+          "last_updated_by": "system"
+      }
+  ]

@@ -19,6 +19,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fatboyindustrial.gsonjavatime.Converters;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -62,10 +63,10 @@ public abstract class BaseCerberusClient {
 			.intervalFunction(IntervalFunction.ofExponentialBackoff(Duration.of(250, ChronoUnit.MILLIS))).build();
 	private final Retry RETRY = Retry.of(this.getClass().getName(), RETRY_CONFIG);
 
-	private final Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+	private final Gson gson = Converters.registerOffsetDateTime(new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
 			.disableHtmlEscaping().registerTypeAdapter(DateTime.class,
 					(JsonDeserializer<DateTime>) (json, typeOfT, context) -> new DateTime(json.getAsString()))
-			.create();
+			).create();
 
 	private final CerberusCredentialsProvider credentialsProvider;
 	private final OkHttpClient httpClient;
@@ -179,7 +180,7 @@ public abstract class BaseCerberusClient {
 	 * Build request
 	 */
 
-	protected Request buildRequest(final HttpUrl httpUrl, final HttpMethod method, final Object requestBody) {
+	public Request buildRequest(final HttpUrl httpUrl, final HttpMethod method, final Object requestBody) {
 		Request.Builder requestBuilder = new Request.Builder().url(httpUrl).headers(defaultHeaders) // call headers
 																									// method first
 																									// because it
@@ -201,7 +202,7 @@ public abstract class BaseCerberusClient {
 	/*
 	 * Params
 	 */
-	protected Map<String,String> getLimitMappings(int limit, int offset){
+	public Map<String,String> getLimitMappings(int limit, int offset){
 		Map<String,String> mapping = new HashMap<>();
 		if(limit > 0) {
 			mapping.put(HttpParam.LIMIT, ""+limit);
@@ -216,11 +217,11 @@ public abstract class BaseCerberusClient {
 	 * Build urls
 	 */
 	
-	protected HttpUrl buildUrl(String base, String... pathVariables) {
+	public HttpUrl buildUrl(String base, String... pathVariables) {
 		return HttpUrl.parse(buildUrlwithPathVariables(base,null,pathVariables));
 	}
 	
-	protected HttpUrl buildUrl(String base,Map<String,String> params, String... pathVariables) {
+	public HttpUrl buildUrl(String base,Map<String,String> params, String... pathVariables) {
 		return HttpUrl.parse(buildUrlwithPathVariables(base,params,pathVariables));
 	}
 	
@@ -349,5 +350,11 @@ public abstract class BaseCerberusClient {
 	public Headers getDefaultHeaders() {
 		return defaultHeaders;
 	}
-
+	
+	// ########################## Checks #################################
+	public void checkForNull(String field, Object input) {
+		if(input == null) {
+			throw new CerberusClientException("Field:'" + field + "' is null");
+		}
+	}
 }

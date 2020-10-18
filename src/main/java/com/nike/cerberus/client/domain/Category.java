@@ -18,86 +18,91 @@ package com.nike.cerberus.client.domain;
 
 import java.time.OffsetDateTime;
 
-/** Represents a category. */
+import com.google.gson.annotations.SerializedName;
+
 public class Category {
 
-  /** Unique identifier for a category. */
-  private String id;
+	@SerializedName("id")
+	private String id;
+	
+	@SerializedName("display_name")
+	private String displayName;
+	
+	@SerializedName("path")
+	private String path;
+	
+	@SerializedName("created_ts")
+	private OffsetDateTime createdTs;
+	
+	@SerializedName("last_updated_ts")
+	private OffsetDateTime lastUpdatedTs;
+	
+	@SerializedName("created_by")
+	private String createdBy;
+	
+	@SerializedName("last_updated_by")
+	private String lastUpdatedBy;
 
-  /** User friendly display name for a category. */
-  private String displayName;
+	public String getId() {
+		return id;
+	}
 
-  /** The path segment used in provisioning. */
-  private String path;
+	public Category setId(String id) {
+		this.id = id;
+		return this;
+	}
 
-  private OffsetDateTime createdTs;
+	public String getDisplayName() {
+		return displayName;
+	}
 
-  private OffsetDateTime lastUpdatedTs;
+	public Category setDisplayName(String displayName) {
+		this.displayName = displayName;
+		return this;
+	}
 
-  private String createdBy;
+	public String getPath() {
+		return path;
+	}
 
-  private String lastUpdatedBy;
+	public Category setPath(String path) {
+		this.path = path;
+		return this;
+	}
 
-  public String getId() {
-    return id;
-  }
+	public OffsetDateTime getCreatedTs() {
+		return createdTs;
+	}
 
-  public Category setId(String id) {
-    this.id = id;
-    return this;
-  }
+	public Category setCreatedTs(OffsetDateTime createdTs) {
+		this.createdTs = createdTs;
+		return this;
+	}
 
-  public String getDisplayName() {
-    return displayName;
-  }
+	public OffsetDateTime getLastUpdatedTs() {
+		return lastUpdatedTs;
+	}
 
-  public Category setDisplayName(String displayName) {
-    this.displayName = displayName;
-    return this;
-  }
+	public Category setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
+		this.lastUpdatedTs = lastUpdatedTs;
+		return this;
+	}
 
-  public String getPath() {
-    return path;
-  }
+	public String getCreatedBy() {
+		return createdBy;
+	}
 
-  public Category setPath(String path) {
-    this.path = path;
-    return this;
-  }
+	public Category setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+		return this;
+	}
 
-  public OffsetDateTime getCreatedTs() {
-    return createdTs;
-  }
+	public String getLastUpdatedBy() {
+		return lastUpdatedBy;
+	}
 
-  public Category setCreatedTs(OffsetDateTime createdTs) {
-    this.createdTs = createdTs;
-    return this;
-  }
-
-  public OffsetDateTime getLastUpdatedTs() {
-    return lastUpdatedTs;
-  }
-
-  public Category setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
-    this.lastUpdatedTs = lastUpdatedTs;
-    return this;
-  }
-
-  public String getCreatedBy() {
-    return createdBy;
-  }
-
-  public Category setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-    return this;
-  }
-
-  public String getLastUpdatedBy() {
-    return lastUpdatedBy;
-  }
-
-  public Category setLastUpdatedBy(String lastUpdatedBy) {
-    this.lastUpdatedBy = lastUpdatedBy;
-    return this;
-  }
+	public Category setLastUpdatedBy(String lastUpdatedBy) {
+		this.lastUpdatedBy = lastUpdatedBy;
+		return this;
+	}
 }

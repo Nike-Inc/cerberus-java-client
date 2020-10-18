@@ -47,6 +47,7 @@ import com.nike.cerberus.client.domain.SafeDepositBoxV1;
 import com.nike.cerberus.client.domain.SecureDataResponse;
 import com.nike.cerberus.client.domain.SecureDataVersionsResult;
 import com.nike.cerberus.client.domain.SecureFileSummaryResult;
+import com.nike.cerberus.client.exception.CerberusClientException;
 
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
@@ -101,8 +102,6 @@ public class CerberusClient extends BaseCerberusClient{
         }
 
         SecureDataResponse responce = parseResponseBody(response, SecureDataResponse.class);
-        System.out.println(responce.getData());
-        
         CerberusListResponse output = new CerberusListResponse();
         @SuppressWarnings("unchecked")
 		Map<String, Object> mapping = (Map<String, Object>) responce.getData();
@@ -378,6 +377,8 @@ public class CerberusClient extends BaseCerberusClient{
     }
     
     public Category getCategory(String categoryId){
+    	checkForNull("categoryId", categoryId);
+    	
         final HttpUrl httpUrl = buildUrl(CATEGORY,categoryId);
         logger.debug("getRoles: requestUrl={}", httpUrl);
 
@@ -390,16 +391,20 @@ public class CerberusClient extends BaseCerberusClient{
     }
     
     public void deleteCategory(String categoryId){
+    	checkForNull("categoryId", categoryId);
+    	
         final HttpUrl httpUrl = buildUrl(CATEGORY,categoryId);
         logger.debug("getRoles: requestUrl={}", httpUrl);
 
         final Response response = executeWithRetry(httpUrl, HttpMethod.DELETE);
-        if (response.code() != HttpStatus.OK || response.code() != HttpStatus.NOT_FOUND) {
+        if (response.code() != HttpStatus.OK && response.code() != HttpStatus.NOT_FOUND) {
             parseAndThrowApiErrorResponse(response);
         }
     }
     
     public Category createCategory(Category category){
+    	checkForNull("category", category);
+    	
         final HttpUrl httpUrl = buildUrl(CATEGORY);
         logger.debug("getRoles: requestUrl={}", httpUrl);
 
