@@ -1,8 +1,13 @@
 package com.nike.cerberus.client.model;
 
+import com.google.gson.annotations.SerializedName;
+
 public class AdminOverrideOwner {
 
+	@SerializedName("name")
 	private String name;
+	
+	@SerializedName("owner")
 	private String owner;
 
 	public String getName() {

@@ -18,21 +18,31 @@ package com.nike.cerberus.client.domain;
 
 import java.util.List;
 
+import com.google.gson.annotations.SerializedName;
+
 public class AuthKmsKeyMetadataResult {
-  private List<AuthKmsKeyMetadata> authenticationKmsKeyMetadata;
+	
+	@SerializedName("authentication_kms_key_metadata")
+	private List<AuthKmsKeyMetadata> authenticationKmsKeyMetadata;
 
-  public AuthKmsKeyMetadataResult() {}
+	public AuthKmsKeyMetadataResult() {
+	}
 
-  public AuthKmsKeyMetadataResult(List<AuthKmsKeyMetadata> authenticationKmsKeyMetadata) {
-    this.authenticationKmsKeyMetadata = authenticationKmsKeyMetadata;
-  }
+	public AuthKmsKeyMetadataResult(List<AuthKmsKeyMetadata> authenticationKmsKeyMetadata) {
+		this.authenticationKmsKeyMetadata = authenticationKmsKeyMetadata;
+	}
 
-  public List<AuthKmsKeyMetadata> getAuthenticationKmsKeyMetadata() {
-    return authenticationKmsKeyMetadata;
-  }
+	public List<AuthKmsKeyMetadata> getAuthenticationKmsKeyMetadata() {
+		return authenticationKmsKeyMetadata;
+	}
 
-  public void setAuthenticationKmsKeyMetadata(
-      List<AuthKmsKeyMetadata> authenticationKmsKeyMetadata) {
-    this.authenticationKmsKeyMetadata = authenticationKmsKeyMetadata;
-  }
+	public void setAuthenticationKmsKeyMetadata(List<AuthKmsKeyMetadata> authenticationKmsKeyMetadata) {
+		this.authenticationKmsKeyMetadata = authenticationKmsKeyMetadata;
+	}
+
+	@Override
+	public String toString() {
+		return "AuthKmsKeyMetadataResult [authenticationKmsKeyMetadata=" + authenticationKmsKeyMetadata + "]";
+	}
+
 }

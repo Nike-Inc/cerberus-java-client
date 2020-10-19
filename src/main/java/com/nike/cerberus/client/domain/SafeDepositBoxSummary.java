@@ -16,50 +16,62 @@
 
 package com.nike.cerberus.client.domain;
 
-/** Represents a summary for a specific safe deposit box. */
+import com.google.gson.annotations.SerializedName;
+
 public class SafeDepositBoxSummary {
 
-  private String id;
+	@SerializedName("id")
+	private String id;
 
-  private String name;
+	@SerializedName("name")
+	private String name;
 
-  private String path;
+	@SerializedName("path")
+	private String path;
 
-  private String categoryId;
+	@SerializedName("category_id")
+	private String categoryId;
 
-  public String getId() {
-    return id;
-  }
+	public String getId() {
+		return id;
+	}
 
-  public SafeDepositBoxSummary setId(String id) {
-    this.id = id;
-    return this;
-  }
+	public SafeDepositBoxSummary setId(String id) {
+		this.id = id;
+		return this;
+	}
 
-  public String getName() {
-    return name;
-  }
+	public String getName() {
+		return name;
+	}
 
-  public SafeDepositBoxSummary setName(String name) {
-    this.name = name;
-    return this;
-  }
+	public SafeDepositBoxSummary setName(String name) {
+		this.name = name;
+		return this;
+	}
 
-  public String getPath() {
-    return path;
-  }
+	public String getPath() {
+		return path;
+	}
 
-  public SafeDepositBoxSummary setPath(String path) {
-    this.path = path;
-    return this;
-  }
+	public SafeDepositBoxSummary setPath(String path) {
+		this.path = path;
+		return this;
+	}
 
-  public String getCategoryId() {
-    return categoryId;
-  }
+	public String getCategoryId() {
+		return categoryId;
+	}
 
-  public SafeDepositBoxSummary setCategoryId(String categoryId) {
-    this.categoryId = categoryId;
-    return this;
-  }
+	public SafeDepositBoxSummary setCategoryId(String categoryId) {
+		this.categoryId = categoryId;
+		return this;
+	}
+
+	@Override
+	public String toString() {
+		return "SafeDepositBoxSummary [id=" + id + ", name=" + name + ", path=" + path + ", categoryId=" + categoryId
+				+ "]";
+	}
+	
 }

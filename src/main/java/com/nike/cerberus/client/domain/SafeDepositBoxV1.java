@@ -20,171 +20,201 @@ import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.google.gson.annotations.SerializedName;
+
 public class SafeDepositBoxV1 implements SafeDepositBox {
 
-  private String id;
-  private String categoryId;
-  private String name;
-  private String description;
-  private String path;
+	@SerializedName("id")
+	private String id;
+	
+	@SerializedName("category_id")
+	private String categoryId;
+	
+	@SerializedName("name")
+	private String name;
+	
+	@SerializedName("description")
+	private String description;
+	
+	@SerializedName("path")
+	private String path;
 
-  private OffsetDateTime createdTs;
+	@SerializedName("created_ts")
+	private OffsetDateTime createdTs;
 
-  private OffsetDateTime lastUpdatedTs;
+	@SerializedName("last_updated_ts")
+	private OffsetDateTime lastUpdatedTs;
 
-  private String createdBy;
+	@SerializedName("created_by")
+	private String createdBy;
 
-  private String lastUpdatedBy;
+	@SerializedName("last_updated_by")
+	private String lastUpdatedBy;
 
-  private String owner;
+	@SerializedName("owner")
+	private String owner;
 
-  private Set<UserGroupPermission> userGroupPermissions = new HashSet<>();
+	@SerializedName("user_group_permissions")
+	private Set<UserGroupPermission> userGroupPermissions = new HashSet<>();
 
-  private Set<IamRolePermission> iamRolePermissions = new HashSet<>();
+	@SerializedName("iam_role_permissions")
+	private Set<IamRolePermission> iamRolePermissions = new HashSet<>();
 
-  public String getId() {
-    return id;
-  }
+	public String getId() {
+		return id;
+	}
 
-  public void setId(String id) {
-    this.id = id;
-  }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-  public String getCategoryId() {
-    return categoryId;
-  }
+	public String getCategoryId() {
+		return categoryId;
+	}
 
-  public void setCategoryId(String categoryId) {
-    this.categoryId = categoryId;
-  }
+	public void setCategoryId(String categoryId) {
+		this.categoryId = categoryId;
+	}
 
-  public String getName() {
-    return name;
-  }
+	public String getName() {
+		return name;
+	}
 
-  public void setName(String name) {
-    this.name = name;
-  }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-  public String getDescription() {
-    return description;
-  }
+	public String getDescription() {
+		return description;
+	}
 
-  public void setDescription(String description) {
-    this.description = description;
-  }
+	public void setDescription(String description) {
+		this.description = description;
+	}
 
-  public String getPath() {
-    return path;
-  }
+	public String getPath() {
+		return path;
+	}
 
-  public void setPath(String path) {
-    this.path = path;
-  }
+	public void setPath(String path) {
+		this.path = path;
+	}
 
-  public OffsetDateTime getCreatedTs() {
-    return createdTs;
-  }
+	public OffsetDateTime getCreatedTs() {
+		return createdTs;
+	}
 
-  public void setCreatedTs(OffsetDateTime createdTs) {
-    this.createdTs = createdTs;
-  }
+	public void setCreatedTs(OffsetDateTime createdTs) {
+		this.createdTs = createdTs;
+	}
 
-  public OffsetDateTime getLastUpdatedTs() {
-    return lastUpdatedTs;
-  }
+	public OffsetDateTime getLastUpdatedTs() {
+		return lastUpdatedTs;
+	}
 
-  public void setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
-    this.lastUpdatedTs = lastUpdatedTs;
-  }
+	public void setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
+		this.lastUpdatedTs = lastUpdatedTs;
+	}
 
-  public String getCreatedBy() {
-    return createdBy;
-  }
+	public String getCreatedBy() {
+		return createdBy;
+	}
 
-  public void setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-  }
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
 
-  public String getLastUpdatedBy() {
-    return lastUpdatedBy;
-  }
+	public String getLastUpdatedBy() {
+		return lastUpdatedBy;
+	}
 
-  public void setLastUpdatedBy(String lastUpdatedBy) {
-    this.lastUpdatedBy = lastUpdatedBy;
-  }
+	public void setLastUpdatedBy(String lastUpdatedBy) {
+		this.lastUpdatedBy = lastUpdatedBy;
+	}
 
-  public String getOwner() {
-    return owner;
-  }
+	public String getOwner() {
+		return owner;
+	}
 
-  public void setOwner(String owner) {
-    this.owner = owner;
-  }
+	public void setOwner(String owner) {
+		this.owner = owner;
+	}
 
-  public Set<UserGroupPermission> getUserGroupPermissions() {
-    return userGroupPermissions;
-  }
+	public Set<UserGroupPermission> getUserGroupPermissions() {
+		return userGroupPermissions;
+	}
 
-  public void setUserGroupPermissions(Set<UserGroupPermission> userGroupPermissions) {
-    this.userGroupPermissions = userGroupPermissions;
-  }
+	public void setUserGroupPermissions(Set<UserGroupPermission> userGroupPermissions) {
+		this.userGroupPermissions = userGroupPermissions;
+	}
 
-  public Set<IamRolePermission> getIamRolePermissions() {
-    return iamRolePermissions;
-  }
+	public Set<IamRolePermission> getIamRolePermissions() {
+		return iamRolePermissions;
+	}
 
-  public void setIamRolePermissions(Set<IamRolePermission> iamRolePermissions) {
-    this.iamRolePermissions = iamRolePermissions;
-  }
+	public void setIamRolePermissions(Set<IamRolePermission> iamRolePermissions) {
+		this.iamRolePermissions = iamRolePermissions;
+	}
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
 
-    SafeDepositBoxV1 that = (SafeDepositBoxV1) o;
+		SafeDepositBoxV1 that = (SafeDepositBoxV1) o;
 
-    if (id != null ? !id.equals(that.id) : that.id != null) return false;
-    if (categoryId != null ? !categoryId.equals(that.categoryId) : that.categoryId != null)
-      return false;
-    if (name != null ? !name.equals(that.name) : that.name != null) return false;
-    if (description != null ? !description.equals(that.description) : that.description != null)
-      return false;
-    if (path != null ? !path.equals(that.path) : that.path != null) return false;
-    if (createdTs != null ? !createdTs.equals(that.createdTs) : that.createdTs != null)
-      return false;
-    if (lastUpdatedTs != null
-        ? !lastUpdatedTs.equals(that.lastUpdatedTs)
-        : that.lastUpdatedTs != null) return false;
-    if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null)
-      return false;
-    if (lastUpdatedBy != null
-        ? !lastUpdatedBy.equals(that.lastUpdatedBy)
-        : that.lastUpdatedBy != null) return false;
-    if (owner != null ? !owner.equals(that.owner) : that.owner != null) return false;
-    if (userGroupPermissions != null
-        ? !userGroupPermissions.equals(that.userGroupPermissions)
-        : that.userGroupPermissions != null) return false;
-    return iamRolePermissions != null
-        ? iamRolePermissions.equals(that.iamRolePermissions)
-        : that.iamRolePermissions == null;
-  }
+		if (id != null ? !id.equals(that.id) : that.id != null)
+			return false;
+		if (categoryId != null ? !categoryId.equals(that.categoryId) : that.categoryId != null)
+			return false;
+		if (name != null ? !name.equals(that.name) : that.name != null)
+			return false;
+		if (description != null ? !description.equals(that.description) : that.description != null)
+			return false;
+		if (path != null ? !path.equals(that.path) : that.path != null)
+			return false;
+		if (createdTs != null ? !createdTs.equals(that.createdTs) : that.createdTs != null)
+			return false;
+		if (lastUpdatedTs != null ? !lastUpdatedTs.equals(that.lastUpdatedTs) : that.lastUpdatedTs != null)
+			return false;
+		if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null)
+			return false;
+		if (lastUpdatedBy != null ? !lastUpdatedBy.equals(that.lastUpdatedBy) : that.lastUpdatedBy != null)
+			return false;
+		if (owner != null ? !owner.equals(that.owner) : that.owner != null)
+			return false;
+		if (userGroupPermissions != null ? !userGroupPermissions.equals(that.userGroupPermissions)
+				: that.userGroupPermissions != null)
+			return false;
+		return iamRolePermissions != null ? iamRolePermissions.equals(that.iamRolePermissions)
+				: that.iamRolePermissions == null;
+	}
 
-  @Override
-  public int hashCode() {
-    int result = id != null ? id.hashCode() : 0;
-    result = 31 * result + (categoryId != null ? categoryId.hashCode() : 0);
-    result = 31 * result + (name != null ? name.hashCode() : 0);
-    result = 31 * result + (description != null ? description.hashCode() : 0);
-    result = 31 * result + (path != null ? path.hashCode() : 0);
-    result = 31 * result + (createdTs != null ? createdTs.hashCode() : 0);
-    result = 31 * result + (lastUpdatedTs != null ? lastUpdatedTs.hashCode() : 0);
-    result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
-    result = 31 * result + (lastUpdatedBy != null ? lastUpdatedBy.hashCode() : 0);
-    result = 31 * result + (owner != null ? owner.hashCode() : 0);
-    result = 31 * result + (userGroupPermissions != null ? userGroupPermissions.hashCode() : 0);
-    result = 31 * result + (iamRolePermissions != null ? iamRolePermissions.hashCode() : 0);
-    return result;
-  }
+	@Override
+	public int hashCode() {
+		int result = id != null ? id.hashCode() : 0;
+		result = 31 * result + (categoryId != null ? categoryId.hashCode() : 0);
+		result = 31 * result + (name != null ? name.hashCode() : 0);
+		result = 31 * result + (description != null ? description.hashCode() : 0);
+		result = 31 * result + (path != null ? path.hashCode() : 0);
+		result = 31 * result + (createdTs != null ? createdTs.hashCode() : 0);
+		result = 31 * result + (lastUpdatedTs != null ? lastUpdatedTs.hashCode() : 0);
+		result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
+		result = 31 * result + (lastUpdatedBy != null ? lastUpdatedBy.hashCode() : 0);
+		result = 31 * result + (owner != null ? owner.hashCode() : 0);
+		result = 31 * result + (userGroupPermissions != null ? userGroupPermissions.hashCode() : 0);
+		result = 31 * result + (iamRolePermissions != null ? iamRolePermissions.hashCode() : 0);
+		return result;
+	}
+
+	@Override
+	public String toString() {
+		return "SafeDepositBoxV1 [id=" + id + ", categoryId=" + categoryId + ", name=" + name + ", description="
+				+ description + ", path=" + path + ", createdTs=" + createdTs + ", lastUpdatedTs=" + lastUpdatedTs
+				+ ", createdBy=" + createdBy + ", lastUpdatedBy=" + lastUpdatedBy + ", owner=" + owner
+				+ ", userGroupPermissions=" + userGroupPermissions + ", iamRolePermissions=" + iamRolePermissions + "]";
+	}
+
 }

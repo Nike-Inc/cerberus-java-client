@@ -21,7 +21,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -29,15 +28,17 @@ import org.junit.Test;
 
 import com.nike.cerberus.client.CerberusClient;
 import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
-import com.nike.cerberus.client.domain.Role;
+import com.nike.cerberus.client.domain.AuthKmsKeyMetadata;
+import com.nike.cerberus.client.domain.AuthKmsKeyMetadataResult;
 import com.nike.cerberus.client.exception.CerberusClientException;
 import com.nike.cerberus.client.exception.CerberusServerApiException;
 import com.nike.cerberus.client.factory.CerberusClientFactory;
+import com.nike.cerberus.client.model.AdminOverrideOwner;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
-public class CerberusClientRoleTest extends AbstractClientTest{
+public class CerberusClientAdminTest extends AbstractClientTest{
 
     private CerberusClient cerberusClient;
     private MockWebServer mockWebServer;
@@ -63,32 +64,29 @@ public class CerberusClientRoleTest extends AbstractClientTest{
     }
 
     /*
-     * getRoles
+     * getAuthenticationKmsMetadata
      */
     
     @Test
-    public void getRoles_returns_list_of_roles() {
+    public void getAuthenticationKmsMetadata_returns_authkmskeymetadataresult() {
         final MockResponse response = new MockResponse();
         response.setResponseCode(200);
-        response.setBody(getResponseJson("role","list-role"));
+        response.setBody(getResponseJson("admin","get-authentication-kms-metadata"));
         mockWebServer.enqueue(response);
 
-        List<Role> responce = cerberusClient.getRoles();
+        AuthKmsKeyMetadataResult responce = cerberusClient.getAuthenticationKmsMetadata();
 
         assertThat(responce).isNotNull();
-        assertThat(responce).isNotEmpty();
+        assertThat(responce.getAuthenticationKmsKeyMetadata()).isNotEmpty();
         
-        Role role = responce.get(0);
+        AuthKmsKeyMetadata metadata = responce.getAuthenticationKmsKeyMetadata().get(0);
         
-        assertThat(role).isNotNull();
-        assertThat(role.getId()).isNotNull();
-        assertThat(role.getName()).isNotNull();
-        
-        assertThat(role.getCreatedTs()).isNotNull();
-        assertThat(role.getCreatedBy()).isNotNull();
-        
-        assertThat(role.getLastUpdatedBy()).isNotNull();
-        assertThat(role.getLastUpdatedTs()).isNotNull();
+        assertThat(metadata.getAwsIamRoleArn()).isNotNull();
+        assertThat(metadata.getAwsKmsKeyId()).isNotNull();
+		assertThat(metadata.getAwsRegion()).isNotNull();
+		assertThat(metadata.getCreatedTs()).isNotNull();
+		assertThat(metadata.getLastUpdatedTs()).isNotNull();
+		assertThat(metadata.getLastValidatedTs()).isNotNull();
     }
 
     @Test(expected = CerberusServerApiException.class)
@@ -97,7 +95,7 @@ public class CerberusClientRoleTest extends AbstractClientTest{
         response.setResponseCode(404);
         mockWebServer.enqueue(response);
 
-        cerberusClient.getRoles();
+        cerberusClient.getAuthenticationKmsMetadata();
     }
     
     @Test(expected = CerberusClientException.class)
@@ -107,58 +105,41 @@ public class CerberusClientRoleTest extends AbstractClientTest{
         response.setBody("non-json");
         mockWebServer.enqueue(response);
 
-        cerberusClient.getRoles();
+        cerberusClient.getAuthenticationKmsMetadata();
     }
     
     /*
-     * getRole
+     * overrideOwner
      */
-    
-    @Test
-    public void getRole_returns_role_by_id() {
-        final MockResponse response = new MockResponse();
-        response.setResponseCode(200);
-        response.setBody(getResponseJson("role","get-role"));
-        mockWebServer.enqueue(response);
-
-        Role role = cerberusClient.getRole("some-id");
-
-        assertThat(role).isNotNull();
-        assertThat(role.toString()).isNotNull();
-        
-        assertThat(role.getId()).isNotNull();
-        assertThat(role.getName()).isNotNull();
-        
-        assertThat(role.getCreatedTs()).isNotNull();
-        assertThat(role.getCreatedBy()).isNotNull();
-        
-        assertThat(role.getLastUpdatedBy()).isNotNull();
-        assertThat(role.getLastUpdatedTs()).isNotNull();
-    }
-
-    @Test(expected = CerberusServerApiException.class)
-    public void getRole_throws_server_exception_if_response_is_not_ok() {
-        final MockResponse response = new MockResponse();
-        response.setResponseCode(404);
-        mockWebServer.enqueue(response);
-
-        cerberusClient.getRole("some-id");
-    }
-    
-    @Test(expected = CerberusClientException.class)
-    public void getRole_throws_client_exception_if_response_is_not_ok_with_data() {
-        final MockResponse response = new MockResponse();
-        response.setResponseCode(404);
-        response.setBody("non-json");
-        mockWebServer.enqueue(response);
-
-        cerberusClient.getRole("some-id");
-    }
-    
-	@Test(expected = CerberusClientException.class)
-	public void getRole_by_null() {
-		cerberusClient.getRole(null);
+	@Test
+	public void overrideOwnery_by_adminoverride_owner() {
+		final MockResponse response = new MockResponse();
+		response.setResponseCode(204);
+		mockWebServer.enqueue(response);
+		
+		AdminOverrideOwner owner = new AdminOverrideOwner();
+		owner.setName("some-name");
+		owner.setOwner("some-owner");
+		
+		cerberusClient.overrideOwner(owner);
 	}
 
+	@Test(expected = CerberusServerApiException.class)
+	public void overrideOwnery_throws_server_exception_if_response_is_not_ok() {
+		final MockResponse response = new MockResponse();
+		response.setResponseCode(403);
+		mockWebServer.enqueue(response);
+		
+		AdminOverrideOwner owner = new AdminOverrideOwner();
+		owner.setName("some-name");
+		owner.setOwner("some-owner");
+		
+		cerberusClient.overrideOwner(owner);
+	}
+	
+	@Test(expected = CerberusClientException.class)
+	public void overrideOwnery_by_null() {
+		cerberusClient.overrideOwner(null);
+	}
     
 }

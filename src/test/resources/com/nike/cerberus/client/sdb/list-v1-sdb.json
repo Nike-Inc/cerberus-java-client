@@ -1,0 +1,11 @@
+[ {
+  "id" : "fb013540-fb5f-11e5-ba72-e899458df21a",
+  "name" : "Web",
+  "path" : "app/web",
+  "category_id" : "f7ff85a0-faaa-11e5-a8a9-7fa3b294cd46"
+}, {
+  "id" : "06f82494-fb60-11e5-ba72-e899458df21a",
+  "name" : "OneLogin",
+  "path" : "shared/onelogin",
+  "category_id" : "f7ffb890-faaa-11e5-a8a9-7fa3b294cd46"
+} ]

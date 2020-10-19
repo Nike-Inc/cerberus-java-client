@@ -18,23 +18,36 @@ package com.nike.cerberus.client.domain;
 
 import java.time.OffsetDateTime;
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * Represents a permission granted to an IAM role with regards to a safe deposit
  * box
  */
 public class IamRolePermission {
 
+	@SerializedName("id")
 	private String id;
+	
+	@SerializedName("account_id")
 	private String accountId;
+	
+	@SerializedName("iam_role_name")
 	private String iamRoleName;
+	
+	@SerializedName("role_id")
 	private String roleId;
 
+	@SerializedName("created_ts")
 	private OffsetDateTime createdTs;
 
+	@SerializedName("last_updated_ts")
 	private OffsetDateTime lastUpdatedTs;
 
+	@SerializedName("created_by")
 	private String createdBy;
 
+	@SerializedName("last_updated_by")
 	private String lastUpdatedBy;
 
 	public String getId() {
@@ -136,4 +149,12 @@ public class IamRolePermission {
 		result = 31 * result + (iamRoleName != null ? iamRoleName.hashCode() : 0);
 		return result;
 	}
+
+	@Override
+	public String toString() {
+		return "IamRolePermission [id=" + id + ", accountId=" + accountId + ", iamRoleName=" + iamRoleName + ", roleId="
+				+ roleId + ", createdTs=" + createdTs + ", lastUpdatedTs=" + lastUpdatedTs + ", createdBy=" + createdBy
+				+ ", lastUpdatedBy=" + lastUpdatedBy + "]";
+	}
+
 }

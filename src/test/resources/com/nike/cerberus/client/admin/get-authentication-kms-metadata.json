@@ -1,0 +1,10 @@
+{
+  "authentication_kms_key_metadata" : [ {
+    "aws_iam_role_arn" : "arn:aws:iam::222222222222:role/foo-role",
+    "aws_kms_key_id" : "arn:aws:kms:us-west-2:222222222222:key/b74225a6-2222-4444-baf0-abc123456",
+    "aws_region" : "us-west-2",
+    "created_ts" : "2018-06-20T14:39:56-07:00",
+    "last_updated_ts" : "2018-06-20T14:39:56-07:00",
+    "last_validated_ts" : "2018-06-20T14:39:56-07:00"
+  } ]
+}

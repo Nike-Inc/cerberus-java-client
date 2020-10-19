@@ -1,0 +1,31 @@
+{
+  "id" : "a7d703da-faac-11e5-a8a9-7fa3b294cd46",
+  "name" : "Stage",
+  "description" : "Sensitive configuration properties for the stage micro-service.",
+  "path" : "app/stage",
+  "category_id": "f7ff85a0-faaa-11e5-a8a9-7fa3b294cd46",
+  "owner" : "Lst-digital.platform-tools.internal",
+  "created_ts" : "2016-04-05T04:19:51Z",
+  "last_updated_ts" : "2016-04-05T04:19:51Z",
+  "created_by" : "system",
+  "last_updated_by" : "system",
+  "user_group_permissions" : [ {
+    "id" : "3fc6455c-faad-11e5-a8a9-7fa3b294cd46",
+    "name" : "Lst-CDT.CloudPlatformEngine.FTE",
+    "role_id" : "f800558e-faaa-11e5-a8a9-7fa3b294cd46",
+    "created_ts" : "2016-04-05T04:19:51Z",
+    "last_updated_ts" : "2016-04-05T04:19:51Z",
+    "created_by" : "system",
+    "last_updated_by" : "system"
+  } ],
+  "iam_role_permissions" : [ {
+    "id" : "d05bf72e-faad-11e5-a8a9-7fa3b294cd46",
+    "account_id" : "123",
+    "iam_role_name" : "stage",
+    "role_id" : "f800558e-faaa-11e5-a8a9-7fa3b294cd46",
+    "created_ts" : "2016-04-05T04:19:51Z",
+    "last_updated_ts" : "2016-04-05T04:19:51Z",
+    "created_by" : "system",
+    "last_updated_by" : "system"
+  } ]
+}

@@ -18,163 +18,120 @@ package com.nike.cerberus.client.domain;
 
 import java.time.OffsetDateTime;
 
+import com.google.gson.annotations.SerializedName;
+
 public class UserGroupPermission {
 
-  private String id;
+	@SerializedName("id")
+	private String id;
 
-  private String name;
+	@SerializedName("name")
+	private String name;
 
-  private String roleId;
+	@SerializedName("role_id")
+	private String roleId;
 
-  private OffsetDateTime createdTs;
+	@SerializedName("created_ts")
+	private OffsetDateTime createdTs;
 
-  private OffsetDateTime lastUpdatedTs;
+	@SerializedName("last_updated_ts")
+	private OffsetDateTime lastUpdatedTs;
 
-  private String createdBy;
+	@SerializedName("created_by")
+	private String createdBy;
 
-  private String lastUpdatedBy;
+	@SerializedName("last_updated_by")
+	private String lastUpdatedBy;
 
-  public String getId() {
-    return id;
-  }
+	public String getId() {
+		return id;
+	}
 
-  public void setId(String id) {
-    this.id = id;
-  }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-  public String getName() {
-    return name;
-  }
+	public String getName() {
+		return name;
+	}
 
-  public void setName(String name) {
-    this.name = name;
-  }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-  public UserGroupPermission withName(String name) {
-    this.name = name;
-    return this;
-  }
+	public UserGroupPermission withName(String name) {
+		this.name = name;
+		return this;
+	}
 
-  public String getRoleId() {
-    return roleId;
-  }
+	public String getRoleId() {
+		return roleId;
+	}
 
-  public void setRoleId(String roleId) {
-    this.roleId = roleId;
-  }
+	public void setRoleId(String roleId) {
+		this.roleId = roleId;
+	}
 
-  public UserGroupPermission withRoleId(String roleId) {
-    this.roleId = roleId;
-    return this;
-  }
+	public UserGroupPermission withRoleId(String roleId) {
+		this.roleId = roleId;
+		return this;
+	}
 
-  public OffsetDateTime getCreatedTs() {
-    return createdTs;
-  }
+	public OffsetDateTime getCreatedTs() {
+		return createdTs;
+	}
 
-  public void setCreatedTs(OffsetDateTime createdTs) {
-    this.createdTs = createdTs;
-  }
+	public void setCreatedTs(OffsetDateTime createdTs) {
+		this.createdTs = createdTs;
+	}
 
-  public OffsetDateTime getLastUpdatedTs() {
-    return lastUpdatedTs;
-  }
+	public OffsetDateTime getLastUpdatedTs() {
+		return lastUpdatedTs;
+	}
 
-  public void setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
-    this.lastUpdatedTs = lastUpdatedTs;
-  }
+	public void setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
+		this.lastUpdatedTs = lastUpdatedTs;
+	}
 
-  public String getCreatedBy() {
-    return createdBy;
-  }
+	public String getCreatedBy() {
+		return createdBy;
+	}
 
-  public void setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-  }
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
 
-  public String getLastUpdatedBy() {
-    return lastUpdatedBy;
-  }
+	public String getLastUpdatedBy() {
+		return lastUpdatedBy;
+	}
 
-  public void setLastUpdatedBy(String lastUpdatedBy) {
-    this.lastUpdatedBy = lastUpdatedBy;
-  }
+	public void setLastUpdatedBy(String lastUpdatedBy) {
+		this.lastUpdatedBy = lastUpdatedBy;
+	}
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
 
-    UserGroupPermission that = (UserGroupPermission) o;
+		UserGroupPermission that = (UserGroupPermission) o;
 
-    return name != null ? name.equals(that.name) : that.name == null;
-  }
+		return name != null ? name.equals(that.name) : that.name == null;
+	}
 
-  @Override
-  public int hashCode() {
-    return name != null ? name.hashCode() : 0;
-  }
+	@Override
+	public int hashCode() {
+		return name != null ? name.hashCode() : 0;
+	}
 
-  public static final class Builder {
-    private String id;
-    private String name;
-    private String roleId;
-    private OffsetDateTime createdTs;
-    private OffsetDateTime lastUpdatedTs;
-    private String createdBy;
-    private String lastUpdatedBy;
-
-    private Builder() {}
-
-    public static Builder create() {
-      return new Builder();
-    }
-
-    public Builder withId(String id) {
-      this.id = id;
-      return this;
-    }
-
-    public Builder withName(String name) {
-      this.name = name;
-      return this;
-    }
-
-    public Builder withRoleId(String roleId) {
-      this.roleId = roleId;
-      return this;
-    }
-
-    public Builder withCreatedTs(OffsetDateTime createdTs) {
-      this.createdTs = createdTs;
-      return this;
-    }
-
-    public Builder withLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
-      this.lastUpdatedTs = lastUpdatedTs;
-      return this;
-    }
-
-    public Builder withCreatedBy(String createdBy) {
-      this.createdBy = createdBy;
-      return this;
-    }
-
-    public Builder withLastUpdatedBy(String lastUpdatedBy) {
-      this.lastUpdatedBy = lastUpdatedBy;
-      return this;
-    }
-
-    public UserGroupPermission build() {
-      UserGroupPermission userGroupPermission = new UserGroupPermission();
-      userGroupPermission.setId(id);
-      userGroupPermission.setName(name);
-      userGroupPermission.setRoleId(roleId);
-      userGroupPermission.setCreatedTs(createdTs);
-      userGroupPermission.setLastUpdatedTs(lastUpdatedTs);
-      userGroupPermission.setCreatedBy(createdBy);
-      userGroupPermission.setLastUpdatedBy(lastUpdatedBy);
-      return userGroupPermission;
-    }
-  }
+	@Override
+	public String toString() {
+		return "UserGroupPermission [id=" + id + ", name=" + name + ", roleId=" + roleId + ", createdTs=" + createdTs
+				+ ", lastUpdatedTs=" + lastUpdatedTs + ", createdBy=" + createdBy + ", lastUpdatedBy=" + lastUpdatedBy
+				+ "]";
+	}
+	
+	
 }

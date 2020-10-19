@@ -233,7 +233,7 @@ public class CerberusClient extends BaseCerberusClient{
      * Safe deposit box
      */
     
-    public List<SafeDepositBoxSummary> listSafeDepositBoxes() {
+    public List<SafeDepositBoxSummary> getSafeDepositBoxes() {
         final HttpUrl httpUrl = buildUrl(SAFE_DEPOSIT_BOX);
         logger.debug("listSafeDepositBox: requestUrl={}", httpUrl);
 
@@ -246,6 +246,8 @@ public class CerberusClient extends BaseCerberusClient{
     }
     
     public SDBCreated createSafeDepositBox(SafeDepositBoxV1 sdb) {
+    	checkForNull("sdb", sdb);
+    	
         final HttpUrl httpUrl = buildUrl(SAFE_DEPOSIT_BOX);
         logger.debug("createSafeDepositBox: requestUrl={}", httpUrl);
 
@@ -261,6 +263,8 @@ public class CerberusClient extends BaseCerberusClient{
     }
     
     public SafeDepositBoxV1 getSafeDepositBox(String id) {
+    	checkForNull("id", id);
+    	
         final HttpUrl httpUrl = buildUrl(SAFE_DEPOSIT_BOX,id);
         logger.debug("getSafeDepositBox: requestUrl={}", httpUrl);
 
@@ -273,6 +277,9 @@ public class CerberusClient extends BaseCerberusClient{
     }
     
     public void updateSafeDepositBox(String id, SafeDepositBoxV1 sdb) {
+    	checkForNull("id", id);
+    	checkForNull("sdb", sdb);
+    	
         final HttpUrl httpUrl = buildUrl(SAFE_DEPOSIT_BOX,id);
         logger.debug("updateSafeDepositBox: requestUrl={}", httpUrl);
 
@@ -283,6 +290,8 @@ public class CerberusClient extends BaseCerberusClient{
     }
     
     public void deleteSafeDepositBox(String id) {
+    	checkForNull("id", id);
+    	
         final HttpUrl httpUrl = buildUrl(SAFE_DEPOSIT_BOX,id);
         logger.debug("deleteSafeDepositBox: requestUrl={}", httpUrl);
 
@@ -348,6 +357,8 @@ public class CerberusClient extends BaseCerberusClient{
     }
     
     public Role getRole(String roleId){
+    	checkForNull("roleId", roleId);
+    	
         final HttpUrl httpUrl = buildUrl(ROLE,roleId);
         logger.debug("getRoles: requestUrl={}", httpUrl);
 
@@ -593,7 +604,7 @@ public class CerberusClient extends BaseCerberusClient{
      * Admin
      */
     
-    public AuthKmsKeyMetadataResult adminGetAuthenticationKmsMetadata() {
+    public AuthKmsKeyMetadataResult getAuthenticationKmsMetadata() {
         final HttpUrl httpUrl = buildUrl(ADMIN_AUTH_KMS_METADATA);
         logger.debug("adminGetAuthenticationKmsMetadata: requestUrl={}", httpUrl);
 
@@ -605,11 +616,13 @@ public class CerberusClient extends BaseCerberusClient{
         return parseResponseBody(response, AuthKmsKeyMetadataResult.class);
     }
     
-    public void adminOverrideOwner(AdminOverrideOwner override) {
+    public void overrideOwner(AdminOverrideOwner adminOverrideOwner) {
+    	checkForNull("override", adminOverrideOwner);
+    	
         final HttpUrl httpUrl = buildUrl(ADMIN_OVERRIDE_OWNER);
         logger.debug("adminOverrideOwner: requestUrl={}", httpUrl);
 
-        final Response response = executeWithRetry(httpUrl, HttpMethod.PUT,override);
+        final Response response = executeWithRetry(httpUrl, HttpMethod.PUT,adminOverrideOwner);
         if (response.code() != HttpStatus.NO_CONTENT) {
             parseAndThrowApiErrorResponse(response);
         }
