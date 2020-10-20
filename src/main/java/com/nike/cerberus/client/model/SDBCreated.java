@@ -1,21 +1,17 @@
 package com.nike.cerberus.client.model;
 
+import com.google.gson.annotations.SerializedName;
+
 public class SDBCreated {
 
+	@SerializedName("id")
 	private String id;
+
+	@SerializedName("location")
 	private String location;
 	
-	public SDBCreated() {}
-	public SDBCreated(String id, String location) {
-		this.id = id;
-		this.location = location;
-	}
-
 	public String getId() {
 		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
 	}
 	public String getLocation() {
 		return location;

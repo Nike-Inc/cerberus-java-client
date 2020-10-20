@@ -1,0 +1,53 @@
+{
+  "has_next" : false,
+  "next_offset" : 10,
+  "limit" : 100,
+  "offset" : 0,
+  "version_count_in_result" : 4,
+  "total_version_count" : 4,
+  "secure_data_version_summaries" : [ {
+    "id" : "1234-4567-8903-0098-7543",
+    "sdb_id" : "0000-0000-0000-0000",
+    "path" : "/category/sdb-slug/path/to/secret1",
+    "action" : "UPDATE",
+    "type" : "OBJECT",
+    "size_in_bytes" : "12983",
+    "version_created_by" : "user0@example.com",
+    "version_created_ts" : "2016-04-05T04:19:51Z",
+    "action_principal" : "user@example.com",
+    "action_ts" : "2016-04-05T05:19:59Z"
+  }, {
+    "id" : "4567-8903-0098-7543-1234",
+    "sdb_id" : "0000-0000-0000-0000",
+    "path" : "/category/sdb-slug/path/to/secret1",
+    "action" : "UPDATE",
+    "type" : "OBJECT",
+    "size_in_bytes" : "12654",
+    "version_created_by" : "user@example.com",
+    "version_created_ts" : "2016-04-05T04:19:51Z",
+    "action_principal" : "admin@example.com",
+    "action_ts" : "2016-03-23T02:32:10Z"
+  }, {
+    "id" : "8903-0098-7543-1234-4567",
+    "sdb_id" : "0000-0000-0000-0000",
+    "path" : "/category/sdb-slug/path/to/secret1",
+    "action" : "UPDATE",
+    "type" : "OBJECT",
+    "size_in_bytes" : "1987",
+    "version_created_by" : "user2@example.com",
+    "version_created_ts" : "2016-04-05T04:19:51Z",
+    "action_principal" : "guest@example.com",
+    "action_ts" : "2016-02-13T12:05:09Z"
+  }, {
+    "id" : "CURRENT",
+    "sdb_id" : "0000-0000-0000-0000",
+    "path" : "/category/sdb-slug/path/to/secret1",
+    "action" : "CREATE",
+    "type" : "OBJECT",
+    "size_in_bytes" : "3874",
+    "version_created_by" : "user@example.com",
+    "version_created_ts" : "2016-04-05T04:19:51Z",
+    "action_principal" : "user@example.com",
+    "action_ts" : "2016-04-05T04:19:51Z"
+  } ]
+}

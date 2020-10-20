@@ -18,112 +18,86 @@ package com.nike.cerberus.client.domain;
 
 import java.time.OffsetDateTime;
 
+import com.google.gson.annotations.SerializedName;
+
 public class SecureDataVersionSummary {
 
-  private String id;
-  private String sdboxId;
-  private String path;
-  private String action;
-  private SecureDataType type;
-  private int sizeInBytes;
-  private String versionCreatedBy;
-  private OffsetDateTime versionCreatedTs;
-  private String actionPrincipal;
-  private OffsetDateTime actionTs;
+	@SerializedName("id")
+	private String id;
 
-  public String getId() {
-    return id;
-  }
+	@SerializedName("sdb_id")
+	private String sdboxId;
 
-  public SecureDataVersionSummary setId(String id) {
-    this.id = id;
-    return this;
-  }
+	@SerializedName("path")
+	private String path;
 
-  public String getSdboxId() {
-    return sdboxId;
-  }
+	@SerializedName("action")
+	private String action;
 
-  public SecureDataVersionSummary setSdboxId(String sdboxId) {
-    this.sdboxId = sdboxId;
-    return this;
-  }
+	@SerializedName("type")
+	private SecureDataType type;
 
-  public String getPath() {
-    return path;
-  }
+	@SerializedName("size_in_bytes")
+	private int sizeInBytes;
 
-  public SecureDataVersionSummary setPath(String path) {
-    this.path = path;
-    return this;
-  }
+	@SerializedName("version_created_by")
+	private String versionCreatedBy;
 
-  public String getAction() {
-    return action;
-  }
+	@SerializedName("version_created_ts")
+	private OffsetDateTime versionCreatedTs;
 
-  public SecureDataVersionSummary setAction(String action) {
-    this.action = action;
-    return this;
-  }
+	@SerializedName("action_principal")
+	private String actionPrincipal;
 
-  public SecureDataType getType() {
-    return type;
-  }
+	@SerializedName("action_ts")
+	private OffsetDateTime actionTs;
 
-  public SecureDataVersionSummary setType(SecureDataType type) {
-    this.type = type;
-    return this;
-  }
+	public String getId() {
+		return id;
+	}
 
-  public int getSizeInBytes() {
-    return sizeInBytes;
-  }
+	public String getSdboxId() {
+		return sdboxId;
+	}
 
-  public SecureDataVersionSummary setSizeInBytes(int sizeInBytes) {
-    this.sizeInBytes = sizeInBytes;
-    return this;
-  }
+	public String getPath() {
+		return path;
+	}
 
-  public String getVersionCreatedBy() {
-    return versionCreatedBy;
-  }
+	public String getAction() {
+		return action;
+	}
 
-  public SecureDataVersionSummary setVersionCreatedBy(String versionCreatedBy) {
-    this.versionCreatedBy = versionCreatedBy;
-    return this;
-  }
+	public SecureDataType getType() {
+		return type;
+	}
 
-  public OffsetDateTime getVersionCreatedTs() {
-    return versionCreatedTs;
-  }
+	public int getSizeInBytes() {
+		return sizeInBytes;
+	}
 
-  public SecureDataVersionSummary setVersionCreatedTs(OffsetDateTime versionCreatedTs) {
-    this.versionCreatedTs = versionCreatedTs;
-    return this;
-  }
+	public String getVersionCreatedBy() {
+		return versionCreatedBy;
+	}
 
-  public String getActionPrincipal() {
-    return actionPrincipal;
-  }
+	public OffsetDateTime getVersionCreatedTs() {
+		return versionCreatedTs;
+	}
 
-  public SecureDataVersionSummary setActionPrincipal(String actionPrincipal) {
-    this.actionPrincipal = actionPrincipal;
-    return this;
-  }
+	public String getActionPrincipal() {
+		return actionPrincipal;
+	}
 
-  public OffsetDateTime getActionTs() {
-    return actionTs;
-  }
+	public OffsetDateTime getActionTs() {
+		return actionTs;
+	}
 
-  public SecureDataVersionSummary setActionTs(OffsetDateTime actionTs) {
-    this.actionTs = actionTs;
-    return this;
-  }
+	@Override
+	public String toString() {
+		return "SecureDataVersionSummary [id=" + id + ", sdboxId=" + sdboxId + ", path=" + path + ", action=" + action
+				+ ", type=" + type + ", sizeInBytes=" + sizeInBytes + ", versionCreatedBy=" + versionCreatedBy
+				+ ", versionCreatedTs=" + versionCreatedTs + ", actionPrincipal=" + actionPrincipal + ", actionTs="
+				+ actionTs + "]";
+	}
 
-  public enum SecretsAction {
-    CREATE,
-    UPDATE,
-    DELETE
-  }
 }

@@ -3,7 +3,6 @@ package com.nike.cerberus.client;
 import static io.github.resilience4j.decorators.Decorators.ofSupplier;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -29,9 +28,7 @@ import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
 import com.nike.cerberus.client.exception.CerberusApiError;
 import com.nike.cerberus.client.exception.CerberusClientException;
 import com.nike.cerberus.client.exception.CerberusServerApiException;
-import com.nike.cerberus.client.exception.CerberusServerException;
 import com.nike.cerberus.client.model.error.ApiErrorResponse;
-import com.nike.cerberus.client.model.error.ErrorResponse;
 import com.nike.cerberus.client.model.http.HttpHeader;
 import com.nike.cerberus.client.model.http.HttpMethod;
 import com.nike.cerberus.client.model.http.HttpParam;
@@ -281,38 +278,6 @@ public abstract class BaseCerberusClient {
 						errorResponse.getErrors());
 			} else {
 				throw new CerberusServerApiException(response.code(), null, new LinkedList<CerberusApiError>());
-			}
-		} catch (JsonSyntaxException e) {
-			logger.error("ERROR Failed to parse error message, response body received: {}", responseBodyStr);
-			throw new CerberusClientException("Error parsing the error response body from Cerberus, response code: "
-					+ response.code() + ", response body: " + responseBodyStr, e);
-		}
-	}
-
-	protected <M> M parseResponseBody(final Response response, final Type typeOf) {
-		final String responseBodyStr = responseBodyAsString(response);
-		try {
-			return gson.fromJson(responseBodyStr, typeOf);
-		} catch (JsonSyntaxException e) {
-			logger.error("parseResponseBody: responseCode={}, requestUrl={}, response={}", response.code(),
-					response.request().url(), responseBodyStr);
-			throw new CerberusClientException("Error parsing the response body from Cerberus, response code: "
-					+ response.code() + ", response body: " + responseBodyStr, e);
-		}
-	}
-
-	protected void parseAndThrowErrorResponse(final Response response) {
-		final String responseBodyStr = responseBodyAsString(response);
-		logger.debug("parseAndThrowErrorResponse: responseCode={}, requestUrl={}, response={}", response.code(),
-				response.request().url(), responseBodyStr);
-
-		try {
-			ErrorResponse errorResponse = gson.fromJson(responseBodyStr, ErrorResponse.class);
-
-			if (errorResponse != null) {
-				throw new CerberusServerException(response.code(), errorResponse.getErrors());
-			} else {
-				throw new CerberusServerException(response.code(), new LinkedList<String>());
 			}
 		} catch (JsonSyntaxException e) {
 			logger.error("ERROR Failed to parse error message, response body received: {}", responseBodyStr);

@@ -59,22 +59,12 @@ public class UserGroupPermission {
 		this.name = name;
 	}
 
-	public UserGroupPermission withName(String name) {
-		this.name = name;
-		return this;
-	}
-
 	public String getRoleId() {
 		return roleId;
 	}
 
 	public void setRoleId(String roleId) {
 		this.roleId = roleId;
-	}
-
-	public UserGroupPermission withRoleId(String roleId) {
-		this.roleId = roleId;
-		return this;
 	}
 
 	public OffsetDateTime getCreatedTs() {
@@ -107,23 +97,6 @@ public class UserGroupPermission {
 
 	public void setLastUpdatedBy(String lastUpdatedBy) {
 		this.lastUpdatedBy = lastUpdatedBy;
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
-
-		UserGroupPermission that = (UserGroupPermission) o;
-
-		return name != null ? name.equals(that.name) : that.name == null;
-	}
-
-	@Override
-	public int hashCode() {
-		return name != null ? name.hashCode() : 0;
 	}
 
 	@Override

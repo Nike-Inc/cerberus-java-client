@@ -28,16 +28,8 @@ public class AuthKmsKeyMetadataResult {
 	public AuthKmsKeyMetadataResult() {
 	}
 
-	public AuthKmsKeyMetadataResult(List<AuthKmsKeyMetadata> authenticationKmsKeyMetadata) {
-		this.authenticationKmsKeyMetadata = authenticationKmsKeyMetadata;
-	}
-
 	public List<AuthKmsKeyMetadata> getAuthenticationKmsKeyMetadata() {
 		return authenticationKmsKeyMetadata;
-	}
-
-	public void setAuthenticationKmsKeyMetadata(List<AuthKmsKeyMetadata> authenticationKmsKeyMetadata) {
-		this.authenticationKmsKeyMetadata = authenticationKmsKeyMetadata;
 	}
 
 	@Override

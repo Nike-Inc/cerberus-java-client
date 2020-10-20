@@ -66,11 +66,6 @@ public class IamRolePermission {
 		this.accountId = accountId;
 	}
 
-	public IamRolePermission withAccountId(String accountId) {
-		this.accountId = accountId;
-		return this;
-	}
-
 	public String getIamRoleName() {
 		return iamRoleName;
 	}
@@ -79,22 +74,12 @@ public class IamRolePermission {
 		this.iamRoleName = iamRoleName;
 	}
 
-	public IamRolePermission withIamRoleName(String iamRoleName) {
-		this.iamRoleName = iamRoleName;
-		return this;
-	}
-
 	public String getRoleId() {
 		return roleId;
 	}
 
 	public void setRoleId(String roleId) {
 		this.roleId = roleId;
-	}
-
-	public IamRolePermission withRoleId(String roleId) {
-		this.roleId = roleId;
-		return this;
 	}
 
 	public OffsetDateTime getCreatedTs() {
@@ -127,27 +112,6 @@ public class IamRolePermission {
 
 	public void setLastUpdatedBy(String lastUpdatedBy) {
 		this.lastUpdatedBy = lastUpdatedBy;
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
-
-		IamRolePermission that = (IamRolePermission) o;
-
-		if (accountId != null ? !accountId.equals(that.accountId) : that.accountId != null)
-			return false;
-		return iamRoleName != null ? iamRoleName.equals(that.iamRoleName) : that.iamRoleName == null;
-	}
-
-	@Override
-	public int hashCode() {
-		int result = accountId != null ? accountId.hashCode() : 0;
-		result = 31 * result + (iamRoleName != null ? iamRoleName.hashCode() : 0);
-		return result;
 	}
 
 	@Override

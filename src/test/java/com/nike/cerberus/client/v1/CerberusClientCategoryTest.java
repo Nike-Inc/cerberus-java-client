@@ -243,6 +243,10 @@ public class CerberusClientCategoryTest extends AbstractClientTest {
 		cerberusClient.createCategory(buildSample());
 	}
 
+	/*
+	 * Helper
+	 */
+	
 	private Category buildSample() {
 		Category input = new Category();
 		input.setCreatedBy("owner");

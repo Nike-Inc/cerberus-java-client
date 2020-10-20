@@ -18,77 +18,64 @@ package com.nike.cerberus.client.domain;
 
 import java.util.List;
 
+import com.google.gson.annotations.SerializedName;
+
 public class SecureDataVersionsResult {
 
-  private boolean hasNext = false;
-  private Integer nextOffset = null;
-  private int limit = 0;
-  private int offset = 0;
-  private int versionCountInResult;
-  private int totalVersionCount;
-  private List<SecureDataVersionSummary> secureDataVersionSummaries;
+	@SerializedName("has_next")
+	private boolean hasNext = false;
+	
+	@SerializedName("next_offset")
+	private Integer nextOffset = null;
+	
+	@SerializedName("limit")
+	private int limit = 0;
+	
+	@SerializedName("offset")
+	private int offset = 0;
+	
+	@SerializedName("version_count_in_result")
+	private int versionCountInResult;
+	
+	@SerializedName("total_version_count")
+	private int totalVersionCount;
+	
+	@SerializedName("secure_data_version_summaries")
+	private List<SecureDataVersionSummary> secureDataVersionSummaries;
 
-  public boolean isHasNext() {
-    return hasNext;
-  }
+	public boolean isHasNext() {
+		return hasNext;
+	}
 
-  public SecureDataVersionsResult setHasNext(boolean hasNext) {
-    this.hasNext = hasNext;
-    return this;
-  }
+	public Integer getNextOffset() {
+		return nextOffset;
+	}
 
-  public Integer getNextOffset() {
-    return nextOffset;
-  }
+	public int getLimit() {
+		return limit;
+	}
 
-  public SecureDataVersionsResult setNextOffset(Integer nextOffset) {
-    this.nextOffset = nextOffset;
-    return this;
-  }
+	public int getOffset() {
+		return offset;
+	}
 
-  public int getLimit() {
-    return limit;
-  }
+	public int getVersionCountInResult() {
+		return versionCountInResult;
+	}
 
-  public SecureDataVersionsResult setLimit(int limit) {
-    this.limit = limit;
-    return this;
-  }
+	public int getTotalVersionCount() {
+		return totalVersionCount;
+	}
 
-  public int getOffset() {
-    return offset;
-  }
+	public List<SecureDataVersionSummary> getSecureDataVersionSummaries() {
+		return secureDataVersionSummaries;
+	}
 
-  public SecureDataVersionsResult setOffset(int offset) {
-    this.offset = offset;
-    return this;
-  }
+	@Override
+	public String toString() {
+		return "SecureDataVersionsResult [hasNext=" + hasNext + ", nextOffset=" + nextOffset + ", limit=" + limit
+				+ ", offset=" + offset + ", versionCountInResult=" + versionCountInResult + ", totalVersionCount="
+				+ totalVersionCount + ", secureDataVersionSummaries=" + secureDataVersionSummaries + "]";
+	}
 
-  public int getVersionCountInResult() {
-    return versionCountInResult;
-  }
-
-  public SecureDataVersionsResult setVersionCountInResult(int versionCountInResult) {
-    this.versionCountInResult = versionCountInResult;
-    return this;
-  }
-
-  public int getTotalVersionCount() {
-    return totalVersionCount;
-  }
-
-  public SecureDataVersionsResult setTotalVersionCount(int totalVersionCount) {
-    this.totalVersionCount = totalVersionCount;
-    return this;
-  }
-
-  public List<SecureDataVersionSummary> getSecureDataVersionSummaries() {
-    return secureDataVersionSummaries;
-  }
-
-  public SecureDataVersionsResult setSecureDataVersionSummaries(
-      List<SecureDataVersionSummary> secureDataVersionSummaries) {
-    this.secureDataVersionSummaries = secureDataVersionSummaries;
-    return this;
-  }
 }

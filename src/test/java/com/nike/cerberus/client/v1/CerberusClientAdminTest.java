@@ -77,10 +77,12 @@ public class CerberusClientAdminTest extends AbstractClientTest{
         AuthKmsKeyMetadataResult responce = cerberusClient.getAuthenticationKmsMetadata();
 
         assertThat(responce).isNotNull();
+        assertThat(responce.toString()).isNotNull();
         assertThat(responce.getAuthenticationKmsKeyMetadata()).isNotEmpty();
         
         AuthKmsKeyMetadata metadata = responce.getAuthenticationKmsKeyMetadata().get(0);
         
+        assertThat(metadata.toString()).isNotNull();
         assertThat(metadata.getAwsIamRoleArn()).isNotNull();
         assertThat(metadata.getAwsKmsKeyId()).isNotNull();
 		assertThat(metadata.getAwsRegion()).isNotNull();
@@ -90,7 +92,7 @@ public class CerberusClientAdminTest extends AbstractClientTest{
     }
 
     @Test(expected = CerberusServerApiException.class)
-    public void getRoles_throws_server_exception_if_response_is_not_ok() {
+    public void getAuthenticationKmsMetadata_throws_server_exception_if_response_is_not_ok() {
         final MockResponse response = new MockResponse();
         response.setResponseCode(404);
         mockWebServer.enqueue(response);
@@ -99,7 +101,7 @@ public class CerberusClientAdminTest extends AbstractClientTest{
     }
     
     @Test(expected = CerberusClientException.class)
-    public void getRoles_throws_client_exception_if_response_is_not_ok_with_data() {
+    public void getAuthenticationKmsMetadata_throws_client_exception_if_response_is_not_ok_with_data() {
         final MockResponse response = new MockResponse();
         response.setResponseCode(404);
         response.setBody("non-json");
@@ -120,6 +122,10 @@ public class CerberusClientAdminTest extends AbstractClientTest{
 		AdminOverrideOwner owner = new AdminOverrideOwner();
 		owner.setName("some-name");
 		owner.setOwner("some-owner");
+		
+		assertThat(owner.toString()).isNotNull();
+		assertThat(owner.getName()).isNotNull();
+		assertThat(owner.getOwner()).isNotNull();
 		
 		cerberusClient.overrideOwner(owner);
 	}

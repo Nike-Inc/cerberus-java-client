@@ -310,6 +310,10 @@ public class CerberusClient extends BaseCerberusClient{
     }
     
     public SecureDataVersionsResult getVersionPathsForSdb(String category, String sdbName, String path, int limit, int offset) {
+    	checkForNull("category", category);
+    	checkForNull("sdbName", sdbName);
+    	checkForNull("path", path);
+    	
     	Map<String,String> mapping = getLimitMappings(limit, offset);
     	
         final HttpUrl httpUrl = buildUrl(SECRET_VERSIONS,mapping,category,sdbName);
