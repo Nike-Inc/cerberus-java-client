@@ -26,10 +26,17 @@ import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
 import com.nike.cerberus.client.http.HttpHeader;
 import com.nike.cerberus.client.http.HttpMethod;
 import com.nike.cerberus.client.http.HttpStatus;
+import com.nike.cerberus.client.model.CerberusCategoryResponse;
 import com.nike.cerberus.client.model.CerberusListFilesResponse;
 import com.nike.cerberus.client.model.CerberusListResponse;
 import com.nike.cerberus.client.model.CerberusResponse;
 import static io.github.resilience4j.decorators.Decorators.ofSupplier;
+
+import com.nike.cerberus.client.model.CerberusRolePermission;
+import com.nike.cerberus.client.model.CerberusRoleResponse;
+import com.nike.cerberus.client.model.CerberusSafeDepositBoxRequest;
+import com.nike.cerberus.client.model.CerberusSafeDepositBoxResponse;
+import com.nike.cerberus.client.model.CerberusSafeDepositBoxSummaryResponse;
 import io.github.resilience4j.core.IntervalFunction;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
@@ -54,8 +61,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Client for interacting with a Cerberus.
@@ -64,13 +70,17 @@ public class CerberusClient {
 
     public static final String SECRET_PATH_PREFIX = "v1/secret/";
 
+    public static final String ROLE_PATH = "v1/role";
+
+    public static final String CATEGORY_PATH = "v1/category";
+
+    public static final String SAFE_DEPOSIT_BOX_PREFIX = "v2/safe-deposit-box/";
+
     public static final String SECURE_FILE_PATH_PREFIX = "v1/secure-file/";
 
     public static final MediaType DEFAULT_MEDIA_TYPE = MediaType.parse("application/json; charset=utf-8");
 
     protected static final int DEFAULT_NUM_RETRIES = 3;
-
-    protected static final int DEFAULT_RETRY_INTERVAL_IN_MILLIS = 200;
 
     private static final RetryConfig RETRY_CONFIG =
             RetryConfig.<Response>custom()
@@ -198,7 +208,7 @@ public class CerberusClient {
      * will be thrown with the code and error details.  If an unexpected I/O error is
      * encountered, a {@link CerberusClientException} will be thrown wrapping the underlying exception.
      * <p>
-     * See https://www.github.com/Nike-Inc/cerberus-management-service/blob/master/API.md for details on what the
+     * See https://github.com/Nike-Inc/cerberus/blob/master/API.md for details on what the
      * list files operation returns.
      * </p>
      *
@@ -215,7 +225,7 @@ public class CerberusClient {
      * will be thrown with the code and error details.  If an unexpected I/O error is
      * encountered, a {@link CerberusClientException} will be thrown wrapping the underlying exception.
      * <p>
-     * See https://www.github.com/Nike-Inc/cerberus-management-service/blob/master/API.md for details on what the
+     * See https://github.com/Nike-Inc/cerberus/blob/master/API.md for details on what the
      * list files operation returns.
      * </p>
      *
@@ -252,21 +262,7 @@ public class CerberusClient {
      * @return Map of the data
      */
     public CerberusResponse read(final String path) {
-        final HttpUrl httpUrl = buildUrl(SECRET_PATH_PREFIX, path);
-        logger.debug("read: requestUrl={}", httpUrl);
-
-        final Response response = ofSupplier(
-                () -> execute(httpUrl, HttpMethod.GET, null)
-        )
-        .withRetry(RETRY)
-        .decorate()
-        .get();
-
-        if (response.code() != HttpStatus.OK) {
-            parseAndThrowApiErrorResponse(response);
-        }
-
-        return parseResponseBody(response, CerberusResponse.class);
+        return buildAndExecuteRequest(SECRET_PATH_PREFIX, path, HttpMethod.GET, null, CerberusResponse.class);
     }
 
     /**
@@ -279,20 +275,7 @@ public class CerberusClient {
      * @return File contents
      */
     public byte[] readFileAsBytes(final String path) {
-        final HttpUrl httpUrl = buildUrl(SECURE_FILE_PATH_PREFIX, path);
-        logger.debug("read: requestUrl={}", httpUrl);
-
-        final Response response = ofSupplier(
-                () -> execute(httpUrl, HttpMethod.GET, null)
-        )
-                .withRetry(RETRY)
-                .decorate()
-                .get();
-
-        if (response.code() != HttpStatus.OK) {
-            parseAndThrowApiErrorResponse(response);
-        }
-
+        Response response = buildAndExecuteRequest(SECURE_FILE_PATH_PREFIX, path, HttpMethod.GET, null);
         return responseBodyAsBytes(response);
     }
 
@@ -305,19 +288,7 @@ public class CerberusClient {
      * @param data Data to be stored
      */
     public void write(final String path, final Map<String, String> data) {
-        final HttpUrl httpUrl = buildUrl(SECRET_PATH_PREFIX, path);
-        logger.debug("write: requestUrl={}", httpUrl);
-
-        final Response response = ofSupplier(
-                () -> execute(httpUrl, HttpMethod.POST, data)
-        )
-                .withRetry(RETRY)
-                .decorate()
-                .get();
-
-        if (response.code() != HttpStatus.NO_CONTENT) {
-            parseAndThrowApiErrorResponse(response);
-        }
+        buildAndExecuteRequest(SECRET_PATH_PREFIX, path, HttpMethod.POST, data);
     }
 
     /**
@@ -362,19 +333,7 @@ public class CerberusClient {
      * @param path Path to file to be deleted
      */
     public void deleteFile(final String path) {
-        final HttpUrl httpUrl = buildUrl(SECURE_FILE_PATH_PREFIX, path);
-        logger.debug("delete: requestUrl={}", httpUrl);
-
-        final Response response = ofSupplier(
-                () -> execute(httpUrl, HttpMethod.DELETE, null)
-        )
-                .withRetry(RETRY)
-                .decorate()
-                .get();
-
-        if (response.code() != HttpStatus.NO_CONTENT) {
-            parseAndThrowApiErrorResponse(response);
-        }
+        buildAndExecuteRequest(SECURE_FILE_PATH_PREFIX, path, HttpMethod.DELETE, null);
     }
 
     /**
@@ -385,19 +344,141 @@ public class CerberusClient {
      * @param path Path to data to be deleted
      */
     public void delete(final String path) {
-        final HttpUrl httpUrl = buildUrl(SECRET_PATH_PREFIX, path);
-        logger.debug("delete: requestUrl={}", httpUrl);
+        buildAndExecuteRequest(SECRET_PATH_PREFIX, path, HttpMethod.DELETE, null);
+    }
 
-        final Response response = ofSupplier(
-                () -> execute(httpUrl, HttpMethod.DELETE, null)
-        )
-                .withRetry(RETRY)
-                .decorate()
-                .get();
+    /**
+     * Lists all roles that Cerberus supports.
+     * If Cerberus returns an unexpected response code, a {@link CerberusServerException} will be thrown with the code
+     * and error details.  If an unexpected I/O error is encountered, a {@link CerberusClientException} will be thrown
+     * wrapping the underlying exception.
+     *
+     * @return List of all roles
+     */
+    public List<CerberusRoleResponse> listRoles() {
+        return buildAndExecuteRequest(ROLE_PATH, "", HttpMethod.GET, null, new TypeToken<List<CerberusRoleResponse>>(){}.getType());
+    }
 
-        if (response.code() != HttpStatus.NO_CONTENT) {
-            parseAndThrowApiErrorResponse(response);
+    /**
+     * Gets all roles that Cerberus supports in a more usable {@link CerberusRolePermission} to ID map.
+     * If Cerberus returns an unexpected response code, a {@link CerberusServerException} will be thrown with the code
+     * and error details.  If an unexpected I/O error is encountered, a {@link CerberusClientException} will be thrown
+     * wrapping the underlying exception.
+     *
+     * @return Map of role permission to ID
+     */
+    public Map<CerberusRolePermission, String> getRolePermissionMap() {
+        return listRoles().stream().collect(Collectors.toMap(roleResponse -> CerberusRolePermission.fromString(roleResponse.getName()), CerberusRoleResponse::getId));
+    }
+
+    /**
+     * Lists all categories that Cerberus supports.
+     * If Cerberus returns an unexpected response code, a {@link CerberusServerException} will be thrown with the code
+     * and error details.  If an unexpected I/O error is encountered, a {@link CerberusClientException} will be thrown
+     * wrapping the underlying exception.
+     *
+     * @return List of all categories
+     */
+    public List<CerberusCategoryResponse> listCategories() {
+        return buildAndExecuteRequest(CATEGORY_PATH, "", HttpMethod.GET, null, new TypeToken<List<CerberusCategoryResponse>>(){}.getType());
+    }
+
+    /**
+     * Gets all categories that Cerberus supports in a more usable category path to ID map.
+     * If Cerberus returns an unexpected response code, a {@link CerberusServerException} will be thrown with the code
+     * and error details.  If an unexpected I/O error is encountered, a {@link CerberusClientException} will be thrown
+     * wrapping the underlying exception.
+     *
+     * @return Map of category path to ID
+     */
+    public Map<String, String> getCategoriesMap() {
+        return listCategories().stream().collect(Collectors.toMap(CerberusCategoryResponse::getPath, CerberusCategoryResponse::getId));
+    }
+
+    /**
+     * Lists all safe deposit boxes that the authenticated IAM principal has access to. If Cerberus returns an unexpected response code, a {@link CerberusServerException}
+     * will be thrown with the code and error details.  If an unexpected I/O error is
+     * encountered, a {@link CerberusClientException} will be thrown wrapping the underlying exception.
+     * <p>
+     * See https://github.com/Nike-Inc/cerberus/blob/master/API.md for details on what the
+     * list safe deposit box operation returns.
+     * </p>
+     *
+     * @return List of safe deposit box summaries
+     */
+    public List<CerberusSafeDepositBoxSummaryResponse> listSafeDepositBoxes() {
+        return buildAndExecuteRequest(SAFE_DEPOSIT_BOX_PREFIX, "", HttpMethod.GET, null, new TypeToken<List<CerberusSafeDepositBoxSummaryResponse>>(){}.getType());
+    }
+
+
+    /**
+     * Gets the safe deposit box metadata by its name.
+     * If Cerberus returns an unexpected response code, a {@link CerberusServerException} will be thrown with the code
+     * and error details.  If an unexpected I/O error is encountered, a {@link CerberusClientException} will be thrown
+     * wrapping the underlying exception.
+     *
+     * @param name The name of the safe deposit box
+     * @return The safe deposit box metadata
+     */
+    public CerberusSafeDepositBoxResponse getSafeDepositBoxByName(String name) {
+        List<CerberusSafeDepositBoxSummaryResponse> responses = listSafeDepositBoxes().stream()
+                .filter(sdb -> sdb.getName().equals(name))
+                .collect(Collectors.toList());
+        if (responses.isEmpty()) {
+            throw new CerberusClientException("ERROR cannot find safe deposit box with the name " + name);
         }
+        return getSafeDepositBoxById(responses.get(0).getId());
+    }
+
+    /**
+     * Gets the safe deposit box metadata by its ID.
+     * If Cerberus returns an unexpected response code, a {@link CerberusServerException} will be thrown with the code
+     * and error details.  If an unexpected I/O error is encountered, a {@link CerberusClientException} will be thrown
+     * wrapping the underlying exception.
+     *
+     * @param id The ID of the safe deposit box
+     * @return The safe deposit box metadata
+     */
+    public CerberusSafeDepositBoxResponse getSafeDepositBoxById(String id) {
+        return buildAndExecuteRequest(SAFE_DEPOSIT_BOX_PREFIX, id, HttpMethod.GET, null, CerberusSafeDepositBoxResponse.class);
+    }
+
+    /**
+     * Creates a safe deposit box.
+     * If Cerberus returns an unexpected response code, a {@link CerberusServerException} will be thrown with the code
+     * and error details.  If an unexpected I/O error is encountered, a {@link CerberusClientException} will be thrown
+     * wrapping the underlying exception.
+     *
+     * @param cerberusSafeDepositBoxRequest The metadata of the safe deposit box
+     * @return The metadata of the created safe deposit box
+     */
+    public CerberusSafeDepositBoxResponse createSafeDepositBox(CerberusSafeDepositBoxRequest cerberusSafeDepositBoxRequest) {
+        return buildAndExecuteRequest(SAFE_DEPOSIT_BOX_PREFIX, "", HttpMethod.POST, cerberusSafeDepositBoxRequest, CerberusSafeDepositBoxResponse.class);
+    }
+
+
+    /**
+     * Updates a safe deposit box.
+     * If Cerberus returns an unexpected response code, a {@link CerberusServerException} will be thrown with the code
+     * and error details.  If an unexpected I/O error is encountered, a {@link CerberusClientException} will be thrown
+     * wrapping the underlying exception.
+     *
+     * @param cerberusSafeDepositBoxRequest The metadata of the safe deposit box
+     * @return The metadata of the updated safe deposit box
+     */
+    public CerberusSafeDepositBoxResponse updateSafeDepositBox(String id, CerberusSafeDepositBoxRequest cerberusSafeDepositBoxRequest) {
+        return buildAndExecuteRequest(SAFE_DEPOSIT_BOX_PREFIX, id, HttpMethod.PUT, cerberusSafeDepositBoxRequest, CerberusSafeDepositBoxResponse.class);
+    }
+
+    /**
+     * Delete operation for an safe deposit box.  If Cerberus returns an unexpected response code, a
+     * {@link CerberusServerException} will be thrown with the code and error details.  If an unexpected I/O
+     * error is encountered, a {@link CerberusClientException} will be thrown wrapping the underlying exception.
+     *
+     * @param id ID of the safe deposit box to be deleted
+     */
+    public void deleteSafeDepositBox(String id) {
+        buildAndExecuteRequest(SAFE_DEPOSIT_BOX_PREFIX, id, HttpMethod.DELETE, null);
     }
 
     /**
@@ -479,6 +560,34 @@ public class CerberusClient {
         }
 
         return HttpUrl.parse(baseUrl + prefix + path);
+    }
+
+    protected <M> M buildAndExecuteRequest(final String prefix, final String path, final String httpMethod, Object requestBody, final Class<M> responseClass) {
+        final Response response = buildAndExecuteRequest(prefix, path, httpMethod, requestBody);
+        return parseResponseBody(response, responseClass);
+    }
+
+    protected <M> M buildAndExecuteRequest(final String prefix, final String path, final String httpMethod, Object requestBody, final Type typeOf) {
+        final Response response = buildAndExecuteRequest(prefix, path, httpMethod, requestBody);
+        return parseResponseBody(response, typeOf);
+    }
+
+    private Response buildAndExecuteRequest(final String prefix, final String path, final String httpMethod, Object requestBody) {
+        final HttpUrl httpUrl = buildUrl(prefix, path);
+        logger.debug("requestUrl={}, HTTP method={}", httpUrl, httpMethod);
+
+        final Response response = ofSupplier(
+                () -> execute(httpUrl, httpMethod, requestBody)
+        )
+                .withRetry(RETRY)
+                .decorate()
+                .get();
+
+        if (!response.isSuccessful()) {
+            parseAndThrowApiErrorResponse(response);
+        }
+
+        return response;
     }
 
     /**
@@ -682,14 +791,6 @@ public class CerberusClient {
         } catch (IOException ioe) {
             logger.debug("responseBodyAsString: response={}", gson.toJson(response));
             throw new CerberusClientException("ERROR failed to print: " + response.toString());
-        }
-    }
-
-    private void sleep(long milliseconds) {
-        try {
-            TimeUnit.MILLISECONDS.sleep(milliseconds);
-        } catch (InterruptedException ie) {
-            logger.warn("Sleep interval interrupted.", ie);
         }
     }
 }

@@ -19,8 +19,11 @@ package com.nike.cerberus.client;
 import com.nike.cerberus.client.auth.CerberusCredentials;
 import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
 import com.nike.cerberus.client.auth.DefaultCerberusCredentialsProviderChain;
+import com.nike.cerberus.client.model.CerberusCategoryResponse;
 import com.nike.cerberus.client.model.CerberusListResponse;
 import com.nike.cerberus.client.model.CerberusResponse;
+import com.nike.cerberus.client.model.CerberusRoleResponse;
+import com.nike.cerberus.client.model.CerberusSafeDepositBoxSummaryResponse;
 import okhttp3.Call;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
@@ -38,6 +41,7 @@ import java.io.InputStream;
 import java.net.ServerSocket;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -127,6 +131,42 @@ public class CerberusClientTest {
 
         assertThat(cerberusListResponse).isNotNull();
         assertThat(cerberusListResponse.getKeys()).isEmpty();
+    }
+
+    @Test
+    public void get_roles() {
+        final MockResponse response = new MockResponse();
+        response.setResponseCode(200);
+        response.setBody(getResponseJson("role"));
+        mockWebServer.enqueue(response);
+
+        List<CerberusRoleResponse> roles = cerberusClient.listRoles();
+
+        assertThat(roles).isNotNull();
+    }
+
+    @Test
+    public void get_categories() {
+        final MockResponse response = new MockResponse();
+        response.setResponseCode(200);
+        response.setBody(getResponseJson("category"));
+        mockWebServer.enqueue(response);
+
+        List<CerberusCategoryResponse> categories = cerberusClient.listCategories();
+
+        assertThat(categories).isNotNull();
+    }
+
+    @Test
+    public void get_safe_deposit_boxes() {
+        final MockResponse response = new MockResponse();
+        response.setResponseCode(200);
+        response.setBody(getResponseJson("safe-deposit-box"));
+        mockWebServer.enqueue(response);
+
+        List<CerberusSafeDepositBoxSummaryResponse> categories = cerberusClient.listSafeDepositBoxes();
+
+        assertThat(categories.get(0)).isNotNull();
     }
 
     @Test

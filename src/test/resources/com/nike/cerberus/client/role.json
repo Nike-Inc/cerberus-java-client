@@ -1,0 +1,26 @@
+[
+  {
+    "id": "ee5c7dea-9c82-4974-b712-086afe589671",
+    "name": "owner",
+    "created_ts": "2017-12-20T22:00:54Z",
+    "last_updated_ts": "2017-12-20T22:00:54Z",
+    "created_by": "system",
+    "last_updated_by": "system"
+  },
+  {
+    "id": "753142b9-a07c-47d4-ad3d-f5af0c2e398d",
+    "name": "write",
+    "created_ts": "2017-12-20T22:00:54Z",
+    "last_updated_ts": "2017-12-20T22:00:54Z",
+    "created_by": "system",
+    "last_updated_by": "system"
+  },
+  {
+    "id": "451b4c06-3fb5-46b4-ad1b-258349e239ce",
+    "name": "read",
+    "created_ts": "2017-12-20T22:00:54Z",
+    "last_updated_ts": "2017-12-20T22:00:54Z",
+    "created_by": "system",
+    "last_updated_by": "system"
+  }
+]

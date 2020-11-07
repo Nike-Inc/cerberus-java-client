@@ -1,0 +1,20 @@
+[
+  {
+    "id": "053de0f6-7588-44e3-bcf7-1a648d0bc8f2",
+    "display_name": "Applications",
+    "path": "app",
+    "created_ts": "2017-12-20T22:00:54Z",
+    "last_updated_ts": "2017-12-20T22:00:54Z",
+    "created_by": "system",
+    "last_updated_by": "system"
+  },
+  {
+    "id": "ce2519e2-249a-4adc-a1ce-43ae9a4f9198",
+    "display_name": "Shared",
+    "path": "shared",
+    "created_ts": "2017-12-20T22:00:54Z",
+    "last_updated_ts": "2017-12-20T22:00:54Z",
+    "created_by": "system",
+    "last_updated_by": "system"
+  }
+]
