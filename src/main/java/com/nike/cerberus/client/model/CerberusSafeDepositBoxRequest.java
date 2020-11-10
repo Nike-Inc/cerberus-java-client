@@ -3,6 +3,7 @@ package com.nike.cerberus.client.model;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class CerberusSafeDepositBoxRequest {
     private String name;
@@ -50,22 +51,31 @@ public class CerberusSafeDepositBoxRequest {
             if (userGroupPermissions == null) {
                 userGroupPermissions = new ArrayList<>();
             }
-            CerberusUserGroupPermission userGroupPermission = new CerberusUserGroupPermission();
-            userGroupPermission.setName(name);
-            userGroupPermission.setRoleId(roleId);
-            userGroupPermissions.add(userGroupPermission);
+            Optional<CerberusUserGroupPermission> any = userGroupPermissions.stream().filter(permission -> name.equals(permission.getName())).findAny();
+            if (any.isPresent()){
+                any.get().setRoleId(roleId);
+            } else {
+                CerberusUserGroupPermission userGroupPermission = new CerberusUserGroupPermission();
+                userGroupPermission.setName(name);
+                userGroupPermission.setRoleId(roleId);
+                userGroupPermissions.add(userGroupPermission);
+            }
             return this;
         }
 
         public Builder withIamPrincipalPermission(String iamPrincipalArn, String roleId){
-            // todo check for duplicate?
             if (iamPrincipalPermissions == null) {
                 iamPrincipalPermissions = new ArrayList<>();
             }
-            CerberusIamPrincipalPermission iamPrincipalPermission = new CerberusIamPrincipalPermission();
-            iamPrincipalPermission.setIamPrincipalArn(iamPrincipalArn);
-            iamPrincipalPermission.setRoleId(roleId);
-            iamPrincipalPermissions.add(iamPrincipalPermission);
+            Optional<CerberusIamPrincipalPermission> any = iamPrincipalPermissions.stream().filter(permission -> iamPrincipalArn.equals(permission.getIamPrincipalArn())).findAny();
+            if (any.isPresent()){
+                any.get().setRoleId(roleId);
+            } else {
+                CerberusIamPrincipalPermission iamPrincipalPermission = new CerberusIamPrincipalPermission();
+                iamPrincipalPermission.setIamPrincipalArn(iamPrincipalArn);
+                iamPrincipalPermission.setRoleId(roleId);
+                iamPrincipalPermissions.add(iamPrincipalPermission);
+            }
             return this;
         }
 

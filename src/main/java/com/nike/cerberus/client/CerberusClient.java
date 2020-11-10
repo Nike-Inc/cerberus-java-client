@@ -391,8 +391,12 @@ public class CerberusClient {
      *
      * @return Map of category path to ID
      */
-    public Map<String, String> getCategoriesMap() {
+    public Map<String, String> getCategoryMap() {
         return listCategories().stream().collect(Collectors.toMap(CerberusCategoryResponse::getPath, CerberusCategoryResponse::getId));
+    }
+
+    public String getCategoryIdByPath(String path) {
+        return listCategories().stream().collect(Collectors.toMap(CerberusCategoryResponse::getPath, CerberusCategoryResponse::getId)).get(path);
     }
 
     /**
