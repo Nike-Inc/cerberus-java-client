@@ -2,7 +2,7 @@
 
 [ ![Download](https://api.bintray.com/packages/nike/maven/cerberus-client/images/download.svg) ](https://bintray.com/nike/maven/cerberus-client/_latestVersion)
 [![][travis img]][travis]
-[![Coverage Status](https://coveralls.io/repos/github/Nike-Inc/cerberus-java-client/badge.svg?branch=master)](https://coveralls.io/github/Nike-Inc/cerberus-java-client)
+[![codecov](https://codecov.io/gh/Nike-Inc/cerberus-java-client/branch/master/graph/badge.svg)](https://codecov.io/gh/Nike-Inc/cerberus-java-client)
 [![][license img]][license]
 
 This is a Java based client library for Cerberus that is built on top of Nike's Cerberus client.
