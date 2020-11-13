@@ -74,7 +74,7 @@ dependencies {
 
     // these will be added to the POM and excluded from the shadow jar
     shadow "joda-time:joda-time:2.8.1"
-    shadow "org.apache.commons:commons-lang3:3.4"
+    shadow "org.apache.commons:commons-lang3:3.11"
     shadow "org.slf4j:slf4j-api:1.7.25"
     shadow "com.google.code.gson:gson:2.5"
 
