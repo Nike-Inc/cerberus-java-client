@@ -35,7 +35,7 @@ task copyProjectVersion() {
 }
 tasks.jar.dependsOn copyProjectVersion
 
-apply from: file('gradle/dependencies.gradle')
+apply from: 'gradle/dependencies.gradle'
 apply from: file('gradle/check.gradle')
 apply from: file('gradle/integration.gradle')
 apply from: file('gradle/bintray.gradle')
