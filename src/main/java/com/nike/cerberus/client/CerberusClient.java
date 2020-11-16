@@ -395,6 +395,15 @@ public class CerberusClient {
         return listCategories().stream().collect(Collectors.toMap(CerberusCategoryResponse::getPath, CerberusCategoryResponse::getId));
     }
 
+    /**
+     * Gets the category ID that matches the path.
+     * If Cerberus returns an unexpected response code, a {@link CerberusServerException} will be thrown with the code
+     * and error details.  If an unexpected I/O error is encountered, a {@link CerberusClientException} will be thrown
+     * wrapping the underlying exception.
+     *
+     * @param path The path of category (e.g. "app")
+     * @return Map of category path to ID
+     */
     public String getCategoryIdByPath(String path) {
         return listCategories().stream().collect(Collectors.toMap(CerberusCategoryResponse::getPath, CerberusCategoryResponse::getId)).get(path);
     }
@@ -475,7 +484,8 @@ public class CerberusClient {
     }
 
     /**
-     * Delete operation for an safe deposit box.  If Cerberus returns an unexpected response code, a
+     * Deletes a safe deposit box.
+     * If Cerberus returns an unexpected response code, a
      * {@link CerberusServerException} will be thrown with the code and error details.  If an unexpected I/O
      * error is encountered, a {@link CerberusClientException} will be thrown wrapping the underlying exception.
      *

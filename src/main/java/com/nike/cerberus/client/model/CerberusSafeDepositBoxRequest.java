@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2020 Nike, inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.nike.cerberus.client.model;
 
 import java.util.ArrayList;
@@ -5,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/** Represents a request for creating and updating a safe deposit box. */
 public class CerberusSafeDepositBoxRequest {
     private String name;
     private String categoryId;
@@ -12,6 +29,54 @@ public class CerberusSafeDepositBoxRequest {
     private String owner;
     private List<CerberusUserGroupPermission> userGroupPermissions;
     private List<CerberusIamPrincipalPermission> iamPrincipalPermissions;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(String categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    public List<CerberusUserGroupPermission> getUserGroupPermissions() {
+        return userGroupPermissions;
+    }
+
+    public void setUserGroupPermissions(List<CerberusUserGroupPermission> userGroupPermissions) {
+        this.userGroupPermissions = userGroupPermissions;
+    }
+
+    public List<CerberusIamPrincipalPermission> getIamPrincipalPermissions() {
+        return iamPrincipalPermissions;
+    }
+
+    public void setIamPrincipalPermissions(List<CerberusIamPrincipalPermission> iamPrincipalPermissions) {
+        this.iamPrincipalPermissions = iamPrincipalPermissions;
+    }
 
     public static class Builder {
         private String name;
@@ -63,6 +128,13 @@ public class CerberusSafeDepositBoxRequest {
             return this;
         }
 
+        public Builder removeUserGroupPermission(String userGroupNameToBeRemoved){
+            if (userGroupPermissions != null){
+                userGroupPermissions.removeIf(userGroupPermission -> userGroupPermission.getName().equals(userGroupNameToBeRemoved));
+            }
+            return this;
+        }
+
         public Builder withIamPrincipalPermission(String iamPrincipalArn, String roleId){
             if (iamPrincipalPermissions == null) {
                 iamPrincipalPermissions = new ArrayList<>();
@@ -93,10 +165,18 @@ public class CerberusSafeDepositBoxRequest {
             return withIamPrincipalPermission(iamPrincipalArn, rolePermissionMap.get(rolePermission));
         }
 
+        public Builder removeIamPrincipalPermission(String iamPrincipalArnToBeRemoved){
+            if (iamPrincipalPermissions != null){
+                iamPrincipalPermissions.removeIf(iamPrincipalPermission -> iamPrincipalPermission.getIamPrincipalArn().equals(iamPrincipalArnToBeRemoved));
+            }
+            return this;
+        }
+
         public Builder withCerberusSafeDepositBoxResponse(CerberusSafeDepositBoxResponse sdbResponse) {
             this.name = sdbResponse.getName();
             this.description = sdbResponse.getDescription();
             this.owner = sdbResponse.getOwner();
+            this.categoryId = sdbResponse.getCategoryId();
             this.userGroupPermissions = sdbResponse.getUserGroupPermissions();
             this.iamPrincipalPermissions = sdbResponse.getIamPrincipalPermissions();
             return this;
@@ -104,11 +184,11 @@ public class CerberusSafeDepositBoxRequest {
 
         public CerberusSafeDepositBoxRequest build() {
             if (name == null) {
-                throw new IllegalArgumentException("name must be set");
+                throw new IllegalArgumentException("Safe deposit box name must be set");
             }
 
             if (owner == null) {
-                throw new IllegalArgumentException("owner must be set");
+                throw new IllegalArgumentException("Safe deposit box owner must be set");
             }
 
             return new CerberusSafeDepositBoxRequest(this);

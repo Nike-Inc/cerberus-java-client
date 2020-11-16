@@ -1,0 +1,14 @@
+[
+  {
+    "id": "cca549f9-768e-4e0a-b57c-b15098ebcdd8",
+    "name": "test sdb 1",
+    "path": "app/test-sdb-1/",
+    "category_id": "c7e98da8-6d81-4a7d-a318-f26c14d990e1"
+  },
+  {
+    "id": "9e3d853c-1144-4b2a-82a1-2987b5e6dea0",
+    "name": "test sdb 2",
+    "path": "shared/test-sdb-2/",
+    "category_id": "adb57965-b0ee-449f-8c23-e29b0b72892b"
+  }
+]

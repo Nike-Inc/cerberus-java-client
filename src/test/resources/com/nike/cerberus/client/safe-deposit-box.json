@@ -1,14 +1,34 @@
-[
-  {
-    "id": "cca549f9-768e-4e0a-b57c-b15098ebcdd8",
-    "name": "test sdb 1",
-    "path": "app/test-sdb-1/",
-    "category_id": "4012ad11-e5d1-11e7-8c06-024f9d112c72"
-  },
-  {
-    "id": "9e3d853c-1144-4b2a-82a1-2987b5e6dea0",
-    "name": "test sdb 2",
-    "path": "app/test-sdb-2/",
-    "category_id": "adb57965-b0ee-449f-8c23-e29b0b72892b"
-  }
-]
+{
+  "id": "cca549f9-768e-4e0a-b57c-b15098ebcdd8",
+  "category_id": "c7e98da8-6d81-4a7d-a318-f26c14d990e1",
+  "name": "test sdb 1",
+  "description": "test description",
+  "path": "app/test-sdb-1/",
+  "created_ts": "2017-06-03T00:06:12Z",
+  "last_updated_ts": "2017-06-03T00:06:12Z",
+  "created_by": "foo@bar.com",
+  "last_updated_by": "foo@bar.com",
+  "owner": "owner group",
+  "user_group_permissions": [
+    {
+      "id": "867fc41b-f8ff-4e95-9fe7-6d0a8b76ccb2",
+      "name": "read group",
+      "role_id": "152db5e5-68bf-4d5f-a08b-6ca4faaa393e",
+      "created_ts": "2017-12-20T22:03:55Z",
+      "last_updated_ts": "2019-09-20T02:23:27.934Z",
+      "created_by": "foo@bar.com",
+      "last_updated_by": "foo@bar.com"
+    }
+  ],
+  "iam_principal_permissions": [
+    {
+      "id": "e6cc049d-7ddf-4056-b291-6a27c3bd0e4b",
+      "role_id": "eb639d7e-89ad-4084-87ce-4d9b6ee81341",
+      "iam_principal_arn": "arn:aws:iam::1234567890:role/test-role",
+      "created_ts": "2018-01-22T19:01:13Z",
+      "last_updated_ts": "2019-09-20T02:23:27.934Z",
+      "created_by": "foo@bar.com",
+      "last_updated_by": "foo@bar.com"
+    }
+  ]
+}
