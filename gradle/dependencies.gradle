@@ -57,7 +57,7 @@ dependencies {
     shadow "org.slf4j:slf4j-api:1.7.25"
     shadow "com.google.code.gson:gson:2.5"
 
-    compile "com.squareup.okhttp3:okhttp:3.14.9"
+    compile "com.squareup.okhttp3:okhttp:4.9.0"
     compile "org.apache.commons:commons-lang3:3.4"
     compile "com.google.code.gson:gson:2.5"
     compile "org.slf4j:slf4j-api:1.7.25"
