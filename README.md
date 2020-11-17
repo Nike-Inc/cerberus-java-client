@@ -23,6 +23,54 @@ To learn more about Cerberus, please see the [Cerberus website](http://engineeri
 ```
 Check out ["Working with AWS Credentials"](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html) for more information on how the AWS SDK for Java loads credentials.
 
+
+## Manage Safe Deposit Box
+
+### Create Safe Deposit Box
+Your IAM role or user needs to be added to any safe deposit box to be authorized to create a safe deposit box.
+``` java
+    String cerberusUrl = "https://cerberus.example.com";
+    String region = "us-west-2";
+    CerberusClient cerberusClient = DefaultCerberusClientFactory.getClient(cerberusUrl, region);
+    String appCategoryId = cerberusClient.getCategoryIdByPath("app");
+    Map<CerberusRolePermission, String> rolePermissionMap = cerberusClient.getRolePermissionMap();
+    CerberusSafeDepositBoxResponse newSdb = cerberusClient.createSafeDepositBox(CerberusSafeDepositBoxRequest.newBuilder()
+                    .withName("cerberus secrets")
+                    .withOwner("very important user group")
+                    .withCategoryId(appCategoryId)
+                    .withRolePermissionMap(rolePermissionMap)
+                    .withIamPrincipalPermission("arn:aws:iam::12345:role/ec2-role", OWNER)
+                    .withUserGroupPermission("readonly group", READ)
+                    .build());
+```
+
+### Update Safe Deposit Box
+Your IAM role or user needs to be the `owner` of a safe deposit box to update it.
+``` java
+    String cerberusUrl = "https://cerberus.example.com";
+    String region = "us-west-2";
+    CerberusClient cerberusClient = DefaultCerberusClientFactory.getClient(cerberusUrl, region);
+    Map<CerberusRolePermission, String> rolePermissionMap = cerberusClient.getRolePermissionMap();
+    CerberusSafeDepositBoxResponse sdb = cerberusClient.getSafeDepositBoxByName("cerberus secrets");
+    cerberusClient.updateSafeDepositBox(CerberusSafeDepositBoxRequest.newBuilder()
+                    .withCerberusSafeDepositBoxResponse(sdb)
+                    .withRolePermissionMap(rolePermissionMap)
+                    .withIamPrincipalPermission("arn:aws:iam::12345:role/lambda-role", READ)
+                    .build());
+```
+
+### Delete Safe Deposit Box
+Your IAM role or user needs to be the `owner` of a safe deposit box to delete it.
+``` java
+    String cerberusUrl = "https://cerberus.example.com";
+    String region = "us-west-2";
+    CerberusClient cerberusClient = DefaultCerberusClientFactory.getClient(cerberusUrl, region);
+    Map<CerberusRolePermission, String> rolePermissionMap = cerberusClient.getRolePermissionMap();
+    CerberusSafeDepositBoxResponse sdb = cerberusClient.getSafeDepositBoxByName("cerberus secrets");
+    cerberusClient.deleteSafeDepositBox(sdb.getId());
+```
+
+
 ## Development
 
 ### Run Integration Tests
