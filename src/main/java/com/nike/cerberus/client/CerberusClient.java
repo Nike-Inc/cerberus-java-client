@@ -78,6 +78,8 @@ public class CerberusClient {
 
     public static final String SECURE_FILE_PATH_PREFIX = "v1/secure-file/";
 
+    public static final String EMPTY_PATH = "";
+
     public static final MediaType DEFAULT_MEDIA_TYPE = MediaType.parse("application/json; charset=utf-8");
 
     protected static final int DEFAULT_NUM_RETRIES = 3;
@@ -356,7 +358,7 @@ public class CerberusClient {
      * @return List of all roles
      */
     public List<CerberusRoleResponse> listRoles() {
-        return buildAndExecuteRequest(ROLE_PATH, "", HttpMethod.GET, null, new TypeToken<List<CerberusRoleResponse>>(){}.getType());
+        return buildAndExecuteRequest(ROLE_PATH, EMPTY_PATH, HttpMethod.GET, null, new TypeToken<List<CerberusRoleResponse>>(){}.getType());
     }
 
     /**
@@ -380,7 +382,7 @@ public class CerberusClient {
      * @return List of all categories
      */
     public List<CerberusCategoryResponse> listCategories() {
-        return buildAndExecuteRequest(CATEGORY_PATH, "", HttpMethod.GET, null, new TypeToken<List<CerberusCategoryResponse>>(){}.getType());
+        return buildAndExecuteRequest(CATEGORY_PATH, EMPTY_PATH, HttpMethod.GET, null, new TypeToken<List<CerberusCategoryResponse>>(){}.getType());
     }
 
     /**
@@ -405,7 +407,7 @@ public class CerberusClient {
      * @return Map of category path to ID
      */
     public String getCategoryIdByPath(String path) {
-        return listCategories().stream().collect(Collectors.toMap(CerberusCategoryResponse::getPath, CerberusCategoryResponse::getId)).get(path);
+        return getCategoryMap().get(path);
     }
 
     /**
@@ -420,7 +422,7 @@ public class CerberusClient {
      * @return List of safe deposit box summaries
      */
     public List<CerberusSafeDepositBoxSummaryResponse> listSafeDepositBoxes() {
-        return buildAndExecuteRequest(SAFE_DEPOSIT_BOX_PREFIX, "", HttpMethod.GET, null, new TypeToken<List<CerberusSafeDepositBoxSummaryResponse>>(){}.getType());
+        return buildAndExecuteRequest(SAFE_DEPOSIT_BOX_PREFIX, EMPTY_PATH, HttpMethod.GET, null, new TypeToken<List<CerberusSafeDepositBoxSummaryResponse>>(){}.getType());
     }
 
 
@@ -466,7 +468,7 @@ public class CerberusClient {
      * @return The metadata of the created safe deposit box
      */
     public CerberusSafeDepositBoxResponse createSafeDepositBox(CerberusSafeDepositBoxRequest cerberusSafeDepositBoxRequest) {
-        return buildAndExecuteRequest(SAFE_DEPOSIT_BOX_PREFIX, "", HttpMethod.POST, cerberusSafeDepositBoxRequest, CerberusSafeDepositBoxResponse.class);
+        return buildAndExecuteRequest(SAFE_DEPOSIT_BOX_PREFIX, EMPTY_PATH, HttpMethod.POST, cerberusSafeDepositBoxRequest, CerberusSafeDepositBoxResponse.class);
     }
 
 
