@@ -1,7 +1,7 @@
 # Cerberus Client
 
 [ ![Download](https://api.bintray.com/packages/nike/maven/cerberus-client/images/download.svg) ](https://bintray.com/nike/maven/cerberus-client/_latestVersion)
-[![][travis img]][travis]
+![][gh actions img]]
 [![codecov](https://codecov.io/gh/Nike-Inc/cerberus-java-client/branch/master/graph/badge.svg)](https://codecov.io/gh/Nike-Inc/cerberus-java-client)
 [![][license img]][license]
 
@@ -98,8 +98,7 @@ Next, in the project directory run:
 
 Cerberus client is released under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
-[travis]:https://travis-ci.org/Nike-Inc/cerberus-java-client
-[travis img]:https://api.travis-ci.org/Nike-Inc/cerberus-java-client.svg?branch=master
+[gh actions img]:https://github.com/Nike-Inc/cerberus-java-client/workflows/Build/badge.svg?branch=master
 
 [license]:LICENSE.txt
 [license img]:https://img.shields.io/badge/License-Apache%202-blue.svg
