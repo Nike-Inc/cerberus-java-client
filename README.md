@@ -1,7 +1,7 @@
 # Cerberus Client
 
 [ ![Download](https://api.bintray.com/packages/nike/maven/cerberus-client/images/download.svg) ](https://bintray.com/nike/maven/cerberus-client/_latestVersion)
-![][gh actions img]]
+![][gh actions img]
 [![codecov](https://codecov.io/gh/Nike-Inc/cerberus-java-client/branch/master/graph/badge.svg)](https://codecov.io/gh/Nike-Inc/cerberus-java-client)
 [![][license img]][license]
 
