@@ -1,12 +1,20 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://help.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+  # Basic dependabot.yml file with
+  # minimum configuration for two package managers
 
-version: 2
-updates:
-  - package-ecosystem: "gradle" # See documentation for possible values
-    directory: "/" # Location of package manifests
-    schedule:
-      interval: "daily"
-    target-branch: "dep/try_dependabot"
+  version: 2
+  updates:
+    # Enable version updates for Gradle
+    - package-ecosystem: "gradle"
+      # Look for `build.gradle`  files in the `root` directory
+      directory: "/"
+      target-branch: "dep/dependency_upgrade_staging"
+      open-pull-requests-limit: 30
+      schedule:
+        interval: "daily"
+    - package-ecosystem: "github-actions"
+      # Look for `package.json` and `lock` files in the `cerberus-dashboard` directory
+      directory: "/"
+      target-branch: "dep/dependency_upgrade_staging"
+      # Check the npm registry for updates every day (weekdays)
+      schedule:
+        interval: "daily"
