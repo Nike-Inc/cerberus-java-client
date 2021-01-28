@@ -1,8 +1,8 @@
 # Cerberus Client
 
 [ ![Download](https://api.bintray.com/packages/nike/maven/cerberus-client/images/download.svg) ](https://bintray.com/nike/maven/cerberus-client/_latestVersion)
-[![][travis img]][travis]
-[![Coverage Status](https://coveralls.io/repos/github/Nike-Inc/cerberus-java-client/badge.svg?branch=master)](https://coveralls.io/github/Nike-Inc/cerberus-java-client)
+![][gh actions img]
+[![codecov](https://codecov.io/gh/Nike-Inc/cerberus-java-client/branch/master/graph/badge.svg)](https://codecov.io/gh/Nike-Inc/cerberus-java-client)
 [![][license img]][license]
 
 This is a Java based client library for Cerberus that is built on top of Nike's Cerberus client.
@@ -22,6 +22,54 @@ To learn more about Cerberus, please see the [Cerberus website](http://engineeri
     Map<String,String> secrets = cerberusClient.read("/app/my-sdb-name").getData();
 ```
 Check out ["Working with AWS Credentials"](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html) for more information on how the AWS SDK for Java loads credentials.
+
+
+## Manage Safe Deposit Box
+
+### Create Safe Deposit Box
+Your IAM role or user needs to be added to any safe deposit box to be authorized to create a safe deposit box.
+``` java
+    String cerberusUrl = "https://cerberus.example.com";
+    String region = "us-west-2";
+    CerberusClient cerberusClient = DefaultCerberusClientFactory.getClient(cerberusUrl, region);
+    String appCategoryId = cerberusClient.getCategoryIdByPath("app");
+    Map<CerberusRolePermission, String> rolePermissionMap = cerberusClient.getRolePermissionMap();
+    CerberusSafeDepositBoxResponse newSdb = cerberusClient.createSafeDepositBox(CerberusSafeDepositBoxRequest.newBuilder()
+                    .withName("cerberus secrets")
+                    .withOwner("very important user group")
+                    .withCategoryId(appCategoryId)
+                    .withRolePermissionMap(rolePermissionMap)
+                    .withIamPrincipalPermission("arn:aws:iam::12345:role/ec2-role", OWNER)
+                    .withUserGroupPermission("readonly group", READ)
+                    .build());
+```
+
+### Update Safe Deposit Box
+Your IAM role or user needs to be the `owner` of a safe deposit box to update it.
+``` java
+    String cerberusUrl = "https://cerberus.example.com";
+    String region = "us-west-2";
+    CerberusClient cerberusClient = DefaultCerberusClientFactory.getClient(cerberusUrl, region);
+    Map<CerberusRolePermission, String> rolePermissionMap = cerberusClient.getRolePermissionMap();
+    CerberusSafeDepositBoxResponse sdb = cerberusClient.getSafeDepositBoxByName("cerberus secrets");
+    cerberusClient.updateSafeDepositBox(CerberusSafeDepositBoxRequest.newBuilder()
+                    .withCerberusSafeDepositBoxResponse(sdb)
+                    .withRolePermissionMap(rolePermissionMap)
+                    .withIamPrincipalPermission("arn:aws:iam::12345:role/lambda-role", READ)
+                    .build());
+```
+
+### Delete Safe Deposit Box
+Your IAM role or user needs to be the `owner` of a safe deposit box to delete it.
+``` java
+    String cerberusUrl = "https://cerberus.example.com";
+    String region = "us-west-2";
+    CerberusClient cerberusClient = DefaultCerberusClientFactory.getClient(cerberusUrl, region);
+    Map<CerberusRolePermission, String> rolePermissionMap = cerberusClient.getRolePermissionMap();
+    CerberusSafeDepositBoxResponse sdb = cerberusClient.getSafeDepositBoxByName("cerberus secrets");
+    cerberusClient.deleteSafeDepositBox(sdb.getId());
+```
+
 
 ## Development
 
@@ -50,8 +98,7 @@ Next, in the project directory run:
 
 Cerberus client is released under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
-[travis]:https://travis-ci.org/Nike-Inc/cerberus-java-client
-[travis img]:https://api.travis-ci.org/Nike-Inc/cerberus-java-client.svg?branch=master
+[gh actions img]:https://github.com/Nike-Inc/cerberus-java-client/workflows/Build/badge.svg?branch=master
 
 [license]:LICENSE.txt
 [license img]:https://img.shields.io/badge/License-Apache%202-blue.svg

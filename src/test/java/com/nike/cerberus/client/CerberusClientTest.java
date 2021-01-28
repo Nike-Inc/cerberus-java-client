@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Nike, Inc.
+ * Copyright (c) 2020 Nike, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,13 @@ package com.nike.cerberus.client;
 import com.nike.cerberus.client.auth.CerberusCredentials;
 import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
 import com.nike.cerberus.client.auth.DefaultCerberusCredentialsProviderChain;
+import com.nike.cerberus.client.model.CerberusCategoryResponse;
 import com.nike.cerberus.client.model.CerberusListResponse;
 import com.nike.cerberus.client.model.CerberusResponse;
+import com.nike.cerberus.client.model.CerberusRolePermission;
+import com.nike.cerberus.client.model.CerberusRoleResponse;
+import com.nike.cerberus.client.model.CerberusSafeDepositBoxResponse;
+import com.nike.cerberus.client.model.CerberusSafeDepositBoxSummaryResponse;
 import okhttp3.Call;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
@@ -38,11 +43,13 @@ import java.io.InputStream;
 import java.net.ServerSocket;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.nike.cerberus.client.CerberusClient.DEFAULT_NUM_RETRIES;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -128,6 +135,142 @@ public class CerberusClientTest {
         assertThat(cerberusListResponse).isNotNull();
         assertThat(cerberusListResponse.getKeys()).isEmpty();
     }
+
+    @Test
+    public void get_roles() {
+        final MockResponse response = new MockResponse();
+        response.setResponseCode(200);
+        response.setBody(getResponseJson("role"));
+        mockWebServer.enqueue(response);
+
+        List<CerberusRoleResponse> roles = cerberusClient.listRoles();
+
+        assertThat(roles).isNotNull();
+        assertEquals(3, roles.size());
+        assertEquals("ee5c7dea-9c82-4974-b712-086afe589671", roles.get(0).getId());
+        assertEquals("owner", roles.get(0).getName());
+        assertEquals("753142b9-a07c-47d4-ad3d-f5af0c2e398d", roles.get(1).getId());
+        assertEquals("write", roles.get(1).getName());
+        assertEquals("451b4c06-3fb5-46b4-ad1b-258349e239ce", roles.get(2).getId());
+        assertEquals("read", roles.get(2).getName());
+    }
+
+    @Test
+    public void get_role_permission_map() {
+        final MockResponse response = new MockResponse();
+        response.setResponseCode(200);
+        response.setBody(getResponseJson("role"));
+        mockWebServer.enqueue(response);
+
+        Map<CerberusRolePermission, String> rolePermissionMap = cerberusClient.getRolePermissionMap();
+
+        assertThat(rolePermissionMap).isNotNull();
+        assertEquals(3, rolePermissionMap.size());
+        assertEquals("ee5c7dea-9c82-4974-b712-086afe589671", rolePermissionMap.get(CerberusRolePermission.OWNER));
+        assertEquals("753142b9-a07c-47d4-ad3d-f5af0c2e398d", rolePermissionMap.get(CerberusRolePermission.WRITE));
+        assertEquals("451b4c06-3fb5-46b4-ad1b-258349e239ce", rolePermissionMap.get(CerberusRolePermission.READ));
+    }
+
+    @Test
+    public void get_categories() {
+        final MockResponse response = new MockResponse();
+        response.setResponseCode(200);
+        response.setBody(getResponseJson("category"));
+        mockWebServer.enqueue(response);
+
+        List<CerberusCategoryResponse> categories = cerberusClient.listCategories();
+
+        assertThat(categories).isNotNull();
+        assertEquals(2, categories.size());
+        assertEquals("053de0f6-7588-44e3-bcf7-1a648d0bc8f2", categories.get(0).getId());
+        assertEquals("Applications", categories.get(0).getDisplayName());
+        assertEquals("app", categories.get(0).getPath());
+        assertEquals("ce2519e2-249a-4adc-a1ce-43ae9a4f9198", categories.get(1).getId());
+        assertEquals("Shared", categories.get(1).getDisplayName());
+        assertEquals("shared", categories.get(1).getPath());
+    }
+
+    @Test
+    public void get_category_map() {
+        final MockResponse response = new MockResponse();
+        response.setResponseCode(200);
+        response.setBody(getResponseJson("category"));
+        mockWebServer.enqueue(response);
+
+        Map<String, String> categoryMap = cerberusClient.getCategoryMap();
+
+        assertThat(categoryMap).isNotNull();
+        assertEquals(2, categoryMap.size());
+        assertEquals("053de0f6-7588-44e3-bcf7-1a648d0bc8f2", categoryMap.get("app"));
+        assertEquals("ce2519e2-249a-4adc-a1ce-43ae9a4f9198", categoryMap.get("shared"));
+    }
+
+    @Test
+    public void list_safe_deposit_boxes() {
+        final MockResponse response = new MockResponse();
+        response.setResponseCode(200);
+        response.setBody(getResponseJson("list-safe-deposit-boxes"));
+        mockWebServer.enqueue(response);
+
+        List<CerberusSafeDepositBoxSummaryResponse> sdbs = cerberusClient.listSafeDepositBoxes();
+
+        assertThat(sdbs).isNotNull();
+        assertEquals(2, sdbs.size());
+        assertEquals("cca549f9-768e-4e0a-b57c-b15098ebcdd8", sdbs.get(0).getId());
+        assertEquals("c7e98da8-6d81-4a7d-a318-f26c14d990e1", sdbs.get(0).getCategoryId());
+        assertEquals("test sdb 1", sdbs.get(0).getName());
+        assertEquals("app/test-sdb-1/", sdbs.get(0).getPath());
+        assertEquals("9e3d853c-1144-4b2a-82a1-2987b5e6dea0", sdbs.get(1).getId());
+        assertEquals("adb57965-b0ee-449f-8c23-e29b0b72892b", sdbs.get(1).getCategoryId());
+        assertEquals("test sdb 2", sdbs.get(1).getName());
+        assertEquals("shared/test-sdb-2/", sdbs.get(1).getPath());
+    }
+
+    @Test
+    public void get_safe_deposit_box_by_id() {
+        final MockResponse response = new MockResponse();
+        response.setResponseCode(200);
+        response.setBody(getResponseJson("safe-deposit-box"));
+        mockWebServer.enqueue(response);
+
+        CerberusSafeDepositBoxResponse sdb = cerberusClient.getSafeDepositBoxById("cca549f9-768e-4e0a-b57c-b15098ebcdd8");
+
+        assertThat(sdb).isNotNull();
+        assertEquals("cca549f9-768e-4e0a-b57c-b15098ebcdd8", sdb.getId());
+        assertEquals("c7e98da8-6d81-4a7d-a318-f26c14d990e1", sdb.getCategoryId());
+        assertEquals("test sdb 1", sdb.getName());
+        assertEquals("test description", sdb.getDescription());
+        assertEquals("app/test-sdb-1/", sdb.getPath());
+        assertEquals("owner group", sdb.getOwner());
+        assertThat(sdb.getIamPrincipalPermissions()).isNotNull();
+        assertEquals("arn:aws:iam::1234567890:role/test-role", sdb.getIamPrincipalPermissions()
+                .get(0).getIamPrincipalArn());
+        assertEquals("eb639d7e-89ad-4084-87ce-4d9b6ee81341", sdb.getIamPrincipalPermissions()
+                .get(0).getRoleId());
+        assertThat(sdb.getUserGroupPermissions()).isNotNull();
+        assertEquals("read group", sdb.getUserGroupPermissions()
+                .get(0).getName());
+        assertEquals("152db5e5-68bf-4d5f-a08b-6ca4faaa393e", sdb.getUserGroupPermissions()
+                .get(0).getRoleId());
+    }
+
+    @Test
+    public void get_safe_deposit_box_by_name() {
+        final MockResponse listResponse = new MockResponse();
+        listResponse.setResponseCode(200);
+        listResponse.setBody(getResponseJson("list-safe-deposit-boxes"));
+        mockWebServer.enqueue(listResponse);
+
+        final MockResponse getResponse = new MockResponse();
+        getResponse.setResponseCode(200);
+        getResponse.setBody(getResponseJson("safe-deposit-box"));
+        mockWebServer.enqueue(getResponse);
+
+        CerberusSafeDepositBoxResponse sdb = cerberusClient.getSafeDepositBoxByName("test sdb 1");
+
+        assertThat(sdb).isNotNull();
+    }
+
 
     @Test
     public void read_returns_map_of_data_for_specified_path_if_exists() {

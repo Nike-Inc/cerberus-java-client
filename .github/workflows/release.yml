@@ -1,0 +1,47 @@
+# This workflow will build a Java project with Gradle
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+
+name: Release
+
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+jobs:
+  Build-and-Release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 8
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build with Gradle
+        run: ./gradlew assemble
+      - name: Test with Gradle
+        run: ./gradlew check
+      - name: Upload coverage report to CodeCov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+          file: ./build/reports/cobertura/coverage.xml # optional
+          fail_ci_if_error: true # optional (default = false)
+          verbose: true
+      - name: Release artifact to Bintray
+        env:
+          BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
+          BINTRAY_KEY: ${{ secrets.BINTRAY_KEY}}
+        run: ./gradlew bintrayUpload
+      - name: Slack notification when release fails
+        if: ${{ failure() }}
+        uses: rtCamp/action-slack-notify@v2.1.0
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: cerberus-alerts
+          SLACK_MESSAGE: 'Cerberus release workflow has failed :build-failed:'
+          SLACK_ICON: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+          SLACK_TITLE: Cerberus Build Failure Notification
+          SLACK_USERNAME: GitHub Actions
