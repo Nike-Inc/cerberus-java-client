@@ -76,7 +76,7 @@ dependencies {
     testCompile ("org.powermock:powermock-api-mockito:1.6.4") {
         exclude group: 'org.hamcrest'
     }
-    testCompile ("org.powermock:powermock-module-junit4:1.6.4") {
+    testCompile ("org.powermock:powermock-module-junit4:2.0.9") {
         exclude group: 'org.hamcrest'
     }
     testCompile "org.assertj:assertj-core:2.3.0"
