@@ -27,7 +27,7 @@ configurations.all {
         force "ch.qos.logback:logback-core:1.2.3"
         force "ch.qos.logback:logback-classic:1.2.3"
         force "net.sourceforge.pmd:pmd-core:6.21.0"
-        force "net.sourceforge.pmd:pmd-java:6.21.0"
+        force "net.sourceforge.pmd:pmd-java:6.30.0"
 
         dependencySubstitution {
             substitute module("org.mortbay.jetty:jetty") with module("org.eclipse.jetty:jetty-server:9.4.34.v20201102")
