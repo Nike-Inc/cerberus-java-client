@@ -26,7 +26,7 @@ configurations.all {
         force "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.11.1"
         force "ch.qos.logback:logback-core:1.2.3"
         force "ch.qos.logback:logback-classic:1.2.3"
-        force "net.sourceforge.pmd:pmd-core:6.21.0"
+        force "net.sourceforge.pmd:pmd-core:6.30.0"
         force "net.sourceforge.pmd:pmd-java:6.21.0"
 
         dependencySubstitution {
