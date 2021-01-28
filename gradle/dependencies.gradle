@@ -81,7 +81,7 @@ dependencies {
     }
     testCompile "org.assertj:assertj-core:2.3.0"
     testCompile "com.squareup.okhttp3:mockwebserver:3.14.9"
-    testCompile "commons-io:commons-io:2.4"
+    testCompile "commons-io:commons-io:2.8.0"
     testCompile group: 'com.tngtech.java', name: 'junit-dataprovider', version: '1.10.0'
 }
 
