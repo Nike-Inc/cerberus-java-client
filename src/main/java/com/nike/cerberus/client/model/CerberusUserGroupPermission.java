@@ -36,7 +36,4 @@ public class CerberusUserGroupPermission {
     public void setRoleId(String roleId) {
         this.roleId = roleId;
     }
-
-
-
 }
