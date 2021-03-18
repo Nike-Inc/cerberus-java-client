@@ -9,7 +9,7 @@ This library acts as a wrapper around the Nike developed Cerberus client by conf
 
 To learn more about Cerberus, please see the [Cerberus website](http://engineering.nike.com/cerberus/).
  
-## <span style="color:#d9534f">Publishing Notice 3/17/2021</span>
+## Publishing Notice 3/17/2021
 As of spring 2021, JFrog has decided to sunset Bintray and JCenter.
 Due to this decision, we are pausing our open source publishing of the Cerberus Client indefinitely.
 However, we will still be updating the source code and making new GitHub releases.
