@@ -1,7 +1,5 @@
 # Cerberus Client
 
-[ ![Download](https://api.bintray.com/packages/nike/maven/cerberus-client/images/download.svg) ](https://bintray.com/nike/maven/cerberus-client/_latestVersion)
-[![][travis img]][travis]
 [![codecov](https://codecov.io/gh/Nike-Inc/cerberus-java-client/branch/master/graph/badge.svg)](https://codecov.io/gh/Nike-Inc/cerberus-java-client)
 [![][license img]][license]
 
@@ -10,6 +8,18 @@ This is a Java based client library for Cerberus that is built on top of Nike's 
 This library acts as a wrapper around the Nike developed Cerberus client by configuring the client to be Cerberus compatible.
 
 To learn more about Cerberus, please see the [Cerberus website](http://engineering.nike.com/cerberus/).
+ 
+## Publishing Notice 3/17/2021
+As of spring 2021, JFrog has decided to sunset Bintray and JCenter.
+Due to this decision, we are pausing our open source publishing of the Cerberus Client indefinitely.
+However, we will still be updating the source code and making new GitHub releases.
+
+In order to build the jar yourself, run this command:
+```bash
+./gradlew assemble
+```
+
+The jar will be located in `./build/libs/`.
 
 ## Quickstart for Cerberus Java Client
 
