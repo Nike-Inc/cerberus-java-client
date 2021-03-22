@@ -19,6 +19,7 @@ package com.nike.cerberus.client;
 import com.nike.cerberus.client.auth.TokenCerberusCredentials;
 import com.nike.cerberus.client.auth.CerberusCredentials;
 import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
+import org.apache.commons.logging.Log;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -53,6 +54,15 @@ public class CerberusClientFactoryTest {
     }
 
     @Test
+    public void test_get_client_uses_url_and_creds_provider_max_requests_per_host() {
+        final CerberusClient client = CerberusClientFactory.getClient(url, credentialsProvider, 3);
+        assertThat(client).isNotNull();
+        assertThat(client.getCerberusUrl().url().toString()).isEqualTo(url);
+        assertThat(client.getCredentialsProvider()).isNotNull();
+        assertThat(client.getCredentialsProvider().getCredentials().getToken()).isEqualTo(TOKEN);
+    }
+
+    @Test
     public void test_get_client_uses_default_headers() {
         final String headerKey = "HeaderKey";
         final String headerValue = "header value";
@@ -65,6 +75,15 @@ public class CerberusClientFactoryTest {
         assertThat(client.getCredentialsProvider().getCredentials().getToken()).isEqualTo(TOKEN);
         assertThat(client.getDefaultHeaders().size()).isEqualTo(1);
         assertThat(client.getDefaultHeaders().get(headerKey)).isEqualTo(headerValue);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void test_get_client_uses_default_as_null_throws_illegalArgument_exception() {
+        final String headerKey = "HeaderKey";
+        final String headerValue = "header value";
+        final Map<String, String> defaultHeaders = new HashMap<>();
+        defaultHeaders.put(headerKey, headerValue);
+        CerberusClientFactory.getClient(url, credentialsProvider, null);
     }
 
     @Test
@@ -80,6 +99,15 @@ public class CerberusClientFactoryTest {
         assertThat(client.getCredentialsProvider().getCredentials().getToken()).isEqualTo(TOKEN);
         assertThat(client.getDefaultHeaders().size()).isEqualTo(1);
         assertThat(client.getDefaultHeaders().get(headerKey)).isEqualTo(headerValue);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void test_get_admin_client_null_default_headers_throws_illegal_argument_exception() {
+        final String headerKey = "HeaderKey";
+        final String headerValue = "header value";
+        final Map<String, String> defaultHeaders = new HashMap<>();
+        defaultHeaders.put(headerKey, headerValue);
+        CerberusClientFactory.getClient(url, credentialsProvider, 100, null);
     }
 
 }
