@@ -11,7 +11,7 @@ To learn more about Cerberus, please see the [Cerberus website](http://engineeri
  
 ## Publishing Notice 3/17/2021
 As of spring 2021, JFrog has decided to sunset Bintray and JCenter.
-Due to this decision, we are pausing our open source publishing of the Cerberus Client indefinitely.
+Due to this decision, we are pausing our open source publishing of the Cerberus Client.
 However, we will still be updating the source code and making new GitHub releases.
 
 In order to build the jar yourself, run this command:
@@ -20,6 +20,8 @@ In order to build the jar yourself, run this command:
 ```
 
 The jar will be located in `./build/libs/`.
+
+For any questions or concerns, create a Github issue [here](https://github.com/Nike-Inc/cerberus-java-client/issues/new).
 
 ## Quickstart for Cerberus Java Client
 
