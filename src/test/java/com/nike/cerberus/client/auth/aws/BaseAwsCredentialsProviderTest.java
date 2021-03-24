@@ -100,7 +100,7 @@ public class BaseAwsCredentialsProviderTest {
         Request request = new Request.Builder().url("http://testurl").build();
 
         Response response = new Response.Builder().request(request).protocol(Protocol.HTTP_1_0).code(200).message("response").build();
-        Mockito.doThrow(new IOException()).when(call).execute();
+        //Mockito.doThrow(new IOException()).when(call).execute();
         BaseAwsCredentialsProvider baseAwsCredentialsProvider = new BaseAwsCredentialsProvider("http://testurl",httpClient) {
             @Override
             protected void authenticate() {
