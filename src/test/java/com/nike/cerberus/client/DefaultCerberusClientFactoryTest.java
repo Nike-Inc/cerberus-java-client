@@ -19,20 +19,18 @@ package com.nike.cerberus.client;
 import org.junit.Test;
 
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 
 import static org.junit.Assert.assertEquals;
 
 /**
  * Tests the DefaultCerberusClientFactory class
  */
+
 public class DefaultCerberusClientFactoryTest {
 
     @Test
@@ -46,63 +44,14 @@ public class DefaultCerberusClientFactoryTest {
     }
 
     @Test
-    public void test_that_getClient_adds_client_version_as_a_default_header_and_returns_CerberusClientFactory() {
+    public void test_that_getClient_adds_client_version_as_a_default_header_and_returns_CerberusClientFactory() throws NoSuchAlgorithmException, KeyStoreException {
         String region = "us-west-2";
         String url = "url";
-        SSLSocketFactory sslSocketFactory = new SSLSocketFactory() {
-            @Override
-            public String[] getDefaultCipherSuites() {
-                return new String[0];
-            }
+        SSLSocketFactory sslSocketFactory =(SSLSocketFactory) SSLSocketFactory.getDefault();
+        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        trustManagerFactory.init((KeyStore) null);
 
-            @Override
-            public String[] getSupportedCipherSuites() {
-                return new String[0];
-            }
-
-            @Override
-            public Socket createSocket(Socket socket, String s, int i, boolean b) throws IOException {
-                return null;
-            }
-
-            @Override
-            public Socket createSocket(String s, int i) throws IOException, UnknownHostException {
-                return null;
-            }
-
-            @Override
-            public Socket createSocket(String s, int i, InetAddress inetAddress, int i1) throws IOException, UnknownHostException {
-                return null;
-            }
-
-            @Override
-            public Socket createSocket(InetAddress inetAddress, int i) throws IOException {
-                return null;
-            }
-
-            @Override
-            public Socket createSocket(InetAddress inetAddress, int i, InetAddress inetAddress1, int i1) throws IOException {
-                return null;
-            }
-        };
-
-        X509TrustManager x509TrustManager = new X509TrustManager() {
-            @Override
-            public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
-
-            }
-
-            @Override
-            public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
-
-            }
-
-            @Override
-            public X509Certificate[] getAcceptedIssuers() {
-                return new X509Certificate[0];
-            }
-        };
-        CerberusClient result = DefaultCerberusClientFactory.getClient(url, region, sslSocketFactory, x509TrustManager);
+        CerberusClient result = DefaultCerberusClientFactory.getClient(url, region, sslSocketFactory, (X509TrustManager)trustManagerFactory.getTrustManagers()[0]);
 
         assertEquals(
                 ClientVersion.getClientHeaderValue(),
