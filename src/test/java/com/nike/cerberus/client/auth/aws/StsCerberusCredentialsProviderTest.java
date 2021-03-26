@@ -51,7 +51,7 @@ public class StsCerberusCredentialsProviderTest {
 
     private String cerberusUrl;
     private AWSCredentialsProviderChain chain;
-    private AWSCredentials credentials;
+    private AWSCredentials credentials ;
 
     @Before
     public void setUp() {

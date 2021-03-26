@@ -18,11 +18,19 @@ package com.nike.cerberus.client;
 
 import org.junit.Test;
 
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+
 import static org.junit.Assert.assertEquals;
 
 /**
  * Tests the DefaultCerberusClientFactory class
  */
+
 public class DefaultCerberusClientFactoryTest {
 
     @Test
@@ -34,5 +42,21 @@ public class DefaultCerberusClientFactoryTest {
                 ClientVersion.getClientHeaderValue(),
                 result.getDefaultHeaders().get(ClientVersion.CERBERUS_CLIENT_HEADER));
     }
+
+    @Test
+    public void test_that_getClient_adds_client_version_as_a_default_header_and_returns_CerberusClientFactory() throws NoSuchAlgorithmException, KeyStoreException {
+        String region = "us-west-2";
+        String url = "url";
+        SSLSocketFactory sslSocketFactory =(SSLSocketFactory) SSLSocketFactory.getDefault();
+        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        trustManagerFactory.init((KeyStore) null);
+
+        CerberusClient result = DefaultCerberusClientFactory.getClient(url, region, sslSocketFactory, (X509TrustManager)trustManagerFactory.getTrustManagers()[0]);
+
+        assertEquals(
+                ClientVersion.getClientHeaderValue(),
+                result.getDefaultHeaders().get(ClientVersion.CERBERUS_CLIENT_HEADER));
+    }
+
 
 }

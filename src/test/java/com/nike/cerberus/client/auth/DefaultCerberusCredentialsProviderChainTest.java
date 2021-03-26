@@ -16,6 +16,8 @@
 
 package com.nike.cerberus.client.auth;
 
+import okhttp3.OkHttpClient;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,6 +44,10 @@ public class DefaultCerberusCredentialsProviderChainTest {
     private static final String region = "us-west-2";
 
     private static final String url = "url";
+
+    private static final String xCerberusClientOverride = "xCerberusClientOverride";
+
+    private static final OkHttpClient httpClient = new OkHttpClient();
 
     private DefaultCerberusCredentialsProviderChain credentialsProviderChain;
 
@@ -72,5 +78,17 @@ public class DefaultCerberusCredentialsProviderChainTest {
 
         assertThat(credentials).isNotNull();
         assertThat(credentials.getToken()).isEqualTo(SYS_VALUE);
+    }
+
+    @Test
+    public void testCreatDefaultCerberusCredentialsProviderChainReturnsValidObject() {
+        DefaultCerberusCredentialsProviderChain credentialsProviderChain = new DefaultCerberusCredentialsProviderChain(url, region, xCerberusClientOverride);
+        Assert.assertNotNull(credentialsProviderChain);
+    }
+
+    @Test
+    public void testCreatDefaultCerberusCredentialsProviderChainWithHttpClientReturnsValidObject() {
+        DefaultCerberusCredentialsProviderChain credentialsProviderChain = new DefaultCerberusCredentialsProviderChain(url, region, httpClient);
+        Assert.assertNotNull(credentialsProviderChain);
     }
 }
