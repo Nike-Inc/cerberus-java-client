@@ -1,12 +1,12 @@
 package com.nike.cerberus.client.auth.aws;
 
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.EC2ContainerCredentialsProviderWrapper;
-import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
-import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.ContainerCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.SystemPropertyCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,11 +24,11 @@ public class DefaultAWSCredentialsProviderChainDebugger {
     /**
      * This chain should match that found in DefaultAWSCredentialsProviderChain
      */
-    private final AWSCredentialsProvider[] credentialProviderChain = new AWSCredentialsProvider[]{
-            new EnvironmentVariableCredentialsProvider(),
-            new SystemPropertiesCredentialsProvider(),
-            new ProfileCredentialsProvider(),
-            new EC2ContainerCredentialsProviderWrapper()
+    private final AwsCredentialsProvider[] credentialProviderChain = new AwsCredentialsProvider[]{
+             EnvironmentVariableCredentialsProvider.create(),
+            SystemPropertyCredentialsProvider.create(),
+            ProfileCredentialsProvider.create(),
+            ContainerCredentialsProvider.builder().build()
     };
 
     /**
@@ -39,11 +39,11 @@ public class DefaultAWSCredentialsProviderChainDebugger {
         if (StringUtils.contains(cerberusErrorMessage, TOKEN_IS_EXPIRED) || StringUtils.contains(cerberusErrorMessage, TOKEN_IS_INVALID)) {
             LOGGER.warn("Bad credentials may have been picked up from the DefaultAWSCredentialsProviderChain");
             boolean firstCredentialsFound = false;
-            for (AWSCredentialsProvider provider : credentialProviderChain) {
+            for (AwsCredentialsProvider provider : credentialProviderChain) {
                 try {
-                    AWSCredentials credentials = provider.getCredentials();
-                    if (credentials.getAWSAccessKeyId() != null &&
-                            credentials.getAWSSecretKey() != null) {
+                    AwsCredentials credentials = provider.resolveCredentials();
+                    if (credentials.accessKeyId() != null &&
+                            credentials.secretAccessKey() != null) {
                         if (!firstCredentialsFound) {
                             firstCredentialsFound = true;
                             LOGGER.info("AWS Credentials were loaded from " + provider.toString());

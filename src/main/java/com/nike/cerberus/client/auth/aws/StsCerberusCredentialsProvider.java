@@ -16,13 +16,14 @@
 
 package com.nike.cerberus.client.auth.aws;
 
-import com.amazonaws.DefaultRequest;
-import com.amazonaws.auth.AWS4Signer;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSCredentialsProviderChain;
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
-import com.amazonaws.http.HttpMethodName;
-import com.amazonaws.regions.Regions;
+
+import software.amazon.awssdk.auth.signer.Aws4Signer;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProviderChain;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.http.SdkHttpMethod;
+
+
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -37,11 +38,15 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.auth.signer.params.Aws4SignerParams;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.http.SdkHttpFullRequest;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Provider for allowing users to authenticate with Cerberus with the STS auth endpoint.
@@ -50,7 +55,7 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
 
     protected String regionName;
 
-    protected AWSCredentialsProviderChain providerChain;
+    protected AwsCredentialsProviderChain providerChain;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseAwsCredentialsProvider.class);
 
@@ -73,7 +78,7 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
         super(cerberusUrl);
 
         if (region != null ) {
-            regionName = Regions.fromName(region).getName();
+            regionName = Region.of(region).id();
         } else {
             throw new CerberusClientException("Region is null. Please provide valid AWS region.");
         }
@@ -89,7 +94,7 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
     public StsCerberusCredentialsProvider(String cerberusUrl, String region, String xCerberusClientOverride) {
         super(cerberusUrl, xCerberusClientOverride);
         if (region != null ) {
-            regionName = Regions.fromName(region).getName();
+            regionName = Region.of(region).id();
         } else {
             throw new CerberusClientException("Region is null. Please provide valid AWS region.");
         }
@@ -106,7 +111,7 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
     public StsCerberusCredentialsProvider(String cerberusUrl, String region, OkHttpClient httpClient) {
         super(cerberusUrl, httpClient);
         if (region != null ) {
-            regionName = Regions.fromName(region).getName();
+            regionName = Region.of(region).id();
         } else {
             throw new CerberusClientException("Region is null. Please provide valid AWS region.");
         }
@@ -119,11 +124,11 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
      * @param region AWS Region used in auth with Cerberus
      * @param providerChain AWS Credentials Provider Chain
      */
-    public StsCerberusCredentialsProvider(String cerberusUrl, String region, AWSCredentialsProviderChain providerChain) {
+    public StsCerberusCredentialsProvider(String cerberusUrl, String region, AwsCredentialsProviderChain providerChain) {
         super(cerberusUrl);
 
         if (region != null ) {
-            regionName = Regions.fromName(region).getName();
+            regionName = Region.of(region).id();
         } else {
             throw new CerberusClientException("Region is null. Please provide valid AWS region.");
         }
@@ -134,13 +139,13 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
     /**
      * Obtains AWS Credentials.
      */
-    private AWSCredentials getAWSCredentials(){
+    private AwsCredentials getAWSCredentials(){
 
         if (providerChain == null) {
-            return DefaultAWSCredentialsProviderChain.getInstance().getCredentials();
+            return DefaultCredentialsProvider.create().resolveCredentials();
         }
         else {
-            return providerChain.getCredentials();
+            return providerChain.resolveCredentials();
         }
     }
 
@@ -149,19 +154,19 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
      * @param request AWS STS request to sign
      * @param credentials AWS credentials
      */
-    private void signRequest(com.amazonaws.Request request, AWSCredentials credentials){
+    private void signRequest(SdkHttpFullRequest request, AwsCredentials credentials){
 
-        AWS4Signer signer = new AWS4Signer();
-        signer.setRegionName(regionName);
-        signer.setServiceName("sts");
-        signer.sign(request, credentials);
+        Aws4Signer signer = Aws4Signer.create();
+        Aws4SignerParams signingParams = Aws4SignerParams.builder().signingRegion(Region.of(regionName))
+                .awsCredentials(credentials).signingName("sts").build();
+        signer.sign(request, signingParams);
     }
 
     /**
      * Generates and returns signed headers.
      * @return Signed headers
      */
-    protected Map<String, String> getSignedHeaders(){
+    protected Map<String, List<String>> getSignedHeaders(){
 
         String url = "https://sts." + regionName + ".amazonaws.com";
         if(CHINA_REGIONS.contains(regionName)) {
@@ -180,16 +185,16 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
         parameters.put("Action", Arrays.asList("GetCallerIdentity"));
         parameters.put("Version", Arrays.asList("2011-06-15"));
 
-        DefaultRequest<String> requestToSign = new DefaultRequest<>("sts");
-        requestToSign.setParameters(parameters);
-        requestToSign.setHttpMethod(HttpMethodName.POST);
-        requestToSign.setEndpoint(endpoint);
+        SdkHttpFullRequest requestToSign = SdkHttpFullRequest.builder().rawQueryParameters(parameters)
+                .method(SdkHttpMethod.POST)
+                .uri(endpoint)
+                .build();
 
         LOGGER.info(String.format("Signing request with [%s] as host", url));
 
         signRequest(requestToSign, getAWSCredentials());
 
-        return requestToSign.getHeaders();
+        return requestToSign.headers();
     }
 
     /**
@@ -204,12 +209,16 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
 
         LOGGER.info(String.format("Attempting to authenticate against [%s]", cerberusUrl));
 
-        Map<String, String> signedHeaders = getSignedHeaders();
-
+        Map<String, List<String>> signedHeaders = getSignedHeaders();
+        List<String> headers = new ArrayList<>();
+        for(Map.Entry<String,List<String>> entry: signedHeaders.entrySet()){
+            headers.add(entry.getKey());
+            headers.add(entry.getValue().stream().collect(Collectors.joining(",")));
+        }
         try {
             Request request = new Request.Builder()
                     .url(cerberusUrl + "/v2/auth/sts-identity")
-                    .headers(Headers.of(signedHeaders))
+                    .headers(Headers.of(headers.toArray(new String[0])))
                     .method(HttpMethod.POST, RequestBody.create(DEFAULT_MEDIA_TYPE, ""))
                     .build();
 
