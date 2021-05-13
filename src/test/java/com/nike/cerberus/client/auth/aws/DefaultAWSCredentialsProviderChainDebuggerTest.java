@@ -1,23 +1,19 @@
 package com.nike.cerberus.client.auth.aws;
 
-import com.amazonaws.auth.EC2ContainerCredentialsProviderWrapper;
-import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
-import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.nike.cerberus.client.auth.EnvironmentCerberusCredentialsProvider;
-import com.nike.cerberus.client.auth.SystemPropertyCerberusCredentialsProvider;
-import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import software.amazon.awssdk.auth.credentials.ContainerCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.SystemPropertyCredentialsProvider;
 
-import static com.amazonaws.SDKGlobalConfiguration.ACCESS_KEY_ENV_VAR;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({EnvironmentVariableCredentialsProvider.class, SystemPropertiesCredentialsProvider.class, ProfileCredentialsProvider.class, EC2ContainerCredentialsProviderWrapper.class})
+@PrepareForTest({EnvironmentVariableCredentialsProvider.class, SystemPropertyCredentialsProvider.class, ProfileCredentialsProvider.class, ContainerCredentialsProvider.class})
 public class DefaultAWSCredentialsProviderChainDebuggerTest {
 
     @Test

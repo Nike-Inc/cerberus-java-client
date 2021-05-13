@@ -166,7 +166,7 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
      * Generates and returns signed headers.
      * @return Signed headers
      */
-    protected Map<String, List<String>> getSignedHeaders(){
+    protected List<String> getSignedHeaders(){
 
         String url = "https://sts." + regionName + ".amazonaws.com";
         if(CHINA_REGIONS.contains(regionName)) {
@@ -194,7 +194,12 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
 
         signRequest(requestToSign, getAWSCredentials());
 
-        return requestToSign.headers();
+        List<String> headers = new ArrayList<>();
+        for(Map.Entry<String,List<String>> entry:  requestToSign.headers().entrySet()){
+            headers.add(entry.getKey());
+            headers.add(entry.getValue().stream().collect(Collectors.joining(",")));
+        }
+        return headers;
     }
 
     /**
@@ -209,12 +214,9 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
 
         LOGGER.info(String.format("Attempting to authenticate against [%s]", cerberusUrl));
 
-        Map<String, List<String>> signedHeaders = getSignedHeaders();
-        List<String> headers = new ArrayList<>();
-        for(Map.Entry<String,List<String>> entry: signedHeaders.entrySet()){
-            headers.add(entry.getKey());
-            headers.add(entry.getValue().stream().collect(Collectors.joining(",")));
-        }
+
+        List<String> headers = getSignedHeaders();
+
         try {
             Request request = new Request.Builder()
                     .url(cerberusUrl + "/v2/auth/sts-identity")
