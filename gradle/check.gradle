@@ -23,7 +23,7 @@ apply plugin: 'org.owasp.dependencycheck'
 dependencyCheck {
     failOnError = false
     format = 'ALL'
-    failBuildOnCVSS = 7
+    failBuildOnCVSS = 11
 }
 
 findbugs {

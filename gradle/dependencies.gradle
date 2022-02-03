@@ -24,8 +24,8 @@ configurations.all {
     resolutionStrategy {
         force "com.fasterxml.jackson.core:jackson-databind:2.13.1"
         force "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.13.1"
-        force "ch.qos.logback:logback-core:1.2.3"
-        force "ch.qos.logback:logback-classic:1.2.3"
+        force "ch.qos.logback:logback-core:1.2.10"
+        force "ch.qos.logback:logback-classic:1.2.10"
         force "net.sourceforge.pmd:pmd-core:6.21.0"
         force "net.sourceforge.pmd:pmd-java:6.21.0"
 
@@ -61,7 +61,7 @@ dependencies {
     compile "org.apache.commons:commons-lang3:3.4"
     compile "com.google.code.gson:gson:2.5"
     compile "org.slf4j:slf4j-api:1.7.25"
-    compile "io.github.resilience4j:resilience4j-all:1.5.0"
+    compile "io.github.resilience4j:resilience4j-all:1.7.1"
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
     compileOnly 'com.google.code.findbugs:annotations:3.0.1'
 
