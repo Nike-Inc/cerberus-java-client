@@ -48,7 +48,7 @@ cobertura {
     coverageIgnoreTrivial = true
     coverageExcludes = []
 }
-test.finalizedBy(project.tasks.coberturaReport)
+// test.finalizedBy(project.tasks.coberturaReport)
 
 task findbugsHtml {
     group = "Verification"
