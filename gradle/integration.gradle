@@ -27,10 +27,10 @@ task integration(type: Test, description: 'Runs integration tests') {
 }
 
 dependencies {
-    integrationCompile sourceSets.main.output
-    integrationCompile configurations.testCompile
-    integrationCompile sourceSets.test.output
-    integrationCompile 'com.fieldju:commons:1.1.0'
+    integrationImplementation sourceSets.main.output
+    integrationImplementation configurations.testImplementation
+    integrationImplementation sourceSets.test.output
+    integrationImplementation 'com.fieldju:commons:1.1.0'
 
     integrationRuntime configurations.testRuntime
 }

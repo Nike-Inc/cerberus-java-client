@@ -14,52 +14,12 @@
  * limitations under the License.
  */
 
-apply plugin: 'findbugs'
 apply plugin: 'pmd'
-apply plugin: 'cobertura'
 apply plugin: 'com.github.kt3k.coveralls'
-apply plugin: 'org.owasp.dependencycheck'
-
-dependencyCheck {
-    failOnError = false
-    format = 'ALL'
-    failBuildOnCVSS = 11
-}
-
-findbugs {
-    ignoreFailures = false
-    sourceSets = [ project.sourceSets.main ]
-}
 
 pmd {
     sourceSets = [ project.sourceSets.main ]
+    ignoreFailures = true
 }
 
-tasks.withType(FindBugs) {
-    reports {
-        xml.withMessages = true
-    }
-}
-
-cobertura {
-    // https://github.com/stevesaliman/gradle-cobertura-plugin/blob/master/usage.md
-    coverageReportDir = new File("$buildDir/reports/cobertura")
-    coverageFormats = ['html', 'xml']
-    coverageIgnoreTrivial = true
-    coverageExcludes = []
-}
-test.finalizedBy(project.tasks.coberturaReport)
-
-task findbugsHtml {
-    group = "Verification"
-    description = "Creates a human readable Findbugs report"
-    doLast {
-        ant.xslt(in: file("$buildDir/reports/findbugs/main.xml"),
-                style: file('codequality/findbugs_default.xsl'),
-                out: new File("$buildDir/reports/findbugs/main.html"))
-    }
-}
-findbugsMain.finalizedBy findbugsHtml
-
-tasks.check.dependsOn dependencyCheckAnalyze
 tasks.coveralls.dependsOn check
