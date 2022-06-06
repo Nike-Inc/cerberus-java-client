@@ -3,8 +3,8 @@
 
 version: 2
 updates:
-  # Enable version updates for Gradle
   - package-ecosystem: "gradle"
+    # Enable version updates for Gradle
     # Look for `build.gradle`  files in the `root` directory
     directory: "/"
     target-branch: "dep/dependency_upgrade_staging"
@@ -14,10 +14,9 @@ updates:
       time: "08:00"
       timezone: "America/Los_Angeles"
   - package-ecosystem: "github-actions"
-    # Look for `package.json` and `lock` files in the `cerberus-dashboard` directory
+    # Look for changes in github actions
     directory: "/"
     target-branch: "dep/dependency_upgrade_staging"
-    # Check the npm registry for updates every day (weekdays)
     schedule:
       interval: "monthly"
       time: "08:00"
