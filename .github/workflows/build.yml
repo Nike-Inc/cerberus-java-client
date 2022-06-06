@@ -37,7 +37,7 @@ jobs:
           verbose: true
       - name: Slack notification when master build fails
         if: ${{ failure() && github.ref == 'refs/heads/master'}}
-        uses: rtCamp/action-slack-notify@v2.1.0
+        uses: rtCamp/action-slack-notify@v2.2.0
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: cerberus-alerts
