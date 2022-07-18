@@ -40,14 +40,7 @@ import com.nike.cerberus.client.model.CerberusSafeDepositBoxSummaryResponse;
 import io.github.resilience4j.core.IntervalFunction;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
-import okhttp3.Headers;
-import okhttp3.HttpUrl;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -793,20 +786,36 @@ public class CerberusClient {
     }
 
     protected String responseBodyAsString(Response response) {
+        ResponseBody body = null;
+        if (response != null) {
+            body = response.body();
+        }
         try {
-            return response.body().string();
+            return body.string();
         } catch (IOException ioe) {
             logger.debug("responseBodyAsString: response={}", gson.toJson(response));
             return "ERROR failed to print response body as str: " + ioe.getMessage();
         }
+        catch(NullPointerException npe) {
+            logger.debug("response or response.body() was null");
+            return "ERROR failed to get response body, response or response.body() was null";
+        }
     }
 
     protected byte[] responseBodyAsBytes(Response response) {
+        ResponseBody body = null;
+        if (response != null) {
+            body = response.body();
+        }
         try {
-            return response.body().bytes();
+            return body.bytes();
         } catch (IOException ioe) {
             logger.debug("responseBodyAsString: response={}", gson.toJson(response));
             throw new CerberusClientException("ERROR failed to print: " + response.toString());
+        }
+        catch(NullPointerException npe) {
+            logger.debug("response or response.body() was null");
+            throw new CerberusClientException("ERROR failed to get bytes from response");
         }
     }
 }

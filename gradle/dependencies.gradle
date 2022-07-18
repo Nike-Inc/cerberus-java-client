@@ -20,6 +20,7 @@ repositories {
 
 def AWS_SDK_VERSION = '1.11.+'
 def JACKSON_VERSION = "2.13.3"
+def OKHTTP_VERSION = '4.9.3'
 
 configurations.all {
     resolutionStrategy {
@@ -58,7 +59,7 @@ dependencies {
     shadow "org.slf4j:slf4j-api:1.7.25"
     shadow "com.google.code.gson:gson:2.5"
 
-    compile "com.squareup.okhttp3:okhttp:3.14.9"
+    compile "com.squareup.okhttp3:okhttp:${OKHTTP_VERSION}"
     compile "org.apache.commons:commons-lang3:3.4"
     compile "com.google.code.gson:gson:2.5"
     compile "org.slf4j:slf4j-api:1.7.25"
@@ -81,7 +82,7 @@ dependencies {
         exclude group: 'org.hamcrest'
     }
     testCompile "org.assertj:assertj-core:2.3.0"
-    testCompile "com.squareup.okhttp3:mockwebserver:3.14.9"
+    testCompile "com.squareup.okhttp3:mockwebserver:${OKHTTP_VERSION}"
     testCompile "commons-io:commons-io:2.4"
     testCompile group: 'com.tngtech.java', name: 'junit-dataprovider', version: '1.10.0'
 }
