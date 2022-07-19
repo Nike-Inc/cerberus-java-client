@@ -29,6 +29,7 @@ dependencyCheck {
 findbugs {
     ignoreFailures = false
     sourceSets = [ project.sourceSets.main ]
+    excludeFilter = file("codequality/findbugs.xml")
 }
 
 pmd {

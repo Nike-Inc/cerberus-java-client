@@ -213,20 +213,8 @@ public class StsCerberusCredentialsProvider extends BaseAwsCredentialsProvider {
                     .method(HttpMethod.POST, RequestBody.create(DEFAULT_MEDIA_TYPE, ""))
                     .build();
 
-            ResponseBody body = null;
-            String responseBody = null;
             Response response = executeRequestWithRetry(request, DEFAULT_AUTH_RETRIES, DEFAULT_RETRY_INTERVAL_IN_MILLIS);
-            if (response == null){
-                throw new IOException("Got null response from Cerberus");
-            }
-            body = response.body();
-            if (body != null) {
-                responseBody = body.string();
-            }
-            if (responseBody == null)
-            {
-                throw new CerberusClientException("Error while communicating with Cerberus, got null response");
-            }
+            String responseBody = response.body().string();
 
             if (response.code() != HttpStatus.OK) {
                 new DefaultAWSCredentialsProviderChainDebugger().logExtraDebuggingIfAppropriate(responseBody);

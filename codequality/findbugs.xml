@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <Match>
+        <Class name="com.nike.cerberus.client.auth.aws.StsCerberusCredentialsProvider" />
+        <Method name="getToken"/>
+        <Bug code="NP" />
+    </Match>
+    <Match>
+        <Class name="com.nike.cerberus.client.CerberusClient" />
+        <Or>
+            <Method name="responseBodyAsString"/>
+            <Method name="responseBodyAsBytes"/>
+        </Or>
+        <Bug code="NP" />
+    </Match>
+</FindBugsFilter>
