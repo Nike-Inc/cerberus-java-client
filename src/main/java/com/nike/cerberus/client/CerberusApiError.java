@@ -16,8 +16,6 @@
 
 package com.nike.cerberus.client;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 public class CerberusApiError {
     private int code;
     private String message;
@@ -26,7 +24,6 @@ public class CerberusApiError {
         return code;
     }
 
-    @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
     public String getMessage() {
         return message;
     }

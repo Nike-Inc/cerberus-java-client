@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-apply plugin: 'findbugs'
+//apply plugin: 'findbugs'
 apply plugin: 'pmd'
-apply plugin: 'cobertura'
+//apply plugin: 'cobertura'
 apply plugin: 'com.github.kt3k.coveralls'
 apply plugin: 'org.owasp.dependencycheck'
 
@@ -26,16 +26,21 @@ dependencyCheck {
     failBuildOnCVSS = 11
 }
 
+/*
 findbugs {
     ignoreFailures = false
     sourceSets = [ project.sourceSets.main ]
     excludeFilter = file("codequality/findbugs.xml")
 }
+*/
 
 pmd {
     sourceSets = [ project.sourceSets.main ]
+    //rulesMinimumPriority = 1
+    ignoreFailures = true
 }
 
+/*
 tasks.withType(FindBugs) {
     reports {
         xml.withMessages = true
@@ -50,7 +55,9 @@ cobertura {
     coverageExcludes = []
 }
 test.finalizedBy(project.tasks.coberturaReport)
+*/
 
+/*
 task findbugsHtml {
     group = "Verification"
     description = "Creates a human readable Findbugs report"
@@ -61,6 +68,7 @@ task findbugsHtml {
     }
 }
 findbugsMain.finalizedBy findbugsHtml
+*/
 
 tasks.check.dependsOn dependencyCheckAnalyze
 tasks.coveralls.dependsOn check

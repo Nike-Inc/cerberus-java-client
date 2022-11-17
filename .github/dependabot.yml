@@ -3,8 +3,8 @@
 
 version: 2
 updates:
+  # Enable version updates for Gradle
   - package-ecosystem: "gradle"
-    # Enable version updates for Gradle
     # Look for `build.gradle`  files in the `root` directory
     directory: "/"
     target-branch: "dep/dependency_upgrade_staging"
