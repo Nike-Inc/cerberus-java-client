@@ -19,11 +19,11 @@ buildscript {
 }
 
 plugins {
-  id "net.saliman.cobertura" version "4.0.0"
+    id "jacoco"
+    id "com.github.spotbugs" version "5.0.13"
 }
 
 apply plugin: 'java'
-//apply plugin: 'maven'
 apply plugin: 'maven-publish'
 apply plugin: "com.github.johnrengelman.shadow"
 

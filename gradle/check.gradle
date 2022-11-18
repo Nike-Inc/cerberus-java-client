@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-//apply plugin: 'findbugs'
 apply plugin: 'pmd'
-//apply plugin: 'cobertura'
-apply plugin: 'com.github.kt3k.coveralls'
 apply plugin: 'org.owasp.dependencycheck'
 
 dependencyCheck {
@@ -26,49 +23,54 @@ dependencyCheck {
     failBuildOnCVSS = 11
 }
 
-/*
-findbugs {
-    ignoreFailures = false
-    sourceSets = [ project.sourceSets.main ]
-    excludeFilter = file("codequality/findbugs.xml")
-}
-*/
-
 pmd {
     sourceSets = [ project.sourceSets.main ]
-    //rulesMinimumPriority = 1
-    ignoreFailures = true
+    rulesMinimumPriority = 2
+    ignoreFailures = false
 }
 
-/*
-tasks.withType(FindBugs) {
+test {
+    finalizedBy jacocoTestReport // report is always generated after tests run
+}
+
+jacocoTestReport {
     reports {
-        xml.withMessages = true
+        xml.required = false
+        csv.required = false
     }
+    dependsOn test // tests are required to run before generating the report
 }
 
-cobertura {
-    // https://github.com/stevesaliman/gradle-cobertura-plugin/blob/master/usage.md
-    coverageReportDir = new File("$buildDir/reports/cobertura")
-    coverageFormats = ['html', 'xml']
-    coverageIgnoreTrivial = true
-    coverageExcludes = []
+jacoco {
+    toolVersion = "0.8.8"
 }
-test.finalizedBy(project.tasks.coberturaReport)
-*/
 
-/*
-task findbugsHtml {
-    group = "Verification"
-    description = "Creates a human readable Findbugs report"
-    doLast {
-        ant.xslt(in: file("$buildDir/reports/findbugs/main.xml"),
-                style: file('codequality/findbugs_default.xsl'),
-                out: new File("$buildDir/reports/findbugs/main.html"))
+spotbugs {
+    ignoreFailures = true
+    showStackTraces = false
+    showProgress = true
+    effort = 'default'
+    reportLevel = 'default'
+    reportsDir = file("$buildDir/reports/spotbugs")
+    //visitors = [ 'FindSqlInjection', 'SwitchFallthrough' ]
+    //omitVisitors = [ 'FindNonShortCircuit' ]
+    //includeFilter = file("include.xml")
+    //excludeFilter = file("exclude.xml")
+    //baselineFile = file("baseline.xml")
+    //onlyAnalyze = [ 'com.foobar.MyClass', 'com.foobar.mypkg.*' ]
+    //maxHeapSize = '1g'
+    //extraArgs = [ '-nested:false' ]
+    //jvmArgs = [ '-Duser.language=ja' ]
+}
+
+spotbugsMain {
+    reports {
+        html {
+            required = true
+            outputLocation = file("$buildDir/reports/spotbugs/main/spotbugs.html")
+            //stylesheet = 'fancy-hist.xsl'
+        }
     }
 }
-findbugsMain.finalizedBy findbugsHtml
-*/
 
 tasks.check.dependsOn dependencyCheckAnalyze
-tasks.coveralls.dependsOn check

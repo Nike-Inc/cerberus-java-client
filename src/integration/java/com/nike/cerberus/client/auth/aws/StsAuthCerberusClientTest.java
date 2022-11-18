@@ -16,7 +16,7 @@
 
 package com.nike.cerberus.client.auth.aws;
 
-import com.fieldju.commons.EnvUtils;
+import com.zookit.commons.EnvUtils;
 import com.nike.cerberus.client.auth.CerberusCredentials;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;

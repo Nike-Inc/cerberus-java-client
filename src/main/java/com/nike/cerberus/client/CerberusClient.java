@@ -109,7 +109,7 @@ public class CerberusClient {
                     (JsonDeserializer<DateTime>) (json, typeOfT, context) -> new DateTime(json.getAsString()))
             .create();
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(CerberusClient.class);
 
     public CerberusClient(final String cerberusUrl,
                           final CerberusCredentialsProvider credentialsProvider,
@@ -182,7 +182,7 @@ public class CerberusClient {
     public CerberusListResponse list(final String path) {
 
         final HttpUrl httpUrl = buildUrl(SECRET_PATH_PREFIX, path + "?list=true");
-        logger.debug("list: requestUrl={}", httpUrl);
+        LOGGER.debug("list: requestUrl={}", httpUrl);
 
         final Response response = ofSupplier(
                     () -> execute(httpUrl, HttpMethod.GET, null)
@@ -239,7 +239,7 @@ public class CerberusClient {
     public CerberusListFilesResponse listFiles(final String path, Integer limit, Integer offset) {
         final HttpUrl httpUrl = buildUrl("v1/secure-files/", path, limit, offset);
 
-        logger.debug("list: requestUrl={}, limit={}, offset={}", httpUrl, limit, offset);
+        LOGGER.debug("list: requestUrl={}, limit={}, offset={}", httpUrl, limit, offset);
         final Response response = ofSupplier(
                 () -> execute(httpUrl, HttpMethod.GET, null)
         )
@@ -304,7 +304,7 @@ public class CerberusClient {
     public void writeFile(final String path, final byte[] contents) {
         final String fileName = StringUtils.substringAfterLast(path, "/");
         final HttpUrl httpUrl = buildUrl(SECURE_FILE_PATH_PREFIX, path);
-        logger.debug("write: requestUrl={}", httpUrl);
+        LOGGER.debug("write: requestUrl={}", httpUrl);
 
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
@@ -590,7 +590,7 @@ public class CerberusClient {
 
     private Response buildAndExecuteRequest(final String prefix, final String path, final String httpMethod, Object requestBody) {
         final HttpUrl httpUrl = buildUrl(prefix, path);
-        logger.debug("requestUrl={}, HTTP method={}", httpUrl, httpMethod);
+        LOGGER.debug("requestUrl={}, HTTP method={}", httpUrl, httpMethod);
 
         final Response response = ofSupplier(
                 () -> execute(httpUrl, httpMethod, requestBody)
@@ -688,7 +688,7 @@ public class CerberusClient {
         try {
             return gson.fromJson(responseBodyStr, responseClass);
         } catch (JsonSyntaxException e) {
-            logger.error("parseResponseBody: responseCode={}, requestUrl={}, response={}",
+            LOGGER.error("parseResponseBody: responseCode={}, requestUrl={}, response={}",
                     response.code(), response.request().url(), responseBodyStr);
             throw new CerberusClientException("Error parsing the response body from Cerberus, response code: "
                 + response.code() + ", response body: " + responseBodyStr, e);
@@ -708,7 +708,7 @@ public class CerberusClient {
         try {
             return gson.fromJson(responseBodyStr, typeOf);
         } catch (JsonSyntaxException e) {
-            logger.error("parseResponseBody: responseCode={}, requestUrl={}, response={}",
+            LOGGER.error("parseResponseBody: responseCode={}, requestUrl={}, response={}",
                     response.code(), response.request().url(), responseBodyStr);
             throw new CerberusClientException("Error parsing the response body from Cerberus, response code: "
                 + response.code() + ", response body: " + responseBodyStr, e);
@@ -722,7 +722,7 @@ public class CerberusClient {
      */
     protected void parseAndThrowErrorResponse(final Response response) {
         final String responseBodyStr = responseBodyAsString(response);
-        logger.debug("parseAndThrowErrorResponse: responseCode={}, requestUrl={}, response={}",
+        LOGGER.debug("parseAndThrowErrorResponse: responseCode={}, requestUrl={}, response={}",
                 response.code(), response.request().url(), responseBodyStr);
 
         try {
@@ -734,7 +734,7 @@ public class CerberusClient {
                 throw new CerberusServerException(response.code(), new LinkedList<String>());
             }
         } catch (JsonSyntaxException e) {
-            logger.error("ERROR Failed to parse error message, response body received: {}", responseBodyStr);
+            LOGGER.error("ERROR Failed to parse error message, response body received: {}", responseBodyStr);
             throw new CerberusClientException("Error parsing the error response body from Cerberus, response code: "
                 + response.code() + ", response body: " + responseBodyStr, e);
         }
@@ -747,7 +747,7 @@ public class CerberusClient {
      */
     protected void parseAndThrowApiErrorResponse(final Response response) {
         final String responseBodyStr = responseBodyAsString(response);
-        logger.debug("parseAndThrowApiErrorResponse: responseCode={}, requestUrl={}, response={}",
+        LOGGER.debug("parseAndThrowApiErrorResponse: responseCode={}, requestUrl={}, response={}",
                 response.code(), response.request().url(), responseBodyStr);
 
         try {
@@ -759,7 +759,7 @@ public class CerberusClient {
                 throw new CerberusServerApiException(response.code(), null, new LinkedList<CerberusApiError>());
             }
         } catch (JsonSyntaxException e) {
-            logger.error("ERROR Failed to parse error message, response body received: {}", responseBodyStr);
+            LOGGER.error("ERROR Failed to parse error message, response body received: {}", responseBodyStr);
             throw new CerberusClientException("Error parsing the error response body from Cerberus, response code: "
                 + response.code() + ", response body: " + responseBodyStr, e);
         }
@@ -796,7 +796,7 @@ public class CerberusClient {
         try {
             return response.body().string();
         } catch (IOException ioe) {
-            logger.debug("responseBodyAsString: response={}", gson.toJson(response));
+            LOGGER.debug("responseBodyAsString: response={}", gson.toJson(response));
             return "ERROR failed to print response body as str: " + ioe.getMessage();
         }
     }
@@ -805,7 +805,7 @@ public class CerberusClient {
         try {
             return response.body().bytes();
         } catch (IOException ioe) {
-            logger.debug("responseBodyAsString: response={}", gson.toJson(response));
+            LOGGER.debug("responseBodyAsString: response={}", gson.toJson(response));
             throw new CerberusClientException("ERROR failed to print: " + response.toString());
         }
     }

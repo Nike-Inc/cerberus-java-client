@@ -58,13 +58,11 @@ dependencies {
     shadow "org.apache.commons:commons-lang3:3.4"
     shadow "org.slf4j:slf4j-api:1.7.25"
     shadow "com.google.code.gson:gson:2.5"
-    // shadow "io.github.resilience4j:resilience4j-all:1.7.1"
 
     implementation "com.squareup.okhttp3:okhttp:${OKHTTP_VERSION}"
     implementation "org.apache.commons:commons-lang3:3.4"
     implementation "com.google.code.gson:gson:2.5"
     implementation "org.slf4j:slf4j-api:1.7.25"
-    //implementation "io.github.resilience4j:resilience4j-all:1.7.1"
     implementation "io.github.resilience4j:resilience4j-all:1.7.0"
     testImplementation "com.google.code.findbugs:jsr305:3.0.2"
     testImplementation 'com.google.code.findbugs:annotations:3.0.1'
@@ -90,7 +88,6 @@ dependencies {
 }
 
 shadowJar {
-    classifier = ''
     dependencies {
       // exclude these from the shadow jar
       project.configurations.shadow.each {

@@ -30,7 +30,5 @@ dependencies {
     integrationCompileClasspath sourceSets.main.output
     integrationCompileClasspath configurations.testImplementation
     integrationCompileClasspath sourceSets.test.output
-    integrationCompileClasspath 'com.fieldju:commons:1.1.0'
-
     integrationCompileClasspath configurations.testImplementation
 }
