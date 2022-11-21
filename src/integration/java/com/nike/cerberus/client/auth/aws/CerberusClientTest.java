@@ -16,10 +16,9 @@
 
 package com.nike.cerberus.client.auth.aws;
 
-import com.fieldju.commons.EnvUtils;
+import com.zookit.commons.EnvUtils;
 import com.nike.cerberus.client.CerberusClient;
 import com.nike.cerberus.client.CerberusServerApiException;
-import com.nike.cerberus.client.CerberusServerException;
 import com.nike.cerberus.client.model.CerberusListFilesResponse;
 import com.nike.cerberus.client.model.CerberusListResponse;
 import com.nike.cerberus.client.model.CerberusResponse;

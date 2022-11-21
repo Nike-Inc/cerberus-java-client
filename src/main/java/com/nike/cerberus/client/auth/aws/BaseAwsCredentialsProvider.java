@@ -22,6 +22,7 @@ import com.nike.cerberus.client.auth.CerberusCredentials;
 import com.nike.cerberus.client.auth.CerberusCredentialsProvider;
 import com.nike.cerberus.client.auth.TokenCerberusCredentials;
 import okhttp3.*;
+import org.apache.commons.lang3.NotImplementedException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +44,7 @@ import static okhttp3.ConnectionSpec.CLEARTEXT;
  * provisioned for usage of Cerberus, it will succeed and have a token that can be
  * used to interact with Cerberus.
  */
-public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsProvider {
+public class BaseAwsCredentialsProvider implements CerberusCredentialsProvider {
 
     public static final MediaType DEFAULT_MEDIA_TYPE = MediaType.parse("application/json; charset=utf-8");
 
@@ -159,7 +160,10 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
      * Look up the IAM roles associated with the given AWS credentials provider
      * and attempt to authenticate and decrypt using STS Auth.
      */
-    abstract protected void authenticate();
+     protected void authenticate()
+     {
+         throw new NotImplementedException("method authenticate must be overridden");
+     }
 
     /**
      * Executes an HTTP request and retries if a 500 level error is returned
@@ -213,7 +217,7 @@ public abstract class BaseAwsCredentialsProvider implements CerberusCredentialsP
         return cerberusUrl;
     }
 
-    public OkHttpClient createHttpClient() {
+    public final OkHttpClient createHttpClient() {
 
         List<ConnectionSpec> connectionSpecs = new ArrayList<>();
         connectionSpecs.add(TLS_1_2_OR_NEWER);

@@ -23,14 +23,12 @@ sourceSets {
 
 task integration(type: Test, description: 'Runs integration tests') {
     testClassesDirs = sourceSets.integration.output.classesDirs
-    classpath = sourceSets.integration.runtimeClasspath
+    classpath += sourceSets.integration.runtimeClasspath
 }
 
 dependencies {
-    integrationCompile sourceSets.main.output
-    integrationCompile configurations.testCompile
-    integrationCompile sourceSets.test.output
-    integrationCompile 'com.fieldju:commons:1.1.0'
-
-    integrationRuntime configurations.testRuntime
+    integrationCompileClasspath sourceSets.main.output
+    integrationCompileClasspath configurations.testImplementation
+    integrationCompileClasspath sourceSets.test.output
+    integrationCompileClasspath configurations.testImplementation
 }

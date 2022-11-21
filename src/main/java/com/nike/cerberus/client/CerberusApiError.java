@@ -15,18 +15,28 @@
  */
 
 package com.nike.cerberus.client;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 public class CerberusApiError {
     private int code;
     private String message;
+
+    /**
+     * Dummy constructor. This shouldn't be necessary because,
+     * let's face it, this whole durned class is unnecessary.
+     * We need to get rid of this class entirely but that's a
+     * task fo a different day. #codingwhiledrunk
+     * @param code
+     * @param message
+     */
+    public CerberusApiError(int code, String message)
+    {
+        this.code = code;
+        this.message = message;
+    }
 
     public int getCode() {
         return code;
     }
 
-    @SuppressFBWarnings("UWF_UNWRITTEN_FIELD")
     public String getMessage() {
         return message;
     }
