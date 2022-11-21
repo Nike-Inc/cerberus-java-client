@@ -23,7 +23,7 @@ sourceSets {
 
 task integration(type: Test, description: 'Runs integration tests') {
     testClassesDirs = sourceSets.integration.output.classesDirs
-    classpath = sourceSets.integration.runtimeClasspath
+    classpath += sourceSets.integration.runtimeClasspath
 }
 
 dependencies {
